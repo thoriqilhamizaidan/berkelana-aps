@@ -1,34 +1,12 @@
 import React from 'react';
 import { ArrowLeftRight } from 'lucide-react';
+import Navbar from './user/navbar';
+import Footer from './user/footer';
 
 export default function BerkelanaLandingPage() {
   return (
     <>
-      {/* Navbar */}
-      <header className="bg-white shadow fixed w-full z-10">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center">
-            <img src="/api/placeholder/120/40" alt="Berkelana" className="h-10" />
-          </div>
-
-          <nav className="hidden md:flex justify-center space-x-8">
-            <a href="#" className="font-medium hover:text-purple-600 transition-colors">CARI TIKET</a>
-            <a href="#" className="font-medium hover:text-purple-600 transition-colors">PROMO</a>
-            <a href="#" className="font-medium hover:text-purple-600 transition-colors">ARTIKEL</a>
-            <a href="#" className="font-medium hover:text-purple-600 transition-colors">TIKET SAYA</a>
-            <a href="#" className="font-medium hover:text-purple-600 transition-colors">TENTANG KAMI</a>
-          </nav>
-          
-          <div className="flex items-center">
-            <a href="#" className="text-gray-800 hover:text-purple-600 transition-colors mr-4">Daftar/Masuk</a>
-            <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="relative h-screen bg-cover bg-center pt-16">
@@ -398,6 +376,7 @@ export default function BerkelanaLandingPage() {
           </div>
         </div>
       </section>
+      <Footer />
     </>
   );
 }
