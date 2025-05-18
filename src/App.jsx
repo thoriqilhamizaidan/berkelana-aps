@@ -3,6 +3,9 @@ import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Homepage from './Homepage'
 import PesanTiket from './user/pesantiket'
+import Artikel from './user/artikel'
+import ArtikelDetail from './user/artikeldetail'
+
 
 function App() {
   return (
@@ -13,7 +16,8 @@ function App() {
         <Route path="/cari-tiket"  element={<PesanTiket />} />
         {/* Add these routes to prevent navigation errors */}
         <Route path="/promo"  />
-        <Route path="/artikel"  />
+        <Route path="/artikel"  element={<Artikel />} />
+        <Route path="/artikel/detail" element={<ArtikelDetail />} />
         <Route path="/tiket-saya"  />
         <Route path="/tentang-kami"  />
         <Route path="/daftar-masuk"  />

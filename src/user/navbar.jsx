@@ -6,21 +6,32 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   useEffect(() => {
-    // Force the loading of Font Awesome
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
-    document.head.appendChild(link);
+    // Load Font Awesome
+    const fontAwesomeLink = document.createElement('link');
+    fontAwesomeLink.rel = 'stylesheet';
+    fontAwesomeLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+    document.head.appendChild(fontAwesomeLink);
+    
+    // Load League Spartan font
+    const fontLink = document.createElement('link');
+    fontLink.rel = 'stylesheet';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap';
+    document.head.appendChild(fontLink);
+    
+    // Add League Spartan to the document body
+    document.body.style.fontFamily = '"League Spartan", sans-serif';
     
     return () => {
-      document.head.removeChild(link);
+      document.head.removeChild(fontAwesomeLink);
+      document.head.removeChild(fontLink);
+      // Reset font family on unmount if needed
     };
   }, []);
   
   return (
-    <nav className="bg-white shadow-sm w-full" style={{ fontFamily: 'League Spartan, sans-serif' }}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <nav className="bg-white shadow-sm w-full font-['League_Spartan']">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-start h-16">
           {/* Logo - Left aligned */}
           <div className="flex-shrink-0">
             <Link to="/">
