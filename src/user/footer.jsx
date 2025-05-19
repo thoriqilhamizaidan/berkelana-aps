@@ -4,8 +4,7 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    
-    <footer className="bg-white" style={{ fontFamily: 'League Spartan, sans-serif' }}>
+    <footer className="bg-white font-[League_Spartan] text-base">
       {/* Main footer content - removed horizontal padding constraints */}
       <section className="relative h-48 bg-cover bg-center">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/50 to-purple-900/50 z-0"></div>
@@ -19,8 +18,8 @@ const Footer = () => {
       </section>
       <div className="max-w-full mx-auto py-8 px-0">
         <div className="flex flex-col md:flex-row justify-between items-start max-w-7xl mx-auto">
-          {/* Section 1 - Logo - Added negative margin to pull to edge */}
-          <div className="mb-8 md:mb-0 md:mr-8 md:-ml-4 lg:-ml-8">
+          {/* Section 1 - Logo - First position (left) */}
+          <div className="mb-8 md:mb-0 md:mr-8">
             <div className="mb-6">
               <img
                 src="../images/berkelana-logo.png"
@@ -98,8 +97,8 @@ const Footer = () => {
             </ul>
           </div>
           
-          {/* Section 5 - Social Media - Added negative margin to pull to edge */}
-          <div className="md:-mr-4 lg:-mr-8">
+          {/* Section 5 - Social Media */}
+          <div className="mb-8 md:mb-0">
             <h3 className="font-medium mb-4">Temukan Kami di</h3>
             <div className="flex space-x-4">
               <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400">

@@ -4,6 +4,7 @@ import { ArrowLeftRight } from 'lucide-react';
 import Navbar from './navbar';
 import Footer from './footer';
 
+
 const PesanTiket = () => {
   // State for form inputs
   const [fromCity, setFromCity] = useState('');
@@ -297,6 +298,21 @@ const PesanTiket = () => {
         </div>
       </section>
       
+<<<<<<< HEAD
+=======
+      {/* Footer Banner */}
+      <section className="relative h-48 bg-cover bg-center">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/50 to-purple-900/50 z-0"></div>
+        <div className="absolute inset-0 z-0">
+          <img src="../images/banner.png" alt="Footer Banner" className="w-full h-full object-cover" />
+        </div>
+        <div className="relative z-10 h-full flex flex-col justify-center items-center text-white text-center px-4">
+          <h2 className="text-2xl font-bold mb-2">Berkelana</h2>
+          <p className="text-lg">Perjalanan Tak Terbatas, Keindahan Tanpa Batas</p>
+        </div>
+      </section>
+      
+>>>>>>> 6b54f6f6d695f626ee87ef163e88639c83c7cf39
       <Footer />
     </>
   );
