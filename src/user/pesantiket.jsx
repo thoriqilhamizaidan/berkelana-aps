@@ -298,8 +298,6 @@ const PesanTiket = () => {
         </div>
       </section>
       
-<<<<<<< HEAD
-=======
       {/* Footer Banner */}
       <section className="relative h-48 bg-cover bg-center">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/50 to-purple-900/50 z-0"></div>
@@ -312,7 +310,6 @@ const PesanTiket = () => {
         </div>
       </section>
       
->>>>>>> 6b54f6f6d695f626ee87ef163e88639c83c7cf39
       <Footer />
     </>
   );

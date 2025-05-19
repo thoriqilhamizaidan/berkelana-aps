@@ -1,0 +1,10 @@
+
+Reminder
+
+
+1. Should an eye icon be added to toggle password visibility? (Login form and Password form)
+2. Should the password form be placed in the center or aligned to the left of the screen? (Ganti sandi / Lupa Sandi)
+3. Change "Back" icon on lupa-sandi and ganti-sandi
+4. Add on the OTPModal, whatever user enter on the OTP code, it will going to ganti-sandi page and then back to login
+5. Fix promo page HowToUse section
+6. Add admin navbar, need fix
