@@ -5,7 +5,7 @@ import Navbar from './navbar';
 import Footer from './footer';
 
 const PesanTiket = () => {
-  
+
   const [fromCity, setFromCity] = useState('');
   const [toCity, setToCity] = useState('');
   const [departDate, setDepartDate] = useState('');
@@ -107,6 +107,7 @@ const PesanTiket = () => {
   const handleBuyTicket = (ticket) => {
     navigate('/pemesanan-1', { state: { ticket } });
   };
+
   const handleClosePopup = () => {
     setAnimationState('exiting');
     setTimeout(() => {
@@ -385,7 +386,7 @@ const PesanTiket = () => {
           </div>
         </div>
       </section>
-      
+
       {/* Detail Popup */}
       {showDetailPopup && (
         <DetailPopup 
@@ -393,9 +394,9 @@ const PesanTiket = () => {
           onClose={handleClosePopup} 
         />
       )}
-      
+
       <Footer />
-      
+
       <style jsx>{`
         @keyframes fadeIn {
           from { opacity: 0; }
