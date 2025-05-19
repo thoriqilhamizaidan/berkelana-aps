@@ -6,6 +6,16 @@ const Footer = () => {
   return (
     <footer className="bg-white font-[League_Spartan] text-base">
       {/* Main footer content - removed horizontal padding constraints */}
+      <section className="relative h-48 bg-cover bg-center">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/50 to-purple-900/50 z-0"></div>
+        <div className="absolute inset-0 z-0">
+          <img src="/images/killian-pham-Sq8rpq2KB7U-unsplash.jpg" alt="Footer Banner" className="w-full h-full object-cover" />
+        </div>
+        <div className="relative z-10 h-full flex flex-col justify-center items-center text-white text-center px-4">
+          <h2 className="text-2xl font-bold mb-2">Berkelana</h2>
+          <p className="text-lg">Perjalanan Tak Terbatas, Keindahan Tanpa Batas</p>
+        </div>
+      </section>
       <div className="max-w-full mx-auto py-8 px-0">
         <div className="flex flex-col md:flex-row justify-between items-start max-w-7xl mx-auto">
           {/* Section 1 - Logo - First position (left) */}
@@ -28,7 +38,8 @@ const Footer = () => {
             <h3 className="font-medium mb-4">Hubungi Kami</h3>
             <div className="space-y-2">
               <div className="flex items-center">
-                <i className="fas fa-phone-alt mr-2 text-gray-700"></i>
+              
+                <i className="fa-solid fa-phone-alt mr-2 text-gray-700"></i>
                 <a href="tel:08124494015" className="text-gray-700 hover:text-emerald-400">
                   08124494015
                 </a>
@@ -102,9 +113,9 @@ const Footer = () => {
       </div>
       
       {/* Copyright Section */}
-      <div className="bg-emerald-400 py-3">
+      <div className="bg-emerald1 py-3">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-white">
+          <p className="text-center text-black">
             Copyright © 2025 BERKELANA®, All rights reserved.
           </p>
         </div>

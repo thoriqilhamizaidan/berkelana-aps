@@ -1,2 +1,14 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
+@theme {
+  --color-purple1: #9966FF;
+  --color-purplelight: #F1EAFF;
+  --color-emerald1: #33CB98;
+  --color-black1: #000000;
+  --color-white1: #FFFFFF;
+  --color-neutral1: #F2F2F2;
+  --color-gray1: #B3B3B3;
+}
