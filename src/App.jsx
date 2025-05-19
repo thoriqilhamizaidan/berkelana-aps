@@ -5,6 +5,11 @@ import Homepage from './Homepage'
 import PesanTiket from './user/pesantiket'
 import Artikel from './user/artikel'
 import ArtikelDetail from './user/artikeldetail'
+import TiketSaya from './user/tiketsaya';
+import ETicket from './user/etiket'; 
+import TentangKami from './user/tentangkami';
+import TermsAndConditions from './user/tc';
+
 
 
 function App() {
@@ -18,9 +23,11 @@ function App() {
         <Route path="/promo"  />
         <Route path="/artikel"  element={<Artikel />} />
         <Route path="/artikel/detail" element={<ArtikelDetail />} />
-        <Route path="/tiket-saya"  />
-        <Route path="/tentang-kami"  />
+        <Route path="/tiket-saya" element={<TiketSaya />} />
+        <Route path="/e-ticket/:bookingCode" element={<ETicket />} />  {/* Add this route */}
+        <Route path="/tentang-kami" element={<TentangKami />} />
         <Route path="/daftar-masuk"  />
+        <Route path="/syarat-ketentuan" element={<TermsAndConditions />} />
       </Routes>
     </Router>
   )
