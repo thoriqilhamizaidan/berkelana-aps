@@ -1,4 +1,3 @@
-// src/user/navbar.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -6,7 +5,6 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   useEffect(() => {
-    // Force the loading of Font Awesome
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
@@ -18,7 +16,7 @@ const Navbar = () => {
   }, []);
   
   return (
-    <nav className="bg-white shadow-sm w-full" style={{ fontFamily: 'League Spartan, sans-serif' }}>
+    <nav className="bg-white shadow-lg w-full" style={{ fontFamily: 'League Spartan, sans-serif' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo - Left aligned */}
