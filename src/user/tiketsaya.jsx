@@ -51,9 +51,8 @@ const TiketSaya = () => {
 
   return (
     <>
-      {/* Navbar */}
-      <Navbar />
 
+      
       {/* Gambar Latar */}
       <div className="relative bg-cover bg-center h-80" style={{ backgroundImage: "url('/images/backgroundtiketsaya.jpg')" }}>
         <div className="absolute inset-0 bg-gradient-to-t from-purple-600 to-transparent opacity-70"></div>
@@ -141,18 +140,6 @@ const TiketSaya = () => {
           </div>
         </div>
       </div>
-
-      {/* Footer Banner */}
-      <section className="relative h-48 bg-cover bg-center">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/50 to-purple-900/50 z-0"></div>
-        <div className="absolute inset-0 z-0">
-          <img src="../images/banner.png" alt="Footer Banner" className="w-full h-full object-cover" />
-        </div>
-        <div className="relative z-10 h-full flex flex-col justify-center items-start text-white px-8 md:px-16">
-          <h2 className="text-2xl font-bold mb-2">Bersama <span className="text-purple-300">#Berkelana</span></h2>
-          <p className="text-lg">Perjalanan Tak Terbatas, Keindahan Tanpa Batas</p>
-        </div>
-      </section>
       {/* Footer */}
       <Footer />
     </>

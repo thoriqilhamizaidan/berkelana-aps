@@ -11,6 +11,8 @@ const Pemesanan2 = () => {
   
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [passengerSeats, setPassengerSeats] = useState({});
+  const [passengerGenders, setPassengerGenders] = useState({});
+  const [activePassenger, setActivePassenger] = useState(null);
   
   // Count how many passengers we have
   const passengerCount = [
@@ -19,13 +21,21 @@ const Pemesanan2 = () => {
     formData?.namaPenumpang3
   ].filter(Boolean).length;
   
-  // Setup dummy seat data
+  // Setup dummy seat data with pre-assigned gender for reserved seats
   const [seatData, setSeatData] = useState({
     rows: 7,
     cols: 4,
-    reservedSeats: [
-      '1B', '2A', '3D', '4C', '5A', '5B', '6C', '6D', '7A'
-    ],
+    reservedSeats: {
+      '1B': 'Laki-laki',
+      '2A': 'Perempuan',
+      '3D': 'Laki-laki',
+      '4C': 'Perempuan',
+      '5A': 'Laki-laki',
+      '5B': 'Perempuan',
+      '6C': 'Laki-laki',
+      '6D': 'Perempuan',
+      '7A': 'Laki-laki'
+    },
     seatMap: {
       'A': 0,
       'B': 1,
@@ -35,62 +45,79 @@ const Pemesanan2 = () => {
   });
   
   useEffect(() => {
-    // Initialize passenger seats mapping
+    // Initialize passenger seats mapping and gender mapping
     if (passengerCount > 0) {
       const initialMapping = {};
+      const genderMapping = {};
+      
       if (formData?.namaPenumpang1) {
         initialMapping[formData.namaPenumpang1] = null;
+        genderMapping[formData.namaPenumpang1] = formData.jenisKelamin1;
       }
       if (formData?.namaPenumpang2) {
         initialMapping[formData.namaPenumpang2] = null;
+        genderMapping[formData.namaPenumpang2] = formData.jenisKelamin2;
       }
       if (formData?.namaPenumpang3) {
         initialMapping[formData.namaPenumpang3] = null;
+        genderMapping[formData.namaPenumpang3] = formData.jenisKelamin3;
       }
+      
       setPassengerSeats(initialMapping);
+      setPassengerGenders(genderMapping);
+      
+      // Set the first passenger as active by default
+      if (formData?.namaPenumpang1) {
+        setActivePassenger(formData.namaPenumpang1);
+      }
     }
   }, [formData, passengerCount]);
 
   const handleSeatClick = (seatId) => {
     // If seat is already reserved, do nothing
-    if (seatData.reservedSeats.includes(seatId)) {
+    if (Object.keys(seatData.reservedSeats).includes(seatId)) {
       return;
     }
     
-    // If seat is already selected, deselect it
-    if (selectedSeats.includes(seatId)) {
+    // If no active passenger, do nothing
+    if (!activePassenger) {
+      return;
+    }
+    
+    // Check if the seat is already assigned to another passenger
+    const passengerWithThisSeat = getPassengerForSeat(seatId);
+    if (passengerWithThisSeat && passengerWithThisSeat !== activePassenger) {
+      return; // Can't take someone else's seat
+    }
+    
+    // If this passenger already has a seat, remove it from selectedSeats
+    const currentSeat = passengerSeats[activePassenger];
+    if (currentSeat) {
+      setSelectedSeats(prev => prev.filter(seat => seat !== currentSeat));
+    }
+    
+    // If clicking on the same seat they already have, unassign it
+    if (currentSeat === seatId) {
+      const updatedSeats = { ...passengerSeats };
+      updatedSeats[activePassenger] = null;
+      setPassengerSeats(updatedSeats);
       setSelectedSeats(prev => prev.filter(seat => seat !== seatId));
-      
-      // Remove seat from passenger mapping
-      const updatedMapping = { ...passengerSeats };
-      Object.keys(updatedMapping).forEach(passenger => {
-        if (updatedMapping[passenger] === seatId) {
-          updatedMapping[passenger] = null;
-        }
-      });
-      setPassengerSeats(updatedMapping);
       return;
     }
     
-    // If we've already selected maximum seats, do nothing
-    if (selectedSeats.length >= passengerCount) {
-      return;
+    // Assign new seat to active passenger
+    const updatedSeats = { ...passengerSeats };
+    updatedSeats[activePassenger] = seatId;
+    setPassengerSeats(updatedSeats);
+    
+    // Update selected seats list
+    if (!selectedSeats.includes(seatId)) {
+      setSelectedSeats(prev => [...prev, seatId]);
     }
-    
-    // Add seat to selected seats
-    setSelectedSeats(prev => [...prev, seatId]);
-    
-    // Assign seat to first passenger without a seat
-    const passengerWithoutSeat = Object.keys(passengerSeats).find(
-      passenger => passengerSeats[passenger] === null
-    );
-    
-    if (passengerWithoutSeat) {
-      setPassengerSeats(prev => ({
-        ...prev,
-        [passengerWithoutSeat]: seatId
-      }));
-    }
+  };
+  
+  const handleSelectPassenger = (passenger) => {
+    setActivePassenger(passenger);
   };
   
   const handleSubmit = () => {
@@ -114,15 +141,42 @@ const Pemesanan2 = () => {
     });
   };
   
+  // Get the passenger who selected this seat (if any)
+  const getPassengerForSeat = (seatId) => {
+    for (const [passenger, seat] of Object.entries(passengerSeats)) {
+      if (seat === seatId) {
+        return passenger;
+      }
+    }
+    return null;
+  };
+  
+  // Get gender-based color for a selected seat
+  const getGenderColor = (gender) => {
+    return gender === 'Perempuan' ? 'bg-pink-500' : 'bg-blue-500';
+  };
+  
   const getSeatColor = (rowIndex, colIndex) => {
     const seatId = getSeatId(rowIndex, colIndex);
     
-    if (seatData.reservedSeats.includes(seatId)) {
-      return 'bg-gray-400 text-white cursor-not-allowed'; // Reserved seat
+    // If the seat is a system-reserved seat (already booked)
+    if (Object.keys(seatData.reservedSeats).includes(seatId)) {
+      const reservedGender = seatData.reservedSeats[seatId];
+      const genderColor = reservedGender === 'Perempuan' ? 'bg-pink-400' : 'bg-blue-400';
+      return `${genderColor} text-white opacity-70 cursor-not-allowed`; // Reserved seat with gender color
     }
     
-    if (selectedSeats.includes(seatId)) {
-      return 'bg-pink-500 text-white cursor-pointer'; // Selected seat
+    // Get the passenger who has this seat (if any)
+    const seatOwner = getPassengerForSeat(seatId);
+    
+    if (selectedSeats.includes(seatId) && seatOwner) {
+      // If this is active passenger's seat, add a highlight border
+      const isActiveSeat = seatOwner === activePassenger;
+      const borderClass = isActiveSeat ? 'ring-2 ring-yellow-400' : '';
+      
+      // Use gender-specific color for selected seats
+      const gender = passengerGenders[seatOwner];
+      return `${getGenderColor(gender)} text-white ${borderClass} cursor-pointer`; 
     }
     
     return 'bg-gray-200 hover:bg-gray-300 cursor-pointer'; // Available seat
@@ -141,9 +195,34 @@ const Pemesanan2 = () => {
     return baseTotal + adminFee;
   };
 
+  // Get passenger list item class
+  const getPassengerItemClass = (passenger) => {
+    const isActive = passenger === activePassenger;
+    const hasSeat = passengerSeats[passenger] !== null;
+    
+    let baseClass = "p-3 rounded-lg cursor-pointer flex justify-between items-center";
+    
+    if (isActive) {
+      return `${baseClass} bg-purple-100 border-2 border-purple-500`;
+    } else if (hasSeat) {
+      return `${baseClass} bg-gray-100`;
+    }
+    
+    return `${baseClass} bg-white border border-gray-200`;
+  };
+
+  // Get information about reserved seat occupants (for tooltip or display)
+  const getReservedSeatInfo = (seatId) => {
+    if (Object.keys(seatData.reservedSeats).includes(seatId)) {
+      const gender = seatData.reservedSeats[seatId];
+      return `Kursi telah dipesan (${gender})`;
+    }
+    return '';
+  };
+
   return (
     <>
-      <Navbar />
+      
       
       <div className="max-w-6xl mx-auto py-6 px-4">
         {/* Back button and title */}
@@ -181,59 +260,79 @@ const Pemesanan2 = () => {
           </div>
         </div>
         
-        {/* Data Penumpang Display */}
+        {/* Data Penumpang Display with Click to Select */}
         <div className="bg-neutral-100 rounded-lg shadow-lg p-5 mb-6">
           <h2 className="text-xl font-bold mb-4">Data Penumpang</h2>
+          <p className="text-sm text-gray-600 mb-3">Klik pada penumpang untuk memilih kursinya</p>
           
-          <div className="space-y-4">
+          <div className="space-y-3">
             {formData?.namaPenumpang1 && (
-              <div>
-                <div className="font-semibold">Data Penumpang 1</div>
-                <div className="flex justify-between">
+              <div 
+                className={getPassengerItemClass(formData.namaPenumpang1)}
+                onClick={() => handleSelectPassenger(formData.namaPenumpang1)}
+              >
+                <div>
+                  <div className="font-semibold">Data Penumpang 1</div>
                   <div className="text-gray-700">
                     {formData.namaPenumpang1} - {formData.jenisKelamin1}
                   </div>
-                  <div className="font-medium">
-                    {passengerSeats[formData.namaPenumpang1] ? 
-                      `Kursi ${passengerSeats[formData.namaPenumpang1]}` : 
-                      'Belum memilih kursi'}
-                  </div>
+                </div>
+                <div className="font-medium">
+                  {passengerSeats[formData.namaPenumpang1] ? 
+                    `Kursi ${passengerSeats[formData.namaPenumpang1]}` : 
+                    'Belum memilih kursi'}
                 </div>
               </div>
             )}
             
             {formData?.namaPenumpang2 && (
-              <div>
-                <div className="font-semibold">Data Penumpang 2</div>
-                <div className="flex justify-between">
+              <div 
+                className={getPassengerItemClass(formData.namaPenumpang2)}
+                onClick={() => handleSelectPassenger(formData.namaPenumpang2)}
+              >
+                <div>
+                  <div className="font-semibold">Data Penumpang 2</div>
                   <div className="text-gray-700">
                     {formData.namaPenumpang2} - {formData.jenisKelamin2}
                   </div>
-                  <div className="font-medium">
-                    {passengerSeats[formData.namaPenumpang2] ? 
-                      `Kursi ${passengerSeats[formData.namaPenumpang2]}` : 
-                      'Belum memilih kursi'}
-                  </div>
+                </div>
+                <div className="font-medium">
+                  {passengerSeats[formData.namaPenumpang2] ? 
+                    `Kursi ${passengerSeats[formData.namaPenumpang2]}` : 
+                    'Belum memilih kursi'}
                 </div>
               </div>
             )}
             
             {formData?.namaPenumpang3 && (
-              <div>
-                <div className="font-semibold">Data Penumpang 3</div>
-                <div className="flex justify-between">
+              <div 
+                className={getPassengerItemClass(formData.namaPenumpang3)}
+                onClick={() => handleSelectPassenger(formData.namaPenumpang3)}
+              >
+                <div>
+                  <div className="font-semibold">Data Penumpang 3</div>
                   <div className="text-gray-700">
                     {formData.namaPenumpang3} - {formData.jenisKelamin3}
                   </div>
-                  <div className="font-medium">
-                    {passengerSeats[formData.namaPenumpang3] ? 
-                      `Kursi ${passengerSeats[formData.namaPenumpang3]}` : 
-                      'Belum memilih kursi'}
-                  </div>
+                </div>
+                <div className="font-medium">
+                  {passengerSeats[formData.namaPenumpang3] ? 
+                    `Kursi ${passengerSeats[formData.namaPenumpang3]}` : 
+                    'Belum memilih kursi'}
                 </div>
               </div>
             )}
           </div>
+          
+          {activePassenger && (
+            <div className="mt-3 p-2 bg-gray-100 rounded text-center">
+              <p className="text-sm font-medium">
+                Pilih kursi untuk: <span className="font-bold">{activePassenger}</span>
+                {passengerSeats[activePassenger] && 
+                 ` (Kursi saat ini: ${passengerSeats[activePassenger]})`}
+              </p>
+            </div>
+          )}
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -243,18 +342,18 @@ const Pemesanan2 = () => {
               <h2 className="text-xl font-bold mb-4">Pilih Kursi</h2>
               
               {/* Seat selection legend */}
-              <div className="flex space-x-4 mb-4">
+              <div className="flex flex-wrap gap-4 mb-4">
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-gray-200 mr-2"></div>
                   <span>Tersedia</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-4 h-4 bg-gray-400 mr-2"></div>
-                  <span>Sudah dipesan</span>
+                  <div className="w-4 h-4 bg-blue-400 opacity-70 mr-2"></div>
+                  <span>Sudah dipesan (Laki-laki)</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-4 h-4 bg-pink-500 mr-2"></div>
-                  <span>Kursi dipilih</span>
+                  <div className="w-4 h-4 bg-pink-400 opacity-70 mr-2"></div>
+                  <span>Sudah dipesan (Perempuan)</span>
                 </div>
               </div>
               
@@ -274,6 +373,10 @@ const Pemesanan2 = () => {
                       const isLeftSide = colIndex < 2;
                       const marginClass = isLeftSide ? 'mr-4' : 'ml-4';
                       
+                      // Only completely disable reserved seats
+                      const isDisabled = Object.keys(seatData.reservedSeats).includes(seatId);
+                      const reservedInfo = getReservedSeatInfo(seatId);
+                      
                       return (
                         <div 
                           key={`${rowIndex}-${colIndex}`} 
@@ -281,7 +384,8 @@ const Pemesanan2 = () => {
                         >
                           <button 
                             onClick={() => handleSeatClick(seatId)}
-                            disabled={seatData.reservedSeats.includes(seatId)}
+                            disabled={isDisabled}
+                            title={reservedInfo || ''}
                             className={`w-10 h-10 flex items-center justify-center rounded-md ${getSeatColor(rowIndex, colIndex)}`}
                           >
                             {seatId}

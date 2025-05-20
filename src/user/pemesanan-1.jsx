@@ -43,7 +43,7 @@ const Pemesanan1 = () => {
 
   return (
     <>
-      <Navbar />
+      
       
       {/* Simplified container structure - removed redundant containers */}
       <div className="max-w-6xl mx-auto py-6 px-4">

@@ -203,7 +203,7 @@ const PesanTiket = () => {
 
   return (
     <>
-      <Navbar />
+      
       
       {/* Hero Section */}
       <section className="relative h-100 bg-cover bg-center">
