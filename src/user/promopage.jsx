@@ -53,7 +53,7 @@ function handleCopyCode(code, e) {
 
 const PromoPage = () => (
   <div className="min-h-screen bg-white flex flex-col">
-    <Navbar />
+    
 
     <section className="relative h-[320px] md:h-[370px] bg-cover bg-center">
       <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-purple-950/40 z-0"></div>

@@ -1,11 +1,38 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 const ChangePassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [password, setPassword] = useState(""); // Added state for password
+  const [confirmPassword, setConfirmPassword] = useState(""); // Added state for confirm password
+  const [error, setError] = useState(""); // Added state for error handling
+  
+  const navigate = useNavigate(); // Added for navigation after submit
+  
+  // Added form submit handler
+  const handleSubmit = (e) => {
+    e.preventDefault(); // Prevent default form submission behavior
+    
+    // Basic validation
+    if (password !== confirmPassword) {
+      setError("Kata sandi tidak cocok");
+      return;
+    }
+    
+    if (password.length < 8) {
+      setError("Kata sandi harus minimal 8 karakter");
+      return;
+    }
+    
+    // Here you would typically make an API call to update the password
+    console.log("Password changed successfully");
+    
+    // Navigate back to user account page after successful submission
+    navigate("/info-akun");
+  };
 
   return (
     <div
@@ -19,9 +46,9 @@ const ChangePassword = () => {
       }}
     >
       <div className="bg-white py-20 px-6 sm:px-12 rounded-3xl shadow-lg w-full max-w-2xl mx-auto relative">
-        {/* Back button */}
+        {/* Back button - Changed to go to user account */}
         <Link
-          to="/daftar-masuk"
+          to="/info-akun"
           className="absolute top-5 left-5 text-2xl text-gray-700 hover:text-purple-500"
         >
           <span aria-label="Back" role="img">
@@ -43,7 +70,15 @@ const ChangePassword = () => {
             Pastikan untuk mengingat kata sandi yang akan diganti
           </p>
         </div>
-        <form>
+        
+        {/* Error message */}
+        {error && (
+          <div className="mb-4 p-3 text-red-500 bg-red-50 rounded-lg border border-red-200">
+            {error}
+          </div>
+        )}
+        
+        <form onSubmit={handleSubmit}>
           {/* New Password Input */}
           <div className="mb-8">
             <label
@@ -59,6 +94,8 @@ const ChangePassword = () => {
                 placeholder="Masukkan kata sandi baru"
                 className="w-full p-4 text-lg border-none bg-transparent placeholder:text-gray-400 focus:outline-none"
                 required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
               <button
                 type="button"
@@ -88,6 +125,8 @@ const ChangePassword = () => {
                 placeholder="Konfirmasi kata sandi"
                 className="w-full p-4 text-lg border-none bg-transparent placeholder:text-gray-400 focus:outline-none"
                 required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <button
                 type="button"
