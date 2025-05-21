@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './navbar';
 import Footer from './footer';
 import { ChevronLeft } from 'lucide-react';
+import { Icon } from '@iconify/react'; 
 
 const Pemesanan1 = () => {
   const location = useLocation();
@@ -343,27 +344,27 @@ const Pemesanan1 = () => {
                   <div className="font-bold mb-1">Fasilitas:</div>
                   <div className="grid grid-cols-2 gap-1 text-sm">
                     <div className="flex items-center">
-                      <span className="w-4 h-4 mr-1">🧊</span>
+                      <Icon icon="mynaui:air-conditioner-solid" className="w-4 h-4 mr-1 text-purple-600" />
                       <span>AC</span>
                     </div>
                     <div className="flex items-center">
-                      <span className="w-4 h-4 mr-1">📺</span>
+                      <Icon icon="f7:tv-fill" className="w-4 h-4 mr-1 text-purple-600" />
                       <span>Hiburan Sentral</span>
                     </div>
                     <div className="flex items-center">
-                      <span className="w-4 h-4 mr-1">📶</span>
+                      <Icon icon="material-symbols:wifi-rounded" className="w-4 h-4 mr-1 text-purple-600" />
                       <span>Wi-Fi</span>
                     </div>
                     <div className="flex items-center">
-                      <span className="w-4 h-4 mr-1">🪑</span>
+                      <Icon icon="ph:seat-fill" className="w-4 h-4 mr-1 text-purple-600" />
                       <span>Kursi Recliner</span>
                     </div>
                     <div className="flex items-center">
-                      <span className="w-4 h-4 mr-1">🛌</span>
+                      <Icon icon="material-symbols:bed" className="w-4 h-4 mr-1 text-purple-600" />
                       <span>Selimut</span>
                     </div>
                     <div className="flex items-center">
-                      <span className="w-4 h-4 mr-1">🧴</span>
+                      <Icon icon="tabler:bottle-filled" className="w-4 h-4 mr-1 text-purple-600" />
                       <span>Mineral dan Snack</span>
                     </div>
                   </div>

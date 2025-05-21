@@ -55,7 +55,7 @@ const TiketSaya = () => {
       
       {/* Gambar Latar */}
       <div className="relative bg-cover bg-center h-80" style={{ backgroundImage: "url('/images/backgroundtiketsaya.jpg')" }}>
-        <div className="absolute inset-0 bg-gradient-to-t from-purple-600 to-transparent opacity-70"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.6)] via-transparent to-transparent z-1"></div>
         <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-10">
           <h1 className="text-4xl font-bold">Tiket Saya</h1>
           <p className="text-lg mt-2">Check tiket kamu disini!</p>

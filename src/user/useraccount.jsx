@@ -9,11 +9,11 @@ const UserAccount = () => {
   const { logout, user } = useAuth();
   
   const [userData, setUserData] = useState({
-    name: 'Nasywa Putri Nataliza',
+    name: 'Freyanashifa Jayawardana ',
     address: 'Jalan Jamrud I No 1 PPS Gresik',
-    email: 'natalizanasywaputri@gmail.com',
+    email: 'Freyanashifa Jayawardana@gmail.com',
     phone: '081249401599',
-    birthdate: '26 April 2004',
+    birthdate: '13 Februari 2006',
     gender: 'Perempuan'
   });
 
@@ -55,10 +55,10 @@ const UserAccount = () => {
       {/* <Navbar isLoggedIn={true} /> */}
       
       {/* Hero Banner */}
-      <div className="relative h-56 bg-gradient-to-r from-purple-500/30 to-blue-500/20">
+      <div className="relative h-96 bg-gradient-to-r from-purple-500/30 to-blue-500/20">
         <div className="absolute inset-0 overflow-hidden">
           <img 
-            src="/images/janke-laskowski-jz-ayLjk2nk-unsplash.jpg" 
+            src="/images/Pusat akun.jpg" 
             alt="Banner background" 
             className="w-full h-full object-cover opacity-80"
             onError={(e) => {
@@ -210,11 +210,11 @@ const UserAccount = () => {
             
             {/* User Avatar */}
             <div className="md:w-1/3 flex justify-center mt-6 md:mt-0">
-              <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-lg">
+              <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-lg hover:scale-105 transition duration-150 hover:border-emerald1">
                 <img 
-                  src="/api/placeholder/160/160" 
+                  src="images/freya.jpeg" 
                   alt="Profile" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-50 object-cover "
                 />
               </div>
             </div>

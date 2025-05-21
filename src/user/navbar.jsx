@@ -1,6 +1,6 @@
 // src/user/navbar.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation,NavLink } from 'react-router-dom';
 import { BellIcon } from 'lucide-react';
 import { useAuth } from './context/AuthContext.jsx';
 
@@ -94,7 +94,7 @@ const Navbar = () => {
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-start h-16">
           {/* Logo - Left aligned */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 mb-2 ml-2">
             <Link to="/">
               <img
                 src="/images/Logo nocaption.png"
@@ -109,47 +109,58 @@ const Navbar = () => {
           </div>
           
           {/* Navigation Links - Center aligned */}
-          <div className="flex justify-center flex-1">
-            <div className="flex space-x-8">
-              <Link 
+          <div className="flex justify-center flex-1 ml-9">
+            <div className="flex space-x-12">
+              <NavLink 
                 to="/cari-tiket" 
-                className="font-bold text-gray-900 hover:text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider"
+                className={({ isActive }) =>
+                  isActive ? 'font-bold text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider' : 'font-bold text-gray-900 hover:text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider'
+                }
               >
                 Cari Tiket
-              </Link>
-              <Link 
+              </NavLink>
+              <NavLink 
                 to="/promo" 
-                className="font-bold text-gray-900 hover:text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider"
+                className={({ isActive }) =>
+                  isActive ? 'font-bold text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider' : 'font-bold text-gray-900 hover:text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider'
+                }
               >
                 Promo
-              </Link>
-              <Link 
+              </NavLink>
+              <NavLink 
                 to="/artikel" 
-                className="font-bold text-gray-900 hover:text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider"
+                className={({ isActive }) =>
+                  isActive ? 'font-bold text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider' : 'font-bold text-gray-900 hover:text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider'
+                }
               >
                 Artikel
-              </Link>
-              <Link 
+              </NavLink>
+              <NavLink 
                 to="/tiket-saya" 
-                className="font-bold text-gray-900 hover:text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider"
+                className={({ isActive }) =>
+                  isActive ? 'font-bold text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider' : 'font-bold text-gray-900 hover:text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider'
+                }
               >
                 Tiket Saya
-              </Link>
-              <Link 
+              </NavLink>
+              <NavLink 
                 to="/tentang-kami" 
-                className="font-bold text-gray-900 hover:text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider"
+                className={({ isActive }) =>
+                  isActive ? 'font-bold text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider' : 'font-bold text-gray-900 hover:text-emerald-400 px-3 py-2 text-sm uppercase tracking-wider'
+                }
               >
                 Tentang Kami
-              </Link>
+              </NavLink>
             </div>
           </div>
+
           
           {/* Login/Register or User Profile - Right aligned */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 mr-2">
             {isLoggedIn ? (
               <>
                 {/* Notification Bell */}
-                <div className="relative">
+                <div className="relative top-1">
                   <button className="text-gray-900 hover:text-emerald-400 focus:outline-none">
                     <i className="fas fa-bell text-2xl"></i>
                     <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
@@ -165,11 +176,11 @@ const Navbar = () => {
                     className="flex items-center focus:outline-none"
                     type="button"
                   >
-                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-emerald-400">
+                    <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-emerald1 hover:scale-105 ">
                       <img 
-                        src={user?.avatar || "/api/placeholder/40/40"} 
+                        src={user?.avatar || "images/freya.jpeg"} 
                         alt="User Profile" 
-                        className="w-full h-full object-cover"
+                        className="w-full h-12 object-cover"
                       />
                     </div>
                   </button>
