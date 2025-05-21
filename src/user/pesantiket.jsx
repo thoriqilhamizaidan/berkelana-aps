@@ -3,6 +3,7 @@ import { ArrowLeftRight, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './navbar';
 import Footer from './footer';
+import { Icon } from '@iconify/react'; 
 
 const PesanTiket = () => {
 
@@ -116,6 +117,8 @@ const PesanTiket = () => {
     }, 300); 
   };
 
+   // Import Icon component from Iconify
+
   const DetailPopup = ({ ticket, onClose }) => {
     if (!ticket) return null;
     
@@ -125,6 +128,15 @@ const PesanTiket = () => {
       }
     };
     
+    const facilities = [
+      { icon: 'mynaui:air-conditioner-solid', label: 'AC' },
+      { icon: 'f7:tv-fill', label: 'Hiburan Sentral' },
+      { icon: 'material-symbols:wifi-rounded', label: 'Wi-Fi' },
+      { icon: 'ph:seat-fill', label: 'Kursi Recliner' },
+      { icon: 'material-symbols:bed', label: 'Selimut' },
+      { icon: 'tabler:bottle-filled', label: 'Mineral dan Snack' }
+    ];
+  
     return (
       <div 
         className={`fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/30 transition-opacity duration-300 ${animationState === 'entering' ? 'animate-fadeIn' : animationState === 'exiting' ? 'animate-fadeOut' : ''}`}
@@ -140,7 +152,7 @@ const PesanTiket = () => {
               <X size={24} />
             </button>
           </div>
-
+  
           <div className="p-6 bg-gray-50">
             <div className="flex flex-col md:flex-row">
               <div className="md:w-1/2">
@@ -153,32 +165,25 @@ const PesanTiket = () => {
                 <div>
                   <p className="font-bold mb-2">Fasilitas:</p>
                   <div className="grid grid-cols-2 gap-y-2">
-                    {[
-                      { icon: '🧊', label: 'AC' },
-                      { icon: '📺', label: 'Hiburan Sentral' },
-                      { icon: '📶', label: 'Wi-Fi' },
-                      { icon: '🪑', label: 'Kursi Recliner' },
-                      { icon: '🛌', label: 'Selimut' },
-                      { icon: '🧴', label: 'Mineral dan Snack' }
-                    ].map((facility, index) => (
+                    {facilities.map((facility, index) => (
                       <div key={index} className="flex items-center">
-                        <span className="inline-block w-6 h-6 mr-2 text-purple-600">{facility.icon}</span>
+                        <Icon icon={facility.icon} className="text-purple-600 w-6 h-6 mr-2" />
                         <span>{facility.label}</span>
                       </div>
                     ))}
                   </div>
                 </div>
               </div>
-
+  
               <div className="md:w-1/2 mt-4 md:mt-0">
                 <img 
-                  src="/api/placeholder/600/400" 
+                  src="images/Detail Armada.png" 
                   alt="Bus interior" 
                   className="w-full h-64 object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 transition-transform"
                 />
               </div>
             </div>
-
+  
             <div className="mt-6 border-t pt-6">
               <h3 className="text-xl font-bold mb-4">Informasi Tiket</h3>
               <div className="mb-4">
@@ -200,6 +205,7 @@ const PesanTiket = () => {
       </div>
     );
   };
+  
 
   return (
     <>
@@ -207,7 +213,7 @@ const PesanTiket = () => {
       
       {/* Hero Section */}
       <section className="relative h-100 bg-cover bg-center">
-        <div className="absolute inset-0 bg-gradient-to-r from-green-400/30 to-blue-500/30 z-0"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.4)] via-transparent to-transparent z-1"></div>
         <div className="absolute inset-0 z-0">
           <img src="/images/janke-laskowski-jz-ayLjk2nk-unsplash.jpg" alt="Background" className="w-full h-full object-cover" />
         </div>
@@ -219,7 +225,7 @@ const PesanTiket = () => {
           <div className="bg-purplelight rounded-lg p-3 w-full max-w-350 shadow-lg">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-7 items-center">
               <div className="flex flex-col md:col-span-3">
-                <label className=" relative right-36 text-gray-600 text-sm mb-1">Dari</label>
+                <label className=" text-gray-600 text-sm mb-1 mr-73">Dari</label>
                 <select 
                   className="w-full border border-gray-200 p-2 rounded text-gray-800 appearance-none bg-white shadow-lg cursor-pointer"
                   value={fromCity}
@@ -239,7 +245,7 @@ const PesanTiket = () => {
               </div>
               
               <div className="flex flex-col md:col-span-3">
-                <label className=" relative right-38 text-gray-600 text-sm mb-1">Ke</label>
+                <label className=" text-gray-600 text-sm mb-1 mr-76">Ke</label>
                 <select 
                   className="w-full border border-gray-200 p-2 rounded text-gray-800 appearance-none bg-white shadow-lg cursor-pointer"
                   value={toCity}
@@ -255,7 +261,7 @@ const PesanTiket = () => {
               </div>
               
               <div className="flex flex-col md:col-span-2">
-                <label className=" relative right-7 text-gray-600 text-sm mb-1">Tanggal Pergi</label>
+                <label className=" text-gray-600 text-sm mb-1 mr-31">Tanggal Pergi</label>
                 <div className="relative">
                   <input 
                     type="date" 
@@ -268,7 +274,7 @@ const PesanTiket = () => {
               </div>
               
               <div className="flex flex-col md:col-span-2">
-                <label className="text-gray-600 text-sm mb-1">Pilih Akomodasi</label>
+                <label className="text-gray-600 text-sm mb-1 mr-28">Pilih Akomodasi</label>
                 <select 
                   className="w-full border border-gray-200 p-2 rounded text-gray-800 appearance-none bg-white shadow-lg cursor-pointer"
                   value={accommodation}
@@ -280,7 +286,7 @@ const PesanTiket = () => {
               </div>
               
               <div className="md:col-span-1 flex items-end">
-                <button className="relative left-0 top-3 bg-emerald1 hover:bg-green-600 text-black font-bold p-2 rounded focus:outline-none w-full flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 transition-transform duration-300">
+                <button className="bg-emerald1 hover:bg-green-600 text-black font-bold p-2 rounded focus:outline-none w-full flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 transition-transform duration-300 mt-6">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                   </svg>

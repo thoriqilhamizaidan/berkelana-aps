@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Navbar from './navbar';
 import Footer from './footer';
 import { ChevronLeft, Copy, Check, Ticket } from 'lucide-react';
+import { Icon } from '@iconify/react'; 
 
 const Pembayaran = () => {
   const location = useLocation();
@@ -178,7 +179,7 @@ const Pembayaran = () => {
                   <div className="bg-white p-3 rounded-lg border border-gray-300 w-64 h-64 flex items-center justify-center">
                     {/* QR code */}
                     <img 
-                      src="/qris-code.png" 
+                      src="/qris.png" 
                       alt="QRIS Payment Code"
                       className="w-full h-full object-contain"
                       onError={(e) => {
@@ -205,7 +206,7 @@ const Pembayaran = () => {
               <div className="flex items-center mb-2">
                 <div className="flex-1">
                   <div className="flex items-center">
-                    <div className="w-4 h-4 rounded-full bg-green-500 mr-2"></div>
+                    <div className="w-4 h-4 rounded-full bg-emerald1 mb-1.5 mr-2"></div>
                     <div className="font-bold text-black">GROGOL</div>
                   </div>
                   <div className="ml-6 text-sm">04:20</div>
@@ -215,14 +216,14 @@ const Pembayaran = () => {
                   </div>
                 </div>
                 
-                <div className="flex-grow text-center">
+                <div className="flex-grow text-center mb-18">
                   <div className="border-t-2 border-dashed border-gray-400 w-16 mx-auto"></div>
                 </div>
                 
-                <div className="flex-1 text-right">
+                <div className="flex-1 text-right mb-4">
                   <div className="flex items-center justify-end">
                     <div className="font-bold text-black">CIAMPELAS</div>
-                    <div className="w-4 h-4 rounded-full bg-indigo-500 ml-2"></div>
+                    <div className="w-4 h-4 rounded-full bg-emerald1 mb-1.5 ml-2"></div>
                   </div>
                   <div className="mr-6 text-sm">09:50</div>
                   <div className="mr-6 text-xs text-gray-600">
@@ -241,31 +242,31 @@ const Pembayaran = () => {
                 <div className="text-sm text-gray-700">Format Kursi: 2-2</div>
               </div>
               
-              <div className="pt-3 border-t border-gray-200">
+              <div className="pt-3 ">
                 <div className="font-bold mb-1">Fasilitas:</div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="flex items-center">
-                    <span className="w-4 h-4 mr-1">🧊</span>
+                    <Icon icon="mynaui:air-conditioner-solid" className="w-5 h-5 mr-2 text-purple-600" />
                     <span>AC</span>
                   </div>
                   <div className="flex items-center">
-                    <span className="w-4 h-4 mr-1">📺</span>
+                    <Icon icon="f7:tv-fill" className="w-5 h-5 mr-2 text-purple-600" />
                     <span>Hiburan Sentral</span>
                   </div>
                   <div className="flex items-center">
-                    <span className="w-4 h-4 mr-1">📶</span>
+                    <Icon icon="material-symbols:wifi-rounded" className="w-5 h-5 mr-2 text-purple-600" />
                     <span>Wi-Fi</span>
                   </div>
                   <div className="flex items-center">
-                    <span className="w-4 h-4 mr-1">🪑</span>
+                    <Icon icon="ph:seat-fill" className="w-5 h-5 mr-2 text-purple-600" />
                     <span>Kursi Recliner</span>
                   </div>
                   <div className="flex items-center">
-                    <span className="w-4 h-4 mr-1">🛌</span>
+                    <Icon icon="material-symbols:bed" className="w-5 h-5 mr-2 text-purple-600" />
                     <span>Selimut</span>
                   </div>
                   <div className="flex items-center">
-                    <span className="w-4 h-4 mr-1">🧴</span>
+                    <Icon icon="tabler:bottle-filled" className="w-5 h-5 mr-2 text-purple-600" />
                     <span>Mineral dan Snack</span>
                   </div>
                 </div>

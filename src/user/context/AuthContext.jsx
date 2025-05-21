@@ -25,9 +25,9 @@ export const AuthProvider = ({ children }) => {
         // In a real app, you would fetch user data from API or localStorage
         // For demo purposes, we'll use a hardcoded user object
         setUser({
-          name: 'Nasywa Putri Nataliza',
-          email: 'natalizanasywaputri@gmail.com',
-          avatar: '/api/placeholder/40/40'
+          name: 'Freyanashifa Jayawardana',
+          email: 'Freyanashifa Jayawardana.com',
+          avatar: 'images/freya.jpeg'
         });
       } else {
         setUser(null);
