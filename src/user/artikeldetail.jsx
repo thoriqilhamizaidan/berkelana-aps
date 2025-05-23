@@ -29,7 +29,7 @@ export default function ArtikelDetail() {
 
   return (
     <>
-      <Navbar />
+      
         {/* Hero Section with Background */}
 <section className="relative h-125 bg-cover bg-center pt-16">
   {/* Overlay Gradient */}
@@ -236,4 +236,4 @@ export default function ArtikelDetail() {
       <Footer />
     </>
   );
-}
+};

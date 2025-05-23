@@ -222,7 +222,7 @@ const PesanTiket = () => {
           <h1 className="text-4xl font-bold text-black mb-8">Cari Tiketmu!</h1>
           
           {/* Search Form */}
-          <div className="bg-purplelight rounded-lg p-3 w-full max-w-350 shadow-lg">
+          <div className="bg-purplelight rounded-lg p-5 w-full max-w-350 shadow-lg">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-7 items-center">
               <div className="flex flex-col md:col-span-3">
                 <label className=" text-gray-600 text-sm mb-1 mr-73">Dari</label>

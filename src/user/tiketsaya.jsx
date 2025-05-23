@@ -14,7 +14,7 @@ const TiketSaya = () => {
       date: 'Selasa, 29 April 2025',
       departureCity: 'GROGOL',
       arrivalCity: 'CIHAMPELAS',
-      busImage: '/images/bus1.jpg', // Ganti dengan path gambar bus yang sesuai
+      busImage: '/images/Bis ungu.png', // Ganti dengan path gambar bus yang sesuai
       departureTime: '03:00',
       arrivalTime: '06:00',
       departureLocation: 'Jl Daan Mogot Raya KM 1N',
@@ -30,7 +30,7 @@ const TiketSaya = () => {
       date: 'Selasa, 29 April 2025',
       departureCity: 'GROGOL',
       arrivalCity: 'DIPATIKUR',
-      busImage: '/images/bus2.jpg', // Ganti dengan path gambar bus yang sesuai
+      busImage: '/images/Bis putih..png', // Ganti dengan path gambar bus yang sesuai
       departureTime: '06:00',
       arrivalTime: '09:00',
       departureLocation: 'Jl Pasar Baru No 3',
@@ -92,10 +92,10 @@ const TiketSaya = () => {
                     {/* Keberangkatan dan Kedatangan - Vertikal */}
                     <div className="flex flex-col mt-4 relative">
                       {/* Vertical Line */}
-                      <div className="absolute left-3 top-6 bottom-6 w-0.5 bg-green-500"></div>
+                      <div className="absolute left-3 top-6 bottom-6 w-0.5 bg-emerald1"></div>
                        {/* Departure */}
                       <div className="flex items-center mb-6 relative">
-                        <div className="h-6 w-6 bg-green-500 rounded-full flex items-center justify-center z-10"></div>
+                        <div className="h-6 w-6 bg-emerald1 rounded-full flex items-center justify-center z-10"></div>
                         <div className="ml-6">
                           <div className="font-bold text-black uppercase">{ticket.departureCity}</div>
                           <div className="font-bold text-black">{ticket.departureTime}</div>
@@ -107,7 +107,7 @@ const TiketSaya = () => {
                       <div className="ml-12 text-sm text-gray-500">{ticket.duration}</div>
                        {/* Arrival */}
                       <div className="flex items-center mt-6 relative">
-                        <div className="h-6 w-6 bg-green-500 rounded-full flex items-center justify-center z-10"></div>
+                        <div className="h-6 w-6 bg-emerald1 rounded-full flex items-center justify-center z-10"></div>
                         <div className="ml-6">
                           <div className="font-bold text-black uppercase">{ticket.arrivalCity}</div>
                           <div className="font-bold text-black">{ticket.arrivalTime}</div>
@@ -127,7 +127,7 @@ const TiketSaya = () => {
                       <div className="text-sm text-gray-600 mt-1">No Kondektur: {ticket.conductor}</div>
                       {/* E-Tiket moved up and made clickable */}
                       <div 
-                        className="text-sm text-green-600 font-medium mt-1 cursor-pointer hover:underline"
+                        className="text-sm text-emerald1 font-medium mt-1 cursor-pointer hover:underline"
                         onClick={() => handleETicketClick(ticket.bookingCode)}  // Handle click
                       >
                         E-Tiket

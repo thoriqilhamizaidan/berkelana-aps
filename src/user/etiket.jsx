@@ -95,11 +95,11 @@ const ETicket = () => {
               <div className="text-xl font-semibold mb-6">{ticket.date}</div>
               {/* Journey Timeline */}
               <div className="relative">
-                <div className="absolute left-3 top-3 w-0.5 h-40 bg-green-500"></div>
+                <div className="absolute left-3 top-3 w-0.5 h-40 bg-emerald1"></div>
                 {/* From */}
                 <div className="flex mb-8 relative">
                   <div className="mr-4 z-10">
-                    <div className="w-6 h-6 rounded-full bg-green-500"></div>
+                    <div className="w-6 h-6 rounded-full bg-emerald1"></div>
                   </div>
                   <div>
                     <div className="font-bold text-lg">{ticket.departureCity}</div>
@@ -114,7 +114,7 @@ const ETicket = () => {
                 {/* To */}
                 <div className="flex relative">
                   <div className="mr-4 z-10">
-                    <div className="w-6 h-6 rounded-full bg-green-500"></div>
+                    <div className="w-6 h-6 rounded-full bg-emerald1"></div>
                   </div>
                   <div>
                     <div className="font-bold text-lg">{ticket.arrivalCity}</div>

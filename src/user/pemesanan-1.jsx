@@ -298,7 +298,7 @@ const Pemesanan1 = () => {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  className="bg-emerald-400 hover:bg-emerald-500 text-black font-bold py-2 px-6 rounded-lg transition-colors duration-200"
+                  className="bg-emerald-400 hover:bg-emerald-500 text-black font-bold py-2 px-6 rounded-lg transition-colors duration-200 cursor-pointer"
                 >
                   Lanjutkan
                 </button>

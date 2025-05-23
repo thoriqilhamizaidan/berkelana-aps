@@ -164,12 +164,12 @@ export default function BerkelanaLandingPage() {
           
           <h1 className="text-5xl font-bold mb-2">Berkelana kemana hari ini?</h1>
           <p className="text-lg mb-12">Bersama Berkelana - Perjalanan Tak Terbatas, Keindahan Tanpa Batas</p>
-
+          
           {/* Search Form */}
-          <div className="bg-white/90 rounded-lg p-6 w-full max-w-5xl">
+          <div className="bg-purplelight  rounded-lg p-6 w-full max-w-350">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
               <div className="flex flex-col md:col-span-3">
-                <label className="text-gray-600 text-sm mb-1">Dari</label>
+                <label className="text-gray-600 text-sm mb-1 mr-74">Dari</label>
                 <select className="w-full border border-gray-200 p-3 rounded text-gray-800 appearance-none bg-white" style={fontStyle}>
                   <option value="">Pilih Kota</option>
                   <option>Jakarta</option>
@@ -184,7 +184,7 @@ export default function BerkelanaLandingPage() {
               </div>
               
               <div className="flex flex-col md:col-span-3">
-                <label className="text-gray-600 text-sm mb-1">Ke</label>
+                <label className="text-gray-600 text-sm mb-1 mr-76">Ke</label>
                 <select className="w-full border border-gray-200 p-3 rounded text-gray-800 appearance-none bg-white" style={fontStyle}>
                   <option value="">Pilih Kota</option>
                   <option>Bali</option>
@@ -194,7 +194,7 @@ export default function BerkelanaLandingPage() {
               </div>
               
               <div className="flex flex-col md:col-span-2">
-                <label className="text-gray-600 text-sm mb-1">Tanggal Pergi</label>
+                <label className=" relative right-6 text-gray-600 text-sm mb-1 mr-20">Tanggal Pergi</label>
                 <div className="relative">
                   <input 
                     type="date" 
@@ -211,7 +211,7 @@ export default function BerkelanaLandingPage() {
               </div>
               
               <div className="flex flex-col md:col-span-2">
-                <label className="text-gray-600 text-sm mb-1">Pilih Akomodasi</label>
+                <label className=" text-gray-600 text-sm mb-1 mr-28">Pilih Akomodasi</label>
                 <select className="w-full border border-gray-200 p-3 rounded text-gray-800 appearance-none bg-white" style={fontStyle}>
                   <option value="">Pilih Akomodasi</option>
                   <option>Bus</option>
@@ -220,7 +220,7 @@ export default function BerkelanaLandingPage() {
               </div>
               
               <div className="md:col-span-1 flex items-end">
-                <button className="bg-green-500 hover:bg-green-600 text-white font-bold p-3 rounded focus:outline-none w-full flex items-center justify-center">
+                <button className="bg-emerald1 hover:bg-green-600 text-white font-bold p-3 rounded focus:outline-none w-full flex items-center justify-center cursor-pointer">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                   </svg>
@@ -309,7 +309,7 @@ export default function BerkelanaLandingPage() {
             <h2 className="text-3xl font-bold">
               Serbu diskon <span className="text-purple-500">#Berkelana</span>
             </h2>
-            <button className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center mt-4 md:mt-0">
+            <button className="bg-emerald1 text-white px-4 py-2 rounded-lg flex items-center mt-4 md:mt-0">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
               </svg>
@@ -346,7 +346,7 @@ export default function BerkelanaLandingPage() {
                     <span className="text-xs text-gray-600">GADOGADO</span>
                   </div>
                   <button 
-                    className="bg-purple-500 hover:bg-purple-600 text-white w-8 h-8 flex items-center justify-center rounded transition-colors"
+                    className="bg-purple-500 hover:bg-purple-600 text-white w-8 h-8 flex items-center cursor-pointer justify-center rounded transition-colors"
                     onClick={(e) => handleCopyCode("GADOGADO", e)}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -384,7 +384,7 @@ export default function BerkelanaLandingPage() {
                     <span className="text-xs text-gray-600">TRIPNYAMAN</span>
                   </div>
                   <button 
-                    className="bg-purple-500 hover:bg-purple-600 text-white w-8 h-8 flex items-center justify-center rounded transition-colors"
+                    className="bg-purple-500 hover:bg-purple-600 text-white w-8 h-8 flex items-center justify-center rounded transition-colors cursor-pointer"
                     onClick={(e) => handleCopyCode("TRIPNYAMAN", e)}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -422,7 +422,7 @@ export default function BerkelanaLandingPage() {
                     <span className="text-xs text-gray-600">MALSUR</span>
                   </div>
                   <button 
-                    className="bg-purple-500 hover:bg-purple-600 text-white w-8 h-8 flex items-center justify-center rounded transition-colors"
+                    className="bg-purple-500 hover:bg-purple-600 text-white w-8 h-8 flex items-center justify-center rounded transition-colors cursor-pointer"
                     onClick={(e) => handleCopyCode("MALSUR", e)}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -469,7 +469,7 @@ export default function BerkelanaLandingPage() {
                 <h3 className="font-bold mb-4">{article.title}</h3>
                 <div className="flex items-center">
                   <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                    <img src="/api/placeholder/40/40" alt={article.author} className="w-full h-full object-cover" />
+                    <img src="images/arp.png" alt={article.author} className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <p className="text-sm font-medium">{article.author}</p>
@@ -510,7 +510,7 @@ export default function BerkelanaLandingPage() {
     {/* View All Button */}
     <div className="flex justify-center mt-8">
       <button 
-        className="bg-green-500 text-white px-6 py-3 rounded-lg flex items-center hover:bg-green-600 transition-colors"
+        className="bg-emerald1 text-white px-6 py-3 rounded-lg flex items-center hover:bg-green-600 transition-colors cursor-pointer"
         onClick={goToArticlesPage}
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
