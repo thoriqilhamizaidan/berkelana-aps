@@ -1,8 +1,8 @@
-// src/user/navbar.jsx
+// src/user/navbar.jsx (updated)
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation,NavLink } from 'react-router-dom';
+import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { BellIcon } from 'lucide-react';
-import { useAuth } from './context/AuthContext.jsx';
+import { useAuth } from './context/AuthContext';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -88,6 +88,11 @@ const Navbar = () => {
     setShowProfileMenu(false);
     navigate(path);
   };
+
+  // Handler for notification bell click - Navigate to notifications page
+  const handleNotificationClick = () => {
+    navigate('/notifikasi');
+  };
   
   return (
     <nav className="bg-white shadow-sm w-full font-['League_Spartan'] relative z-50">
@@ -159,9 +164,12 @@ const Navbar = () => {
           <div className="flex items-center space-x-4 mr-2">
             {isLoggedIn ? (
               <>
-                {/* Notification Bell */}
+                {/* Notification Bell - Updated with navigation to /notifikasi */}
                 <div className="relative top-1">
-                  <button className="text-gray-900 hover:text-emerald-400 focus:outline-none">
+                  <button 
+                    className="text-gray-900 hover:text-emerald-400 focus:outline-none"
+                    onClick={handleNotificationClick}
+                  >
                     <i className="fas fa-bell text-2xl"></i>
                     <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
                       2
@@ -272,6 +280,16 @@ const Navbar = () => {
           >
             Tentang Kami
           </Link>
+          {/* Add Notifications link to mobile menu */}
+          {isLoggedIn && (
+            <Link
+              to="/notifikasi"
+              className="font-bold text-gray-900 hover:text-emerald-400 block px-3 py-2 text-sm uppercase tracking-wider"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Notifikasi
+            </Link>
+          )}
           {!isLoggedIn && (
             <Link
               to="/daftar-masuk"

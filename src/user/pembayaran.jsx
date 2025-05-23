@@ -179,7 +179,7 @@ const Pembayaran = () => {
                   <div className="bg-white p-3 rounded-lg border border-gray-300 w-64 h-64 flex items-center justify-center">
                     {/* QR code */}
                     <img 
-                      src="/qris.png" 
+                      src="images/qris.png" 
                       alt="QRIS Payment Code"
                       className="w-full h-full object-contain"
                       onError={(e) => {

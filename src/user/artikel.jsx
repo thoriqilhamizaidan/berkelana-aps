@@ -85,7 +85,7 @@ const Artikel = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button className="absolute right-0 top-0 bottom-0 px-4 bg-green-400 hover:bg-green-500 rounded-r-full flex items-center justify-center">
+              <button className="absolute right-0 top-0 bottom-0 px-4 bg-emerald1 hover:bg-green-500 rounded-r-full flex items-center justify-center">
                 <Search size={16} className="text-white" />
               </button>
             </div>
@@ -626,7 +626,7 @@ const Artikel = () => {
               />
               <button
                 type="button"
-                className="bg-green-500 text-white px-4 py-3 hover:bg-green-600 focus:outline-none"
+                className="bg-emerald1 text-white px-4 py-3 hover:bg-green-600 focus:outline-none"
                 onClick={openModal}
               >
                 <svg

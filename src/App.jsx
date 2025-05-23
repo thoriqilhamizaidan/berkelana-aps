@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-
 import AuthProvider, { useAuth } from './user/context/AuthContext.jsx';
 import MainLayout from './layouts/mainlayout';
 
+
 // Impor semua komponen halaman
 import Homepage from './Homepage'
 import PesanTiket from './user/pesantiket'
@@ -22,6 +23,7 @@ import RegisterForm from './user/registerform'
 import ForgotPassword from './user/forgotpassword'
 import ChangePassword from './user/changepassword'
 import UserAccount from './user/useraccount'
+import NotificationsPage from './user/notificationspage'
 
 // Komponen layout dengan Outlet
 const MainLayoutWrapper = () => {
@@ -64,6 +66,7 @@ function AppRoutes() {
         <Route path="/pemesanan-2" element={<Pemesanan2 />} />
         <Route path="/pembayaran" element={<Pembayaran />} />
         <Route path="/ubah-sandi" element={<ChangePassword />} />
+        <Route path="/notifikasi" element={<NotificationsPage />} />
         
         {/* Protected Routes */}
         <Route path="/info-akun" element={
