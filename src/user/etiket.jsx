@@ -1,5 +1,8 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom'; // Import the useNavigate hook
+import { useNavigate } from 'react-router-dom';
+import { useRef } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const ETicket = () => {
   const ticket = {
@@ -31,9 +34,24 @@ const ETicket = () => {
     navigate('/tiket-saya'); // Navigate to Tiketsaya page when button is clicked
   };
 
+  const ticketRef = useRef();
+
+  const handleDownloadPDF = async () => {
+    const element = ticketRef.current;
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`E-Tiket_${ticket.bookingCode}.pdf`);
+  };
+
+
   return (
     <div className="w-full bg-white p-4 md:p-6 lg:p-8">
-      <div className="w-full max-w-7xl mx-auto">
+      <div className="w-full max-w-7xl mx-auto" ref={ticketRef}>
         {/* Header with Logo (No Padding) */}
         <div className="flex justify-between items-center mb-4">
           <div>
@@ -41,7 +59,7 @@ const ETicket = () => {
           </div>
           <button
             onClick={handleClose} // Add onClick event to handle the close button
-            className="text-gray-400 hover:text-[#9966FF]" // Change color on hover
+            className="text-gray-400 hover:text-purplelight" // Change color on hover
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -207,6 +225,16 @@ ukuran atau berat tersebut, maka penumpang diharuskan membayar biaya tambahan se
               <li>Tidak dapat refund pada jam keberangkatan.</li>
             </ul>
           </div>
+        </div>
+
+        {/* Tombol Download */}
+        <div className="text-center mt-6 mb-10 px-10">
+          <button
+            onClick={handleDownloadPDF}
+            className="bg-emerald1 hover:bg-green-400 text-white px-6 py-3 rounded-md font-semibold"
+          >
+            Download PDF
+          </button>
         </div>
       </div>
     </div>

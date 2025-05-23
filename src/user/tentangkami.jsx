@@ -58,7 +58,7 @@ const TentangKami = () => {
   );
 
   return (
-    <div className="bg-white">
+    <div className="bg-white1">
 
 
       {/* Hero Section */}
@@ -74,32 +74,38 @@ const TentangKami = () => {
 
       {/* Section 2 */}
       <div
-        className="bg-cover bg-center py-12"
+        className="relative bg-cover bg-center py-12"
         style={{ backgroundImage: "url('/images/tentangkami2.jpg')" }}
       >
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between">
+        <div className="absolute inset-0 bg-white1 opacity-60"></div>
+
+        <div className="relative z-10 max-w-6xl mx-auto px-4">
+          {/* Flex container kiri-kanan + jarak */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between md:gap-x-16">
+            
+            {/* Kiri: Paragraf */}
             <div className="md:w-2/3">
-              <p className="text-black mb-4">
+              <p className="text-black1 mb-4">
                 Dengan fokus pada transportasi, platform “Berkelana” memiliki tujuan untuk memberikan kemudahan akses, transparansi harga, dan efisiensi waktu bagi para wisatawan yang ingin merencanakan perjalanan mereka dengan lebih praktis dan nyaman.
-                 Dengan menghadirkan sistem pemesanan tiket yang efisien, platform ini tidak hanya menghubungkan pengguna dengan penyedia transportasi, tetapi juga menawarkan informasi real-time yang diperlukan untuk perencanaan perjalanan yang lebih baik, mulai dari pilihan transportasi yang sesuai hingga rekomendasi destinasi wisata yang relevan. 
+                Dengan menghadirkan sistem pemesanan tiket yang efisien, platform ini tidak hanya menghubungkan pengguna dengan penyedia transportasi, tetapi juga menawarkan informasi real-time yang diperlukan untuk perencanaan perjalanan yang lebih baik, mulai dari pilihan transportasi yang sesuai hingga rekomendasi destinasi wisata yang relevan. 
               </p>
-              <p className="text-black">
+              <p className="text-black1">
                 Dengan solusi yang praktis dan ramah pengguna, “Berkelana” berfokus pada pengembangan sistem yang menyederhanakan pengalaman pengguna dalam merencanakan perjalanan, memastikan mereka bisa menikmati perjalanan dengan lebih lancar, aman, dan tanpa kendala.
               </p>
             </div>
-            <div className="md:w-1/3 text-center mt-6 md:mt-0">
-              <h2 className="text-3xl font-semibold">
-                Jadi Apa Itu <span className="text-purple-600 font-bold">#Berkelana?</span>
+
+            {/* Kanan: Judul + Icon (lebih rapat dan icon lebih besar) */}
+            <div className="md:w-1/3 mt-6 md:mt-0 flex items-center justify-center gap-0">
+              <h2 className="text-3xl font-semibold text-black1">
+                Jadi Apa itu <span className="font-bold text-purple1">#Berkelana?</span>
               </h2>
-              <div className="mt-4">
-                <img
-                  src="/images/bagicon.png"
-                  alt="Travel Bag Icon"
-                  className="h-32 w-32 inline-block"
-                />
-              </div>
+              <img
+                src="/images/bagicon.png"
+                alt="Travel Bag Icon"
+                className="h-36 w-36"
+              />
             </div>
+
           </div>
         </div>
       </div>
@@ -109,7 +115,7 @@ const TentangKami = () => {
         <div className="flex flex-col md:flex-row items-center">
           <div className="md:w-1/3 text-center md:text-left mb-6 md:mb-0">
             <p className="text-2xl font-semibold text-black">
-              <span className="text-green-600 font-semibold">#Berkelana</span> siap
+              <span className="text-emerald1 font-semibold">#Berkelana</span> siap
             </p>
             <p className="text-2xl font-semibold text-black">membersamai kalian</p>
             <p className="text-2xl font-semibold text-black">kemanapun kalian pergi!</p>
