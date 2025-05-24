@@ -37,7 +37,7 @@ export default function ArtikelDetail() {
 
   {/* Background Image */}
   <div className="absolute inset-0 z-0">
-    <img src="../images/arhero.png" alt="Mountain Background" className="w-full h-full object-cover" />
+    <img src="../images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
   </div>
 
   {/* Content */}

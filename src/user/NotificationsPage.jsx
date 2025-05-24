@@ -61,14 +61,6 @@ const NotificationsPage = () => {
                 <ArrowLeft size={24} />
               </button>
               <div className="flex items-center">
-                <svg className="h-6 w-6 text-emerald-500 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M19 8C20.6569 8 22 6.65685 22 5C22 3.34315 20.6569 2 19 2C17.3431 2 16 3.34315 16 5C16 6.65685 17.3431 8 19 8Z" fill="currentColor" />
-                  <path d="M15 12V10C15 8.34315 16.3431 7 18 7H20C21.6569 7 23 8.34315 23 10V12H15Z" fill="currentColor" />
-                  <path d="M5 8C6.65685 8 8 6.65685 8 5C8 3.34315 6.65685 2 5 2C3.34315 2 2 3.34315 2 5C2 6.65685 3.34315 8 5 8Z" fill="currentColor" />
-                  <path d="M1 12V10C1 8.34315 2.34315 7 4 7H6C7.65685 7 9 8.34315 9 10V12H1Z" fill="currentColor" />
-                  <path d="M12 8C13.6569 8 15 6.65685 15 5C15 3.34315 13.6569 2 12 2C10.3431 2 9 3.34315 9 5C9 6.65685 10.3431 8 12 8Z" fill="currentColor" />
-                  <path d="M8 12V10C8 8.34315 9.34315 7 11 7H13C14.6569 7 16 8.34315 16 10V12H8Z" fill="currentColor" />
-                </svg>
                 <h1 className="text-xl font-semibold text-gray-900">Inbox</h1>
               </div>
             </div>

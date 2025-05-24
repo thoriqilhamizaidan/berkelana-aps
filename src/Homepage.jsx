@@ -130,6 +130,11 @@ export default function BerkelanaLandingPage() {
     navigate('/artikel');
   };
 
+  // Navigate to promo page
+  const goToPromoPage = () => {
+    navigate('/promo');
+  };
+
   // Get the current visible articles based on the index
   const visibleArticles = articles.slice(currentArticleIndex * 3, (currentArticleIndex + 1) * 3);
 
@@ -172,9 +177,11 @@ export default function BerkelanaLandingPage() {
                 <label className="text-gray-600 text-sm mb-1 mr-74">Dari</label>
                 <select className="w-full border border-gray-200 p-3 rounded text-gray-800 appearance-none bg-white" style={fontStyle}>
                   <option value="">Pilih Kota</option>
-                  <option>Jakarta</option>
-                  <option>Bandung</option>
-                  <option>Surabaya</option>
+                  <option value="Jakarta">Jakarta</option>
+                  <option value="Bandung">Bandung</option>
+                  <option value="Surabaya">Surabaya</option>
+                  <option value="Yogyakarta">Yogyakarta</option>
+                  <option value="Malang">Malang</option>
                 </select>
               </div>
               
@@ -187,9 +194,11 @@ export default function BerkelanaLandingPage() {
                 <label className="text-gray-600 text-sm mb-1 mr-76">Ke</label>
                 <select className="w-full border border-gray-200 p-3 rounded text-gray-800 appearance-none bg-white" style={fontStyle}>
                   <option value="">Pilih Kota</option>
-                  <option>Bali</option>
-                  <option>Yogyakarta</option>
-                  <option>Medan</option>
+                  <option value="Jakarta">Jakarta</option>
+                  <option value="Bandung">Bandung</option>
+                  <option value="Surabaya">Surabaya</option>
+                  <option value="Yogyakarta">Yogyakarta</option>
+                  <option value="Malang">Malang</option>
                 </select>
               </div>
               
@@ -309,7 +318,10 @@ export default function BerkelanaLandingPage() {
             <h2 className="text-3xl font-bold">
               Serbu diskon <span className="text-purple-500">#Berkelana</span>
             </h2>
-            <button className="bg-emerald1 text-white px-4 py-2 rounded-lg flex items-center mt-4 md:mt-0">
+            <button 
+              className="bg-emerald1 text-white px-4 py-2 rounded-lg flex items-center mt-4 md:mt-0 cursor-pointer hover:bg-green-600 transition-colors"
+              onClick={goToPromoPage}
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
               </svg>
