@@ -67,7 +67,7 @@ const Artikel = () => {
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
         <div className="absolute inset-0 z-0">
           {/* Mountain background image */}
-          <img src="../images/arhero.png" alt="Mountain Background" className="w-full h-full object-cover" />
+          <img src="../images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
         </div>
         {/* Content */}
         <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center">
