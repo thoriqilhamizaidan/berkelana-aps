@@ -30,6 +30,11 @@ import AdminSidebar from './admin/Sidebar';
 import KelolaArtikel from './admin/kelolaartikel';
 import TambahArtikel from './admin/tambahartikel';
 import EditArtikel from './admin/editartikel';
+import KelolaAdmin from './admin/kelolaadmin';
+import TambahAdmin from './admin/tambahadmin';
+import EditAdmin from './admin/editadmin';
+import LaporanPenjualanTiket from './admin/laporanpenjualantiket';
+import ETicketAdmin from './admin/etiketadmin';
 
 const MainLayoutWrapper = () => (
   <MainLayout>
@@ -39,16 +44,24 @@ const MainLayoutWrapper = () => (
 
 const AdminLayout = () => {
   const [activeMenu, setActiveMenu] = useState('Dashboard');
+  
+  // State untuk Artikel
   const [showTambahArtikel, setShowTambahArtikel] = useState(false);
   const [editingArticle, setEditingArticle] = useState(null);
   const [articles, setArticles] = useState([]);
 
-  const handleTambahClick = () => {
+  // State untuk Admin
+  const [showTambahAdmin, setShowTambahAdmin] = useState(false);
+  const [editingAdmin, setEditingAdmin] = useState(null);
+  const [admins, setAdmins] = useState([]);
+
+  // Handler untuk Artikel
+  const handleTambahArtikelClick = () => {
     setShowTambahArtikel(true);
     setEditingArticle(null);
   };
 
-  const handleEditClick = (article) => {
+  const handleEditArtikelClick = (article) => {
     setEditingArticle(article);
     setShowTambahArtikel(false);
   };
@@ -73,7 +86,39 @@ const AdminLayout = () => {
     setArticles(prev => prev.filter(article => article.id !== id));
   };
 
+  // Handler untuk Admin
+  const handleTambahAdminClick = () => {
+    setShowTambahAdmin(true);
+    setEditingAdmin(null);
+  };
+
+  const handleEditAdminClick = (admin) => {
+    setEditingAdmin(admin);
+    setShowTambahAdmin(false);
+  };
+
+  const handleSaveAdmin = (newAdmin) => {
+    setAdmins(prev => [...prev, { id: Date.now(), ...newAdmin }]);
+    setShowTambahAdmin(false);
+  };
+
+  const handleUpdateAdmin = (updatedAdmin) => {
+    setAdmins(prev =>
+      prev.map(admin =>
+        admin.id === updatedAdmin.id
+          ? { ...admin, ...updatedAdmin }
+          : admin
+      )
+    );
+    setEditingAdmin(null);
+  };
+
+  const handleDeleteAdmin = (id) => {
+    setAdmins(prev => prev.filter(admin => admin.id !== id));
+  };
+
   const renderContent = () => {
+    // Handle Artikel Menu
     if (activeMenu === 'Artikel') {
       if (editingArticle) {
         return (
@@ -97,13 +142,45 @@ const AdminLayout = () => {
       return (
         <KelolaArtikel
           articles={articles}
-          onTambahClick={handleTambahClick}
+          onTambahClick={handleTambahArtikelClick}
           onDeleteArticle={handleDeleteArticle}
-          onEditArticle={handleEditClick}
+          onEditArticle={handleEditArtikelClick}
         />
       );
     }
 
+    // Handle Kelola Admin Menu
+    if (activeMenu === 'Kelola Admin') {
+      if (editingAdmin) {
+        return (
+          <EditAdmin
+            admin={editingAdmin}
+            onBack={() => setEditingAdmin(null)}
+            onUpdate={handleUpdateAdmin}
+          />
+        );
+      }
+
+      if (showTambahAdmin) {
+        return (
+          <TambahAdmin
+            onBack={() => setShowTambahAdmin(false)}
+            onSave={handleSaveAdmin}
+          />
+        );
+      }
+
+      return (
+        <KelolaAdmin
+          admins={admins}
+          onTambahClick={handleTambahAdminClick}
+          onDeleteAdmin={handleDeleteAdmin}
+          onEditAdmin={handleEditAdminClick}
+        />
+      );
+    }
+
+    // Handle menu lainnya
     switch (activeMenu) {
       case 'Dashboard':
         return <AdminDashboard />;
@@ -112,9 +189,7 @@ const AdminLayout = () => {
       case 'Promo':
         return <div className="p-8"><h1 className="text-2xl font-bold">Halaman Promo</h1></div>;
       case 'Laporan Penjualan Tiket':
-        return <div className="p-8"><h1 className="text-2xl font-bold">Halaman Laporan Penjualan Tiket</h1></div>;
-      case 'Kelola Admin':
-        return <div className="p-8"><h1 className="text-2xl font-bold">Halaman Kelola Admin</h1></div>;
+        return <LaporanPenjualanTiket />;
       default:
         return <AdminDashboard />;
     }
@@ -154,6 +229,7 @@ function AppRoutes() {
 
       {/* ROUTE ADMIN TANPA LOGIN */}
       <Route path="/admin/*" element={<AdminLayout />} />
+      <Route path="/admin/etiket/:kodePesanan" element={<ETicketAdmin />} />
 
       <Route element={<MainLayoutWrapper />}>
         <Route path="/" element={<Homepage />} />
