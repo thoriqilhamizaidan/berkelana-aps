@@ -120,6 +120,7 @@ const KelolaArtikel = ({ articles, onTambahClick, onDeleteArticle, onEditArticle
                 <th className="text-left py-4 px-6 font-medium text-gray-700 text-sm">Tanggal Artikel</th>
                 <th className="text-left py-4 px-6 font-medium text-gray-700 text-sm">Artikel</th>
                 <th className="text-left py-4 px-6 font-medium text-gray-700 text-sm">Isi</th>
+                <th className="text-left py-4 px-6 font-medium text-gray-700 text-sm">Kategori</th>
                 <th className="text-left py-4 px-6 font-medium text-gray-700 text-sm">Penulis</th>
                 <th className="text-left py-4 px-6 font-medium text-gray-700 text-sm">Gambar</th>
                 <th className="text-left py-4 px-6 font-medium text-gray-700 text-sm">Action</th>
@@ -153,7 +154,32 @@ const KelolaArtikel = ({ articles, onTambahClick, onDeleteArticle, onEditArticle
                       )}
                     </td>
                     <td className="py-4 px-6 text-sm text-gray-600 align-top">
-                      {article.penulis}
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        article.kategori === 'Popular' ? 'bg-red-100 text-red-800' :
+                        article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' :
+                        article.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {article.kategori || 'Tidak ada'}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6 text-sm text-gray-600 align-top">
+                      <div className="flex items-center gap-3">
+                        {article.authorPhotoUrl ? (
+                          <img 
+                            src={article.authorPhotoUrl} 
+                            alt="Author" 
+                            className="w-8 h-8 object-cover rounded-full border border-gray-200"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                            <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                        <span>{article.penulis}</span>
+                      </div>
                     </td>
                     <td className="py-4 px-6 align-top">
                       {article.gambarUrl ? (

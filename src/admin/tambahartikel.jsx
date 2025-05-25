@@ -5,12 +5,15 @@ const TambahArtikel = ({ onBack, onSave }) => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
+    category: '',
     authorName: '',
     authorPhoto: null,
     authorPhotoPreview: null,
     articleImage: null,
     articleImagePreview: null
   });
+
+  const categories = ['Popular', 'Destinasi', 'Inspirasi'];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -33,7 +36,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
   };
 
   const handleSubmit = () => {
-    if (formData.title && formData.content && formData.authorName) {
+    if (formData.title && formData.content && formData.category && formData.authorName) {
       const newArticle = {
         id: Date.now(),
         tanggal: new Date().toLocaleDateString('id-ID', {
@@ -44,14 +47,17 @@ const TambahArtikel = ({ onBack, onSave }) => {
         }),
         artikel: formData.title,
         isi: formData.content,
+        kategori: formData.category,
         penulis: formData.authorName,
         gambar: formData.articleImage ? true : false,
-        gambarUrl: formData.articleImagePreview
+        gambarUrl: formData.articleImagePreview,
+        authorPhotoUrl: formData.authorPhotoPreview
       };
 
       setFormData({
         title: '',
         content: '',
+        category: '',
         authorName: '',
         authorPhoto: null,
         authorPhotoPreview: null,
@@ -105,6 +111,26 @@ const TambahArtikel = ({ onBack, onSave }) => {
                 className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
                 placeholder=""
               />
+            </div>
+
+            {/* Kategori artikel */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-3">
+                Kategori artikel
+              </label>
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+              >
+                <option value="">Pilih kategori artikel</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Tambah penulis */}
