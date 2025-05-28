@@ -27,6 +27,7 @@ import NotificationsPage from './user/notificationspage'
 // Import halaman admin
 import AdminDashboard from './admin/Dashboard';
 import AdminSidebar from './admin/Sidebar';
+import DetailKendaraan from './admin/detailkendaraan'; // Import DetailKendaraan
 import KelolaArtikel from './admin/kelolaartikel';
 import TambahArtikel from './admin/tambahartikel';
 import EditArtikel from './admin/editartikel';
@@ -187,6 +188,8 @@ const AdminLayout = () => {
         return <AdminDashboard />;
       case 'Tiket dan Jadwal':
         return <div className="p-8"><h1 className="text-2xl font-bold">Halaman Tiket dan Jadwal</h1></div>;
+      case 'Detail Kendaraan':
+        return <DetailKendaraan />; // Tambahkan case untuk Detail Kendaraan
       case 'Promo':
         return <PromoTable />;
       case 'Laporan Penjualan Tiket':
