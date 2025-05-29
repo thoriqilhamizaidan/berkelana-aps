@@ -6,10 +6,10 @@ import { useAuth } from './context/AuthContext.jsx';
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useAuth(); // Gunakan hook useAuth
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
-    email: 'yosik@example.com',
-    password: '1234'
+    email: '',
+    password: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -22,49 +22,53 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
-    // Simple validation
-    if (!formData.email || !formData.password) {
-      setError('Email dan kata sandi diperlukan');
-      setLoading(false);
-      return;
-    }
-    
-    // Simulate login - in a real app, this would be an API call
-    setTimeout(() => {
-      // For demo purposes, accept any valid email format and any password
-      if (formData.email.includes('@') && formData.password.length > 0) {
-        // Call login function from context
-        login({
-          name: 'Nasywa Putri Nataliza',
-          email: formData.email
-        });
-        
-        // Navigate to account page
-        navigate('/info-akun');
+
+    try {
+      const response = await fetch('http://localhost:3000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        const userData = {
+          email: formData.email,
+          role_admin: result.role
+        };
+
+        localStorage.setItem('admin', JSON.stringify(userData));
+        login(userData);
+
+        // Redirect berdasarkan role
+        if (result.role === 'superadmin' || result.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/info-akun');
+        }
+
       } else {
-        setError('Email atau kata sandi tidak valid');
+        setError(result.message || 'Login gagal');
       }
+    } catch (err) {
+      setError('Gagal terhubung ke server');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
   };
 
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-purple-700"
-      style={{
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
+      style={{ backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat" }}
     >
-      {/* Main container */}
       <div className="flex w-full max-w-screen-xl">
-        {/* Left Side: Logo and Tagline */}
+        {/* Left Side */}
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center text-white">
             <Link to="/" className="inline-block hover:opacity-80 transition-opacity duration-300">
@@ -81,10 +85,9 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Right Side: Login Form */}
+        {/* Right Side */}
         <div className="flex flex-1 items-center justify-end px-8 md:px-32">
           <div className="bg-white py-8 md:py-16 px-8 md:px-12 rounded-lg shadow-lg w-full max-w-lg">
-            {/* Logo */}
             <div className="mb-8 md:mb-12 flex justify-center">
               <Link to="/" className="inline-block hover:opacity-80 transition-opacity duration-300">
                 <img
@@ -98,31 +101,25 @@ const Login = () => {
                 />
               </Link>
             </div>
-            
-            {/* Login Text */}
+
             <div className="text-start mb-6">
               <h1 className="text-2xl font-bold">Login</h1>
             </div>
-            
-            {/* Error Message */}
+
             {error && (
               <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
                 {error}
               </div>
             )}
-            
+
             <form onSubmit={handleSubmit}>
-              {/* Email Input */}
               <div className="mb-4">
-                <label
-                  htmlFor="email"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
+                <label htmlFor="email" className="block text-gray-700 text-sm font-bold mb-2">
                   Masukkan Email
                 </label>
                 <div className="flex items-center border border-gray-300 rounded-lg">
                   <div className="text-gray-500 p-2">
-                    <i className="fas fa-envelope"></i>
+                    <FontAwesomeIcon icon={faEnvelope} />
                   </div>
                   <input
                     id="email"
@@ -136,17 +133,13 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Password Input */}
               <div className="mb-6">
-                <label
-                  htmlFor="password"
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                >
+                <label htmlFor="password" className="block text-gray-700 text-sm font-bold mb-2">
                   Masukkan Kata Sandi
                 </label>
                 <div className="flex items-center border border-gray-300 rounded-lg">
                   <div className="text-gray-500 p-2">
-                    <i className="fas fa-lock"></i>
+                    <FontAwesomeIcon icon={faLock} />
                   </div>
                   <input
                     id="password"
@@ -160,7 +153,6 @@ const Login = () => {
                 </div>
               </div>
 
-              {/* Login Button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -171,7 +163,6 @@ const Login = () => {
               </button>
             </form>
 
-            {/* Links */}
             <div className="text-center mt-4">
               <p className="text-gray-600">
                 Belum punya akun?{" "}
@@ -186,8 +177,7 @@ const Login = () => {
                 Dengan login, kamu menyetujui{" "}
                 <Link to="/syarat-ketentuan" className="text-purple-500 hover:text-purple-700 transition-colors">
                   Kebijakan Privasi
-                </Link>{" "}
-                dan{" "}
+                </Link> dan{" "}
                 <Link to="/syarat-ketentuan" className="text-purple-500 hover:text-purple-700 transition-colors">
                   Syarat & Ketentuan Berkelana
                 </Link>

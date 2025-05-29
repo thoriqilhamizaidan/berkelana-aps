@@ -1,47 +1,43 @@
 import React, { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
 
 const TambahAdmin = ({ onBack, onSave }) => {
-  const [formData, setFormData] = useState({
-    nama: '',
-    email: '',
-    password: '',
-    status: '',
+  const [formData, setFormData] = useState({ 
+    email: '', 
+    password: '', 
+    status: '', 
+    role: '' 
   });
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  const statusOptions = ['aktif', 'nonaktif'];
+  const roleOptions = ['admin', 'superadmin'];
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = () => {
-    const { nama, email, password, status } = formData;
+  const handleSubmit = async () => {
+    if (formData.email && formData.password && formData.status && formData.role) {
+      const res = await fetch('http://localhost:3000/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email_admin: formData.email,
+          password_admin: formData.password,
+          status_admin: formData.status,
+          role_admin: formData.role,
+        })
+      });
 
-    if (!nama || !email || !password || !status) {
-      alert('Mohon lengkapi semua field!');
-      return;
+      if (res.ok) {
+        alert('Admin berhasil ditambahkan.');
+        setFormData({ email: '', password: '', status: '', role: '' });
+        onSave();
+      } else {
+        alert('Gagal menambahkan admin.');
+      }
+    } else {
+      alert('Mohon lengkapi semua field yang required!');
     }
-
-    const newAdmin = {
-      id: Date.now(),
-      nama,
-      email,
-      password,
-      status,
-    };
-
-    onSave(newAdmin);
-    alert('Admin berhasil ditambahkan!');
-
-    setFormData({
-      nama: '',
-      email: '',
-      password: '',
-      status: '',
-    });
   };
 
   return (
@@ -49,80 +45,94 @@ const TambahAdmin = ({ onBack, onSave }) => {
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-800">
-            Kelola Admin | Tambah Data Admin
+            Admin | Tambah Admin
           </h1>
         </div>
 
         <div className="bg-gray-100 rounded-lg shadow-sm p-8">
           <div className="space-y-6">
-            {/* Nama Admin */}
-            <div>
-              <label className="block text-sm text-gray-600 mb-3">
-                Tambah keterangan admin
-              </label>
-              <input
-                type="text"
-                name="nama"
-                value={formData.nama}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-              />
-            </div>
-
             {/* Email Admin */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
-                Tambah email admin
+                Email Admin
               </label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                placeholder="Masukkan email admin"
               />
             </div>
 
             {/* Password Admin */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
-                Tambah password admin
+                Password Admin
               </label>
               <input
                 type="password"
                 name="password"
                 value={formData.password}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                placeholder="Masukkan password admin"
               />
             </div>
 
             {/* Status Admin */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
-                Tambah status admin
+                Status Admin
               </label>
-              <input
-                type="text"
+              <select
                 name="status"
                 value={formData.status}
-                onChange={handleInputChange}
-                placeholder="Aktif / Nonaktif"
+                onChange={handleChange}
                 className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-              />
+              >
+                <option value="">Pilih status admin</option>
+                {statusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Role Admin */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-3">
+                Role Admin
+              </label>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+              >
+                <option value="">Pilih role admin</option>
+                {roleOptions.map((role) => (
+                  <option key={role} value={role}>
+                    {role.charAt(0).toUpperCase() + role.slice(1)}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {/* Tombol Simpan & Kembali */}
             <div className="flex justify-end gap-4 pt-4">
               <button
                 onClick={onBack}
-                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium"
+                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
               >
                 Kembali
               </button>
               <button
+                type="button"
                 onClick={handleSubmit}
-                className="px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium"
+                className="px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
               >
                 Simpan
               </button>

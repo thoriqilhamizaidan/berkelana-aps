@@ -20,28 +20,28 @@ export const AuthProvider = ({ children }) => {
     const checkLoginStatus = () => {
       const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
       setIsLoggedIn(loggedIn);
-      
+
       if (loggedIn) {
-        // In a real app, you would fetch user data from API or localStorage
-        // For demo purposes, we'll use a hardcoded user object
-        setUser({
-          name: 'Freyanashifa Jayawardana',
-          email: 'Freyanashifa Jayawardana.com',
-          avatar: 'images/freya.jpeg'
-        });
+        const storedUser = JSON.parse(localStorage.getItem('admin'));
+        if (storedUser) {
+          setUser(storedUser);
+        } else {
+          setUser(null);
+        }
       } else {
         setUser(null);
       }
-      
+
       setLoading(false);
     };
-    
+
     checkLoginStatus();
   }, []);
 
   // Login function
   const login = (userData) => {
     localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('admin', JSON.stringify(userData));
     setIsLoggedIn(true);
     setUser(userData);
   };
@@ -49,6 +49,7 @@ export const AuthProvider = ({ children }) => {
   // Logout function
   const logout = () => {
     localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('admin');
     setIsLoggedIn(false);
     setUser(null);
   };

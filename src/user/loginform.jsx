@@ -38,17 +38,21 @@ const LoginForm = () => {
       const result = await response.json();
 
       if (result.success) {
-        login({
+        const userData = {
           email: formData.email,
-          role: result.role
-        });
+          role_admin: result.role
+        };
 
-        // Redirect ke halaman sesuai role
-        if (result.role === 'superadmin') {
+        localStorage.setItem('admin', JSON.stringify(userData));
+        login(userData);
+
+        // ✅ Redirect berdasarkan role
+        if (result.role === 'superadmin' || result.role === 'admin') {
           navigate('/admin');
         } else {
           navigate('/');
         }
+
       } else {
         setError(result.message || 'Login gagal');
       }
