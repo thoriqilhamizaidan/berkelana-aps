@@ -7,6 +7,7 @@ const app = express();
 
 // Import routes
 const kendaraanRoutes = require('./routes/kendaraan');
+const loginRoutes = require('./routes/login');
 
 // Middleware
 app.use(cors());
@@ -33,6 +34,7 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/kendaraan', kendaraanRoutes);
+app.use('/api', loginRoutes); 
 
 // 404 handler untuk route yang tidak ditemukan
 app.use('*', (req, res) => {
