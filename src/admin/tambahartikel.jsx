@@ -37,36 +37,53 @@ const TambahArtikel = ({ onBack, onSave }) => {
 
   const handleSubmit = () => {
     if (formData.title && formData.content && formData.category && formData.authorName) {
-      const newArticle = {
-        id: Date.now(),
-        tanggal: new Date().toLocaleDateString('id-ID', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric'
-        }),
-        artikel: formData.title,
-        isi: formData.content,
-        kategori: formData.category,
-        penulis: formData.authorName,
-        gambar: formData.articleImage ? true : false,
-        gambarUrl: formData.articleImagePreview,
-        authorPhotoUrl: formData.authorPhotoPreview
-      };
+      const formPayload = new FormData();
+      formPayload.append('judul', formData.title);
+      formPayload.append('isi', formData.content);
+      formPayload.append('kategori', formData.category);
+      formPayload.append('nama_penulis', formData.authorName);
+      if (formData.articleImage) {
+        formPayload.append('gambar_artikel', formData.articleImage);
+      }
+      if (formData.authorPhoto) {
+        formPayload.append('foto_penulis', formData.authorPhoto);
+      }
 
-      setFormData({
-        title: '',
-        content: '',
-        category: '',
-        authorName: '',
-        authorPhoto: null,
-        authorPhotoPreview: null,
-        articleImage: null,
-        articleImagePreview: null
-      });
+      fetch('http://localhost:3000/api/artikel', {
+        method: 'POST',
+        body: formPayload
+      })
+        .then(res => res.json())
+        .then(data => {
+          alert('Artikel berhasil ditambahkan!');
+          setFormData({
+            title: '',
+            content: '',
+            category: '',
+            authorName: '',
+            authorPhoto: null,
+            authorPhotoPreview: null,
+            articleImage: null,
+            articleImagePreview: null
+          });
 
-      onSave(newArticle);
-      alert('Artikel berhasil ditambahkan!');
+          if (onSave) {
+            const completeData = {
+              ...data,
+              penulis: data.nama_penulis,
+              artikel: data.judul,
+              isi: data.isi,
+              kategori: data.kategori,
+              gambarUrl: `/uploads/artikel/${data.gambar_artikel}`,
+              authorPhotoUrl: `/uploads/artikel/${data.foto_penulis}`
+            };
+            onSave(completeData);
+          }
+        })
+        .catch(err => {
+          console.error('Gagal:', err);
+          alert('Terjadi kesalahan saat menambahkan artikel.');
+        });
     } else {
       alert('Mohon lengkapi semua field yang required!');
     }
@@ -83,7 +100,6 @@ const TambahArtikel = ({ onBack, onSave }) => {
 
         <div className="bg-gray-100 rounded-lg shadow-sm p-8">
           <div className="space-y-6">
-            {/* Tambah judul artikel */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
                 Tambah judul artikel
@@ -98,7 +114,6 @@ const TambahArtikel = ({ onBack, onSave }) => {
               />
             </div>
 
-            {/* Tambah isi artikel */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
                 Tambah isi artikel
@@ -113,7 +128,6 @@ const TambahArtikel = ({ onBack, onSave }) => {
               />
             </div>
 
-            {/* Kategori artikel */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
                 Kategori artikel
@@ -133,13 +147,11 @@ const TambahArtikel = ({ onBack, onSave }) => {
               </select>
             </div>
 
-            {/* Tambah penulis */}
             <div>
               <label className="block text-sm text-gray-600 mb-4">
                 Tambah penulis
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Nama */}
                 <div>
                   <label className="block text-sm text-gray-600 mb-2">Nama</label>
                   <input
@@ -152,7 +164,6 @@ const TambahArtikel = ({ onBack, onSave }) => {
                   />
                 </div>
 
-                {/* Foto Penulis */}
                 <div>
                   <label className="block text-sm text-gray-600 mb-2">
                     Foto Penulis
@@ -197,7 +208,6 @@ const TambahArtikel = ({ onBack, onSave }) => {
               </div>
             </div>
 
-            {/* Tambah gambar */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
                 Tambah gambar
@@ -215,7 +225,6 @@ const TambahArtikel = ({ onBack, onSave }) => {
               </div>
             </div>
 
-            {/* Preview gambar artikel */}
             {formData.articleImagePreview ? (
               <div className="flex justify-start">
                 <div className="relative">
@@ -247,7 +256,6 @@ const TambahArtikel = ({ onBack, onSave }) => {
               </div>
             )}
 
-            {/* Tombol Simpan & Kembali */}
             <div className="flex justify-end gap-4 pt-4">
               <button
                 onClick={onBack}

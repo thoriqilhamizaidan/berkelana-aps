@@ -10,6 +10,7 @@ const kendaraanRoutes = require('./routes/kendaraan');
 const jadwalRoutes = require('./routes/jadwal');
 const loginRoutes = require('./routes/login');
 const adminRoutes = require('./routes/adminRoutes');
+const artikelRoutes = require('./routes/artikelRoutes');
 
 // Middleware
 app.use(cors());
@@ -42,6 +43,7 @@ app.use('/api/kendaraan', kendaraanRoutes);
 app.use('/api/jadwal', jadwalRoutes);
 app.use('/api', loginRoutes); 
 app.use('/api', adminRoutes);
+app.use('/api', artikelRoutes);
 
 // 404 handler untuk route yang tidak ditemukan
 app.use('*', (req, res) => {

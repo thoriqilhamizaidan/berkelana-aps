@@ -17,12 +17,11 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
         title: article.artikel || article.title || '',
         content: article.isi || article.content || '',
         authorName: article.penulis || article.authorName || '',
-        authorPhoto: article.authorPhoto || article.authorPhotoUrl || null,
-        articleImages: article.articleImages || (article.gambarUrl ? [article.gambarUrl] : []),
+        authorPhoto: article.authorPhotoUrl || null,
+        articleImages: article.gambarUrl ? [article.gambarUrl] : [],
         category: article.kategori || article.category || '',
       });
     } else {
-      // Reset form data when no article is provided
       setFormData({
         title: '',
         content: '',
@@ -78,33 +77,65 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
       return;
     }
 
-    const updatedArticle = {
-      id: article?.id || Date.now(),
-      artikel: formData.title,
-      isi: formData.content,
-      penulis: formData.authorName,
-      tanggal: article?.tanggal || new Date().toLocaleDateString('id-ID'),
-      authorPhoto: formData.authorPhoto,
-      authorPhotoUrl: formData.authorPhoto, // Untuk konsistensi dengan kelolaartikel
-      articleImages: formData.articleImages,
-      gambarUrl: formData.articleImages[0] || article?.gambarUrl || '',
-      kategori: formData.category,
-    };
+    const formPayload = new FormData();
+    formPayload.append('judul', formData.title);
+    formPayload.append('isi', formData.content);
+    formPayload.append('kategori', formData.category);
+    formPayload.append('nama_penulis', formData.authorName);
 
-    if (onUpdate) {
-      onUpdate(updatedArticle);
-      alert('Artikel berhasil diperbarui!');
-    } else {
-      console.log('Form submitted:', formData);
-      alert('Artikel berhasil disimpan!');
+    if (formData.articleImages.length > 0) {
+      const base64Data = formData.articleImages[0];
+      const blob = dataURLtoBlob(base64Data);
+      formPayload.append('gambar_artikel', blob, 'artikel.jpg');
     }
+
+    if (formData.authorPhoto && formData.authorPhoto.startsWith('data:image')) {
+      const blob = dataURLtoBlob(formData.authorPhoto);
+      formPayload.append('foto_penulis', blob, 'penulis.jpg');
+    }
+
+    fetch(`http://localhost:3000/api/artikel/${article?.id_artikel || article?.id}`, {
+      method: 'PUT',
+      body: formPayload
+    })
+      .then(res => res.json())
+      .then(data => {
+        alert('Artikel berhasil diperbarui!');
+        if (onUpdate) {
+          const updatedData = {
+            ...data,
+            artikel: data.judul,
+            isi: data.isi,
+            kategori: data.kategori,
+            penulis: data.nama_penulis,
+            gambarUrl: `/uploads/artikel/${data.gambar_artikel}`,
+            authorPhotoUrl: `/uploads/artikel/${data.foto_penulis}`,
+          };
+          onUpdate(updatedData);
+        }
+      })
+      .catch(err => {
+        console.error('Gagal:', err);
+        alert('Terjadi kesalahan saat memperbarui artikel.');
+      });
+  };
+
+  const dataURLtoBlob = (dataURL) => {
+    const [header, base64] = dataURL.split(',');
+    const mime = header.match(/:(.*?);/)[1];
+    const binary = atob(base64);
+    let len = binary.length;
+    const u8arr = new Uint8Array(len);
+    while (len--) {
+      u8arr[len] = binary.charCodeAt(len);
+    }
+    return new Blob([u8arr], { type: mime });
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm p-8">
-          {/* Header */}
           <div className="mb-8">
             <h1 className="text-xl font-semibold text-gray-800">
               Artikel | Edit Artikel
@@ -112,8 +143,6 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
           </div>
 
           <div className="space-y-6">
-
-            {/* Form Input Atas - Background Terpisah */}
             <div className="bg-gray-100 p-6 rounded-lg border border-gray-200">
               <input
                 type="text"
@@ -125,10 +154,7 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
               />
             </div>
 
-            {/* Edit Artikel Section - Satu Background */}
             <div className="bg-gray-100 p-6 rounded-lg border border-gray-200 space-y-8">
-              
-              {/* Edit Judul Artikel */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Edit judul artikel
@@ -143,7 +169,6 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
                 />
               </div>
 
-              {/* Edit Isi Artikel */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Edit isi artikel
@@ -158,7 +183,6 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
                 />
               </div>
 
-              {/* Tambah Kategori Artikel */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Tambah kategori artikel
@@ -177,7 +201,6 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
                 </select>
               </div>
 
-              {/* Edit Penulis */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Edit penulis
@@ -233,7 +256,6 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
                 </div>
               </div>
 
-              {/* Edit Gambar */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">
                   Edit gambar artikel
@@ -273,7 +295,6 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
                 )}
               </div>
 
-              {/* Tombol Kembali dan Simpan */}
               <div className="flex justify-end gap-4 pt-6">
                 <button
                   onClick={onBack}
