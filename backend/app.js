@@ -8,6 +8,8 @@ const app = express();
 // Import routes
 const kendaraanRoutes = require('./routes/kendaraan');
 const jadwalRoutes = require('./routes/jadwal');
+const loginRoutes = require('./routes/login');
+const adminRoutes = require('./routes/adminRoutes');
 
 // Middleware
 app.use(cors());
@@ -27,6 +29,8 @@ app.get('/', (req, res) => {
     endpoints: {
       kendaraan: '/api/kendaraan',
       jadwal: '/api/jadwal',
+      login: '/api/login',
+      admin: '/api/admin',
       uploads: '/uploads'
     },
     timestamp: new Date().toISOString()
@@ -36,6 +40,8 @@ app.get('/', (req, res) => {
 // API Routes
 app.use('/api/kendaraan', kendaraanRoutes);
 app.use('/api/jadwal', jadwalRoutes);
+app.use('/api', loginRoutes); 
+app.use('/api', adminRoutes);
 
 // 404 handler untuk route yang tidak ditemukan
 app.use('*', (req, res) => {
@@ -45,7 +51,9 @@ app.use('*', (req, res) => {
     availableEndpoints: {
       root: '/',
       kendaraan: '/api/kendaraan',
-      jadwal: '/api/jadwal'
+      jadwal: '/api/jadwal',
+      login: '/api/login',
+      admin: '/api/admin'
     }
   });
 });
