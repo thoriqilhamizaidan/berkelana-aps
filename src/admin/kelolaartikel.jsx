@@ -1,13 +1,42 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 
-const KelolaArtikel = ({ articles, onTambahClick, onDeleteArticle, onEditArticle }) => {
+const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArticle }) => {
+  const [articles, setArticles] = useState([]);
   const [expandedArticles, setExpandedArticles] = useState(new Set());
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Jumlah artikel per halaman
+  const itemsPerPage = 5;
 
-  // Hitung data untuk pagination
+  useEffect(() => {
+    const fetchArticles = () => {
+      fetch("http://localhost:3000/api/artikel")
+        .then((res) => res.json())
+        .then((data) => {
+          const mapped = data.map(item => {
+            const tanggalUpload = new Date(item.createdAt).toLocaleDateString('id-ID', {
+              weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+            });
+            return {
+              ...item,
+              penulis: item.nama_penulis,
+              artikel: item.judul,
+              isi: item.isi,
+              kategori: item.kategori,
+              gambarUrl: item.gambar_artikel ? `http://localhost:3000/uploads/artikel/${item.gambar_artikel}` : null,
+              authorPhotoUrl: item.foto_penulis ? `http://localhost:3000/uploads/artikel/${item.foto_penulis}` : null,
+              tanggal: tanggalUpload
+            };
+          });
+          const sorted = mapped.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          setArticles(sorted);
+        })
+        .catch((err) => console.error(err));
+    };
+
+    fetchArticles();
+  }, [newArticle]);
+
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -38,8 +67,7 @@ const KelolaArtikel = ({ articles, onTambahClick, onDeleteArticle, onEditArticle
       onDeleteArticle(articleToDelete);
       setShowConfirmModal(false);
       setArticleToDelete(null);
-      
-      // Jika halaman saat ini kosong setelah delete, pindah ke halaman sebelumnya
+
       const remainingItems = articles.length - 1;
       const maxPage = Math.ceil(remainingItems / itemsPerPage);
       if (currentPage > maxPage && maxPage > 0) {
@@ -57,17 +85,14 @@ const KelolaArtikel = ({ articles, onTambahClick, onDeleteArticle, onEditArticle
 
     const pageNumbers = [];
     const maxVisiblePages = 10;
-    
-    // Tentukan range halaman yang akan ditampilkan
+
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
-    // Adjust startPage jika endPage sudah di maksimum
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
-    // Nomor halaman
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(
         <button
@@ -84,27 +109,21 @@ const KelolaArtikel = ({ articles, onTambahClick, onDeleteArticle, onEditArticle
       );
     }
 
-    // Tambahkan "Selanjutnya" di ujung kanan
     pageNumbers.push(
       <span key="selanjutnya" className="ml-4 text-sm text-gray-600">
         Selanjutnya
       </span>
     );
 
-    return (
-      <div className="flex items-center gap-0 mt-6">
-        {pageNumbers}
-      </div>
-    );
+    return <div className="flex items-center gap-0 mt-6">{pageNumbers}</div>;
   };
 
   return (
     <div className="min-h-screen bg-white p-6 pt-18">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Kelola Artikel</h1>
-          <button 
+          <button
             onClick={onTambahClick}
             className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
           >
@@ -112,7 +131,6 @@ const KelolaArtikel = ({ articles, onTambahClick, onDeleteArticle, onEditArticle
           </button>
         </div>
 
-        {/* Tabel Artikel */}
         <div className="bg-gray-100 rounded-lg shadow-sm overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-100">
@@ -127,7 +145,7 @@ const KelolaArtikel = ({ articles, onTambahClick, onDeleteArticle, onEditArticle
               </tr>
             </thead>
             <tbody>
-              {paginatedData.map((article, index) => {
+              {paginatedData.map((article) => {
                 const isExpanded = expandedArticles.has(article.id);
                 const shouldTruncate = article.isi && article.isi.length > 150;
                 const displayText = isExpanded || !shouldTruncate
@@ -166,9 +184,9 @@ const KelolaArtikel = ({ articles, onTambahClick, onDeleteArticle, onEditArticle
                     <td className="py-4 px-6 text-sm text-gray-600 align-top">
                       <div className="flex items-center gap-3">
                         {article.authorPhotoUrl ? (
-                          <img 
-                            src={article.authorPhotoUrl} 
-                            alt="Author" 
+                          <img
+                            src={article.authorPhotoUrl}
+                            alt="Author"
                             className="w-8 h-8 object-cover rounded-full border border-gray-200"
                           />
                         ) : (
@@ -183,17 +201,11 @@ const KelolaArtikel = ({ articles, onTambahClick, onDeleteArticle, onEditArticle
                     </td>
                     <td className="py-4 px-6 align-top">
                       {article.gambarUrl ? (
-                        <img 
-                          src={article.gambarUrl} 
-                          alt="Artikel" 
+                        <img
+                          src={article.gambarUrl}
+                          alt="Artikel"
                           className="w-16 h-12 object-cover rounded border border-gray-200"
                         />
-                      ) : article.gambar ? (
-                        <div className="w-16 h-12 bg-gray-300 rounded flex items-center justify-center">
-                          <svg className="w-6 h-6 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
-                          </svg>
-                        </div>
                       ) : (
                         <span className="text-xs text-gray-400">Tidak ada</span>
                       )}
@@ -206,7 +218,7 @@ const KelolaArtikel = ({ articles, onTambahClick, onDeleteArticle, onEditArticle
                         >
                           Edit
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDeleteClick(article.id)}
                           className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-medium"
                         >
@@ -221,35 +233,8 @@ const KelolaArtikel = ({ articles, onTambahClick, onDeleteArticle, onEditArticle
           </table>
         </div>
 
-        {/* Pagination */}
         {renderPagination()}
       </div>
-
-      {/* Modal Konfirmasi */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-6 w-96 relative">
-            <button onClick={() => setShowConfirmModal(false)} className="absolute top-3 right-3 text-black text-xl font-bold">
-              ×
-            </button>
-            <h2 className="text-lg font-bold text-center mb-6">Apakah anda yakin?</h2>
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={() => setShowConfirmModal(false)}
-                className="bg-green-400 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-semibold"
-              >
-                Tidak
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold"
-              >
-                Hapus
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
