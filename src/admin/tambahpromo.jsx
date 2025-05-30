@@ -1,54 +1,61 @@
-import React, { useState } from 'react';
-import { Upload, Image } from 'lucide-react';
+import React, { useState } from "react";
+import { Upload, Image } from "lucide-react";
 
-const TambahPromo = ({ onBack, onSave }) => {
+const TambahPromo = ({ onSubmit, onCancel, loading }) => {
   const [formData, setFormData] = useState({
-    title: '',
-    details: '',
-    code: '',
+    title: "",
+    details: "",
+    code: "",
+    potongan: "",
+    berlakuHingga: "",
+    id_admin: "",
     image: null,
     imagePreview: null,
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setFormData(prev => ({
-        ...prev,
-        image: file,
-        imagePreview: imageUrl
-      }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({
+          ...prev,
+          image: file,
+          imagePreview: reader.result,
+        }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = () => {
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({
+      ...prev,
+      image: null,
+      imagePreview: null,
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
     if (formData.title && formData.details && formData.code) {
-      const newPromo = {
-        title: formData.title,
-        details: formData.details.split('\n').filter(Boolean),
-        code: formData.code,
-        image: formData.imagePreview,
-      };
-      setFormData({
-        title: '',
-        details: '',
-        code: '',
-        image: null,
-        imagePreview: null,
-      });
-      onSave(newPromo);
-      alert('Promo berhasil ditambahkan!');
+      onSubmit(formData);
     } else {
-      alert('Mohon lengkapi semua field yang required!');
+      alert("Mohon lengkapi semua field yang required!");
+    }
+  };
+
+  const handleBackClick = () => {
+    if (onCancel && typeof onCancel === "function") {
+      onCancel();
     }
   };
 
@@ -60,9 +67,11 @@ const TambahPromo = ({ onBack, onSave }) => {
             Promo | Tambah Promo
           </h1>
         </div>
-        <div className="bg-gray-100 rounded-lg shadow-sm p-8">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-gray-100 rounded-lg shadow-sm p-8"
+        >
           <div className="space-y-6">
-            {/* Nama Promo */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
                 Nama Promo
@@ -73,22 +82,22 @@ const TambahPromo = ({ onBack, onSave }) => {
                 value={formData.title}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg"
+                disabled={loading}
               />
             </div>
-            {/* Detail Promo (same size as Nama Promo) */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
                 Detail Promo
               </label>
-              <input
-                type="text"
+              <textarea
                 name="details"
                 value={formData.details}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg"
+                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg resize-none"
+                rows={3}
+                disabled={loading}
               />
             </div>
-            {/* Kode Promo */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
                 Kode Promo
@@ -99,9 +108,48 @@ const TambahPromo = ({ onBack, onSave }) => {
                 value={formData.code}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg"
+                disabled={loading}
               />
             </div>
-            {/* Gambar Promo */}
+            <div>
+              <label className="block text-sm text-gray-600 mb-3">
+                Potongan (%)
+              </label>
+              <input
+                type="number"
+                name="potongan"
+                value={formData.potongan}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-3">
+                Berlaku Hingga
+              </label>
+              <input
+                type="datetime-local"
+                name="berlakuHingga"
+                value={formData.berlakuHingga}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg"
+                disabled={loading}
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600 mb-3">
+                ID Admin
+              </label>
+              <input
+                type="number"
+                name="id_admin"
+                value={formData.id_admin}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg"
+                disabled={loading}
+              />
+            </div>
             <div>
               <label className="block text-sm text-gray-600 mb-3">
                 Gambar Promo
@@ -112,6 +160,7 @@ const TambahPromo = ({ onBack, onSave }) => {
                   accept="image/*"
                   onChange={handleFileChange}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  disabled={loading}
                 />
                 <div className="w-full px-4 py-3 border border-purple-400 rounded-lg bg-white flex items-center justify-end">
                   <Upload className="w-5 h-5 text-gray-400" />
@@ -126,14 +175,9 @@ const TambahPromo = ({ onBack, onSave }) => {
                   />
                   <button
                     type="button"
-                    onClick={() =>
-                      setFormData(prev => ({
-                        ...prev,
-                        image: null,
-                        imagePreview: null
-                      }))
-                    }
+                    onClick={handleRemoveImage}
                     className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center"
+                    disabled={loading}
                   >
                     ×
                   </button>
@@ -146,26 +190,28 @@ const TambahPromo = ({ onBack, onSave }) => {
                 </div>
               )}
             </div>
-            {/* Tombol */}
             <div className="flex justify-end gap-4 pt-4">
               <button
-                onClick={onBack}
+                type="button"
+                onClick={handleBackClick}
                 className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium"
+                disabled={loading}
               >
                 Kembali
               </button>
               <button
-                type="button"
-                onClick={handleSubmit}
+                type="submit"
                 className="px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium"
+                disabled={loading}
               >
                 Simpan
               </button>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
 };
+
 export default TambahPromo;
