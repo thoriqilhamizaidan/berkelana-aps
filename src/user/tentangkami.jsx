@@ -13,49 +13,72 @@ const TentangKami = () => {
     },
     {
       question: 'Apakah ada biaya pendaftaran untuk bergabung dengan Berkelana?',
-      answer:
-        'Tidak ada biaya pendaftaran untuk bergabung dengan Berkelana. Anda hanya perlu membuat akun secara gratis dan mulai menikmati layanan kami.',
+      answer: 'Tidak ada biaya pendaftaran untuk bergabung dengan Berkelana. Anda hanya perlu membuat akun secara gratis dan mulai menikmati layanan kami.'
+    },
+    {
+      question: 'Bagaimana cara memesan tiket bus melalui Berkelana?',
+      answer: 'Untuk memesan tiket bus, cukup pilih rute dan tanggal perjalanan yang diinginkan, pilih bus yang tersedia, dan lanjutkan ke proses pembayaran. Tiket akan dikirimkan ke email Anda setelah pembayaran selesai.'
+    },
+    {
+      question: 'Apakah Berkelana menyediakan layanan pemesanan tiket untuk Shufell?',
+      answer: 'Ya, Berkelana juga menyediakan layanan pemesanan tiket untuk Shufell. Anda dapat memilih jadwal dan lokasi yang tersedia untuk perjalanan Shufell dan memesan tiket dengan mudah melalui platform kami.'
+    },
+    {
+      question: 'Bagaimana cara membatalkan pemesanan tiket bus atau Shufell?',
+      answer: 'Untuk membatalkan pemesanan, kunjungi halaman pesanan Anda dan pilih opsi pembatalan. Pastikan untuk memeriksa kebijakan pembatalan terkait dengan jadwal yang Anda pilih.'
+    },
+    {
+      question: 'Apakah Berkelana menyediakan diskon atau promo untuk tiket bus atau Shufell?',
+      answer: 'Berkelana secara berkala menawarkan promo dan diskon khusus untuk tiket bus dan Shufell. Pastikan untuk memeriksa halaman promo kami atau mengikuti akun media sosial kami untuk mendapatkan informasi terbaru.'
+    },
+    {
+      question: 'Apakah Berkelana menyediakan layanan selain pemesanan tiket bus dan Shufell?',
+      answer: 'Selain pemesanan tiket bus dan Shufell, Berkelana juga menyediakan informasi destinasi wisata, rekomendasi akomodasi, dan artikel perjalanan yang dapat membantu Anda merencanakan perjalanan dengan lebih lengkap.'
+    },
+    {
+      question: 'Bisakah saya berbagi pengalaman menggunakan Berkelana?',
+      answer: 'Tentu! Kami sangat menghargai pengalaman dan feedback dari pengguna. Anda dapat mengirim cerita, pengalaman, atau saran melalui email ke berkelana@gmail.com. Setiap cerita Anda sangat berarti bagi kami untuk meningkatkan layanan.'
+    },
+    {
+      question: 'Apakah ada artikel atau tips perjalanan yang bisa saya baca di Berkelana?',
+      answer: 'Ya, Berkelana menyediakan berbagai artikel dan tips perjalanan yang informatif dan inspiratif untuk membantu Anda merencanakan perjalanan yang menyenangkan dan aman.'
     },
     {
       question: 'Apakah Berkelana aman untuk digunakan?',
-      answer:
-        'Berkelana menjaga data pribadi dan transaksi Anda dengan sangat aman. Kami menggunakan enkripsi data yang kuat untuk melindungi informasi pengguna.',
-    },
+      answer: 'Berkelana menjaga data pribadi dan transaksi Anda dengan sangat aman. Kami menggunakan enkripsi data yang kuat untuk melindungi informasi pengguna dan transaksi pembayaran.'
+    }
   ];
 
   const handleToggle = (index) => {
     setOpenIndex(index === openIndex ? null : index);
   };
 
-  const FAQItem = ({ question, answer, isOpen, onClick }) => (
-    <div className="bg-white p-6 rounded-lg shadow-md transition duration-300">
-      <button
-        className="w-full flex items-center justify-between focus:outline-none"
-        onClick={onClick}
-      >
-        <p className="font-semibold text-lg text-left">{question}</p>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className={`h-5 w-5 text-gray-600 transform transition-transform duration-200 ${
-            isOpen ? 'rotate-180' : ''
-          }`}
-          viewBox="0 0 20 20"
-          fill="currentColor"
+    const FAQItem = ({ question, answer, isOpen, onClick }) => (
+      <div className="bg-white p-6 rounded-lg shadow-md transition duration-300">
+        <button
+          className="w-full flex items-center justify-between focus:outline-none"
+          onClick={onClick}
         >
-          <path
-            fillRule="evenodd"
-            d="M5 7a1 1 0 011.414 0L10 10.586l3.586-3.586A1 1 0 1114.414 7l-4 4a1 1 0 01-1.414 0l-4-4A1 1 0 015 7z"
-            clipRule="evenodd"
-          />
-        </svg>
-      </button>
-      {isOpen && (
-        <div className="mt-4">
-          <p className="text-gray-600">{answer}</p>
-        </div>
-      )}
-    </div>
-  );
+          <p className="font-semibold text-lg text-left">{question}</p>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className={`h-6 w-6 text-gray-600 transform transition-transform duration-200 ${
+              isOpen ? 'rotate-180' : ''
+            }`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+        {isOpen && (
+          <div className="mt-4">
+            <p className="text-gray-600">{answer}</p>
+          </div>
+        )}
+      </div>
+    );
 
   return (
     <div className="bg-white1">
