@@ -48,15 +48,15 @@ module.exports = {
         type: Sequelize.STRING(255),
         allowNull: true,
       },
-      created_at: {
+      createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
+        defaultValue: Sequelize.NOW,  // Pastikan nilai default ada
       },
-      updated_at: {
+      updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW,
+        defaultValue: Sequelize.NOW,  // Pastikan nilai default ada
       },
       deletedAt: {
         type: Sequelize.DATE,
@@ -68,7 +68,6 @@ module.exports = {
     await queryInterface.addIndex('tabel_kendaraan', ['tipe_armada']);
     await queryInterface.addIndex('tabel_kendaraan', ['nomor_armada']);
     await queryInterface.addIndex('tabel_kendaraan', ['nomor_kendaraan']);
-    await queryInterface.addIndex('tabel_kendaraan', ['created_at']);
   },
 
   down: async (queryInterface, Sequelize) => {

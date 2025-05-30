@@ -7,6 +7,7 @@ const app = express();
 
 // Import routes
 const kendaraanRoutes = require('./routes/kendaraan');
+const jadwalRoutes = require('./routes/jadwal');
 
 // Middleware
 app.use(cors());
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
     status: 'Server is running successfully!',
     endpoints: {
       kendaraan: '/api/kendaraan',
+      jadwal: '/api/jadwal',
       uploads: '/uploads'
     },
     timestamp: new Date().toISOString()
@@ -33,6 +35,7 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/kendaraan', kendaraanRoutes);
+app.use('/api/jadwal', jadwalRoutes);
 
 // 404 handler untuk route yang tidak ditemukan
 app.use('*', (req, res) => {
@@ -41,7 +44,8 @@ app.use('*', (req, res) => {
     message: 'Endpoint not found',
     availableEndpoints: {
       root: '/',
-      kendaraan: '/api/kendaraan'
+      kendaraan: '/api/kendaraan',
+      jadwal: '/api/jadwal'
     }
   });
 });

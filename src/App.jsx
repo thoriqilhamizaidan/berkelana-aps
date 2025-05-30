@@ -37,6 +37,10 @@ import EditAdmin from './admin/editadmin';
 import LaporanPenjualanTiket from './admin/laporanpenjualantiket';
 import ETicketAdmin from './admin/etiketadmin';   
 import PromoTable from './admin/promotable';
+import TiketDanJadwal from './admin/tiketdanjadwal';
+import TambahJadwal from './admin/tambahjadwal';
+import EditJadwal from './admin/editjadwal';
+import DetailJadwal from './admin/detailjadwal';
 
 const MainLayoutWrapper = () => (
   <MainLayout>
@@ -187,9 +191,9 @@ const AdminLayout = () => {
       case 'Dashboard':
         return <AdminDashboard />;
       case 'Tiket dan Jadwal':
-        return <div className="p-8"><h1 className="text-2xl font-bold">Halaman Tiket dan Jadwal</h1></div>;
+        return <TiketDanJadwal />;
       case 'Detail Kendaraan':
-        return <DetailKendaraan />; // Tambahkan case untuk Detail Kendaraan
+        return <DetailKendaraan />;
       case 'Promo':
         return <PromoTable />;
       case 'Laporan Penjualan Tiket':
