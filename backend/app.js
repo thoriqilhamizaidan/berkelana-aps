@@ -56,7 +56,7 @@ app.use('*', (req, res) => {
       jadwal: '/api/jadwal',
       login: '/api/login',
       admin: '/api/admin',
-      promo: '/api/promos' // <-- ADD THIS LINE
+      promo: '/api/promos' 
     }
   });
 });
