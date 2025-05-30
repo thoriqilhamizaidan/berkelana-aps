@@ -85,13 +85,13 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/syarat-ketentuan" className="text-gray-700 hover:text-emerald-400">
-                  Syarat & Ketentuan
+                <Link to="/tentang-kami" className="text-gray-700 hover:text-emerald-400">
+                  Tentang kami
                 </Link>
               </li>
               <li>
-                <Link to="/privacy-policy" className="text-gray-700 hover:text-emerald-400">
-                  Privacy Policy
+                <Link to="/syarat-ketentuan" className="text-gray-700 hover:text-emerald-400">
+                  Kebijakan Kami
                 </Link>
               </li>
             </ul>
