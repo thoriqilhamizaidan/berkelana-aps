@@ -5,6 +5,7 @@ module.exports = (sequelize, DataTypes) => {
   class Kendaraan extends Model {
     static associate(models) {
       // Define associations here if needed
+      // Kendaraan.hasMany(models.Jadwal, { foreignKey: 'id_kendaraan' });
     }
   }
   
@@ -66,8 +67,8 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'Kendaraan',
     tableName: 'tabel_kendaraan',
     timestamps: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
+    createdAt: 'createdAt',  // Sesuaikan dengan nama kolom di database (camelCase)
+    updatedAt: 'updatedAt',  // Sesuaikan dengan nama kolom di database (camelCase)
     paranoid: true,
     deletedAt: 'deletedAt',
   });

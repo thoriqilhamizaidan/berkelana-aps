@@ -7,6 +7,7 @@ const app = express();
 
 // Import routes
 const kendaraanRoutes = require('./routes/kendaraan');
+const jadwalRoutes = require('./routes/jadwal');
 const loginRoutes = require('./routes/login');
 const adminRoutes = require('./routes/adminRoutes');
 
@@ -27,6 +28,9 @@ app.get('/', (req, res) => {
     status: 'Server is running successfully!',
     endpoints: {
       kendaraan: '/api/kendaraan',
+      jadwal: '/api/jadwal',
+      login: '/api/login',
+      admin: '/api/admin',
       uploads: '/uploads'
     },
     timestamp: new Date().toISOString()
@@ -35,6 +39,7 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/kendaraan', kendaraanRoutes);
+app.use('/api/jadwal', jadwalRoutes);
 app.use('/api', loginRoutes); 
 app.use('/api', adminRoutes);
 
@@ -45,7 +50,10 @@ app.use('*', (req, res) => {
     message: 'Endpoint not found',
     availableEndpoints: {
       root: '/',
-      kendaraan: '/api/kendaraan'
+      kendaraan: '/api/kendaraan',
+      jadwal: '/api/jadwal',
+      login: '/api/login',
+      admin: '/api/admin'
     }
   });
 });

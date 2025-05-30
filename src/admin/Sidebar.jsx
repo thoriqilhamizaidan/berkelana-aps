@@ -88,6 +88,10 @@ const Sidebar = ({ activeMenu, setActiveMenu, userRole = null }) => {
     }
   ];
 
+  const handleMenuClick = (menuLabel) => {
+    setActiveMenu(menuLabel);
+  };
+
   const currentRole = getCurrentUserRole();
   console.log('Current user role:', currentRole);
   console.log('Formatted role:', formatRole(currentRole));

@@ -1,8 +1,9 @@
-// backend/seeders/YYYYMMDDHHMMSS-demo-kendaraan.js
 'use strict';
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
+    const now = new Date();
+    
     await queryInterface.bulkInsert('tabel_kendaraan', [
       {
         tipe_armada: 'Bus',
@@ -14,8 +15,8 @@ module.exports = {
         nomor_kondektur: '081234567890',
         fasilitas: JSON.stringify(['AC', 'WiFi', 'Toilet', 'TV']),
         gambar: null,
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: now,
+        updatedAt: now
       },
       {
         tipe_armada: 'Shuttle',
@@ -27,8 +28,8 @@ module.exports = {
         nomor_kondektur: '081987654321',
         fasilitas: JSON.stringify(['AC', 'WiFi', 'Reclining Seat']),
         gambar: null,
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: now,
+        updatedAt: now
       },
       {
         tipe_armada: 'Bus',
@@ -36,51 +37,51 @@ module.exports = {
         nomor_kendaraan: 'B 9012 CD',
         format_kursi: '2-2',
         kapasitas_kursi: 40,
-        nama_kondektur: 'Citra Dewi',
-        nomor_kondektur: '081122334455',
-        fasilitas: JSON.stringify(['AC', 'WiFi', 'Charging Port']),
+        nama_kondektur: 'Dedi Prasetyo',
+        nomor_kondektur: '081234567891',
+        fasilitas: JSON.stringify(['AC', 'WiFi', 'Toilet', 'TV', 'USB Charger']),
         gambar: null,
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: now,
+        updatedAt: now
       },
       {
         tipe_armada: 'Shuttle',
         nomor_armada: 'ARM004',
         nomor_kendaraan: 'B 3456 EF',
-        format_kursi: '3-1',
-        kapasitas_kursi: 8,
-        nama_kondektur: 'Dedi Pratama',
-        nomor_kondektur: '081998877665',
-        fasilitas: JSON.stringify(['AC', 'WiFi']),
+        format_kursi: '2-2',
+        kapasitas_kursi: 16,
+        nama_kondektur: 'Eko Susanto',
+        nomor_kondektur: '081987654322',
+        fasilitas: JSON.stringify(['AC', 'WiFi', 'Reclining Seat', 'Snack']),
         gambar: null,
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: now,
+        updatedAt: now
       },
       {
         tipe_armada: 'Bus',
         nomor_armada: 'ARM005',
         nomor_kendaraan: 'B 7890 GH',
-        format_kursi: '2-2',
-        kapasitas_kursi: 35,
-        nama_kondektur: 'Eka Saputri',
-        nomor_kondektur: '081555666777',
-        fasilitas: JSON.stringify(['AC', 'WiFi', 'TV', 'Toilet']),
+        format_kursi: '2-3',
+        kapasitas_kursi: 50,
+        nama_kondektur: 'Fajar Hidayat',
+        nomor_kondektur: '081234567892',
+        fasilitas: JSON.stringify(['AC', 'WiFi', 'Toilet', 'TV', 'Blanket']),
         gambar: null,
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: now,
+        updatedAt: now
       },
       {
         tipe_armada: 'Shuttle',
         nomor_armada: 'ARM006',
-        nomor_kendaraan: 'B 1357 IJ',
-        format_kursi: '3-1',
-        kapasitas_kursi: 10,
-        nama_kondektur: 'Farid Hakim',
-        nomor_kondektur: '081444333222',
-        fasilitas: JSON.stringify(['AC', 'Charging Port']),
+        nomor_kendaraan: 'B 2345 IJ',
+        format_kursi: '2-1',
+        kapasitas_kursi: 9,
+        nama_kondektur: 'Gunawan Putra',
+        nomor_kondektur: '081987654323',
+        fasilitas: JSON.stringify(['AC', 'WiFi', 'Leather Seat', 'Personal TV']),
         gambar: null,
-        created_at: new Date(),
-        updated_at: new Date()
+        createdAt: now,
+        updatedAt: now
       }
     ], {});
   },
