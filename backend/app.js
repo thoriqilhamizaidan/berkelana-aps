@@ -1,4 +1,3 @@
-// backend/app.js atau backend/index.js
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -11,6 +10,7 @@ const jadwalRoutes = require('./routes/jadwal');
 const loginRoutes = require('./routes/login');
 const adminRoutes = require('./routes/adminRoutes');
 const artikelRoutes = require('./routes/artikelRoutes');
+const promoRoutes = require('./routes/promoRoutes')
 
 // Middleware
 app.use(cors());
@@ -32,6 +32,7 @@ app.get('/', (req, res) => {
       jadwal: '/api/jadwal',
       login: '/api/login',
       admin: '/api/admin',
+      promo: '/api/promos',
       uploads: '/uploads'
     },
     timestamp: new Date().toISOString()
@@ -43,7 +44,6 @@ app.use('/api/kendaraan', kendaraanRoutes);
 app.use('/api/jadwal', jadwalRoutes);
 app.use('/api', loginRoutes); 
 app.use('/api', adminRoutes);
-app.use('/api', artikelRoutes);
 
 // 404 handler untuk route yang tidak ditemukan
 app.use('*', (req, res) => {
@@ -55,7 +55,8 @@ app.use('*', (req, res) => {
       kendaraan: '/api/kendaraan',
       jadwal: '/api/jadwal',
       login: '/api/login',
-      admin: '/api/admin'
+      admin: '/api/admin',
+      promo: '/api/promos' // <-- ADD THIS LINE
     }
   });
 });
