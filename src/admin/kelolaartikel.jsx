@@ -6,19 +6,37 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [articleToDelete, setArticleToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const itemsPerPage = 5;
 
   useEffect(() => {
     const fetchArticles = () => {
+      setLoading(true);
+      setError(null);
+      
       fetch("http://localhost:3000/api/artikel")
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
         .then((data) => {
+          console.log('Fetched data:', data); // Debug log
+          
+          // Check if data is an array
+          if (!Array.isArray(data)) {
+            throw new Error('Data yang diterima bukan array');
+          }
+          
           const mapped = data.map(item => {
             const tanggalUpload = new Date(item.createdAt).toLocaleDateString('id-ID', {
               weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
             });
             return {
               ...item,
+              id: item.id_artikel, // Make sure we have consistent ID
               penulis: item.nama_penulis,
               artikel: item.judul,
               isi: item.isi,
@@ -31,7 +49,14 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
           const sorted = mapped.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
           setArticles(sorted);
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+          console.error('Fetch error:', err);
+          setError(`Gagal memuat artikel: ${err.message}`);
+          setArticles([]); // Set empty array on error
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     };
 
     fetchArticles();
@@ -64,15 +89,38 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
 
   const handleConfirmDelete = () => {
     if (articleToDelete) {
-      onDeleteArticle(articleToDelete);
-      setShowConfirmModal(false);
-      setArticleToDelete(null);
+      // Call API to delete article
+      fetch(`http://localhost:3000/api/artikel/${articleToDelete}`, {
+        method: 'DELETE'
+      })
+        .then(res => res.json())
+        .then(data => {
+          // Remove article from local state
+          setArticles(prev => prev.filter(article => 
+            (article.id_artikel || article.id) !== articleToDelete
+          ));
+          
+          if (onDeleteArticle) {
+            onDeleteArticle(articleToDelete);
+          }
+          
+          setShowConfirmModal(false);
+          setArticleToDelete(null);
 
-      const remainingItems = articles.length - 1;
-      const maxPage = Math.ceil(remainingItems / itemsPerPage);
-      if (currentPage > maxPage && maxPage > 0) {
-        setCurrentPage(maxPage);
-      }
+          const remainingItems = articles.length - 1;
+          const maxPage = Math.ceil(remainingItems / itemsPerPage);
+          if (currentPage > maxPage && maxPage > 0) {
+            setCurrentPage(maxPage);
+          }
+          
+          alert('Artikel berhasil dihapus!');
+        })
+        .catch(err => {
+          console.error('Delete error:', err);
+          alert('Gagal menghapus artikel!');
+          setShowConfirmModal(false);
+          setArticleToDelete(null);
+        });
     }
   };
 
@@ -93,10 +141,11 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
+    // Add page number buttons
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(
         <button
-          key={i}
+          key={`page-${i}`}
           onClick={() => handlePageChange(i)}
           className={`w-8 h-8 text-sm flex items-center justify-center ${
             currentPage === i
@@ -109,8 +158,9 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
       );
     }
 
+    // Add "Selanjutnya" text
     pageNumbers.push(
-      <span key="selanjutnya" className="ml-4 text-sm text-gray-600">
+      <span key="next-label" className="ml-4 text-sm text-gray-600">
         Selanjutnya
       </span>
     );
@@ -118,8 +168,75 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
     return <div className="flex items-center gap-0 mt-6">{pageNumbers}</div>;
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white p-6 pt-18">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-gray-600">Memuat artikel...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white p-6 pt-18">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-bold text-gray-900">Kelola Artikel</h1>
+            <button
+              onClick={onTambahClick}
+              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
+            >
+              Tambah Data +
+            </button>
+          </div>
+          <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded">
+            {error}
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white p-6 pt-18">
+     {showConfirmModal && (
+        <div className="fixed inset-0 flex items-center justify-center  bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-6 w-96 relative">
+            <button 
+              onClick={() => setShowConfirmModal(false)} 
+              className="absolute top-3 right-3 text-black text-xl font-bold"
+            >
+              ×
+            </button>
+            <h2 className="text-lg font-bold text-center mb-6">Apakah anda yakin?</h2>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="bg-green-400 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-semibold"
+              >
+                Tidak
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold"
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Kelola Artikel</h1>
@@ -146,14 +263,15 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
             </thead>
             <tbody>
               {paginatedData.map((article) => {
-                const isExpanded = expandedArticles.has(article.id);
+                const articleId = article.id_artikel || article.id;
+                const isExpanded = expandedArticles.has(articleId);
                 const shouldTruncate = article.isi && article.isi.length > 150;
                 const displayText = isExpanded || !shouldTruncate
                   ? article.isi
-                  : article.isi.substring(0, 150) + '...';
+                  : article.isi?.substring(0, 150) + '...';
 
                 return (
-                  <tr key={article.id} className="bg-gray-100">
+                  <tr key={articleId} className="bg-gray-100">
                     <td className="py-4 px-6 text-sm text-gray-600 align-top">
                       {article.tanggal}
                     </td>
@@ -164,7 +282,7 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
                       <div className="whitespace-pre-wrap">{displayText}</div>
                       {shouldTruncate && (
                         <button
-                          onClick={() => toggleExpand(article.id)}
+                          onClick={() => toggleExpand(articleId)}
                           className="text-xs text-blue-500 hover:text-blue-700 mt-2 cursor-pointer font-medium"
                         >
                           {isExpanded ? 'Sembunyikan' : 'Selengkapnya'}
@@ -219,7 +337,7 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
                           Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteClick(article.id)}
+                          onClick={() => handleDeleteClick(articleId)}
                           className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-medium"
                         >
                           Hapus
