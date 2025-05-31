@@ -69,6 +69,48 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
     setFormData(prev => ({ ...prev, authorPhoto: null }));
   };
 
+  const dataURLtoBlob = (dataURL) => {
+    try {
+      // Check if dataURL is valid
+      if (!dataURL || typeof dataURL !== 'string') {
+        throw new Error('Invalid dataURL');
+      }
+
+      // Check if it contains the expected comma separator
+      if (!dataURL.includes(',')) {
+        throw new Error('Invalid dataURL format - missing comma separator');
+      }
+
+      const [header, base64] = dataURL.split(',');
+      
+      // Check if header exists and has the expected format
+      if (!header || !base64) {
+        throw new Error('Invalid dataURL format - missing header or base64 data');
+      }
+
+      // Extract MIME type with better error handling
+      const mimeMatch = header.match(/:(.*?);/);
+      if (!mimeMatch || !mimeMatch[1]) {
+        throw new Error('Invalid dataURL format - cannot extract MIME type');
+      }
+
+      const mime = mimeMatch[1];
+      const binary = atob(base64);
+      let len = binary.length;
+      const u8arr = new Uint8Array(len);
+      
+      while (len--) {
+        u8arr[len] = binary.charCodeAt(len);
+      }
+      
+      return new Blob([u8arr], { type: mime });
+    } catch (error) {
+      console.error('Error converting dataURL to blob:', error);
+      // Return a default empty blob if conversion fails
+      return new Blob([], { type: 'image/jpeg' });
+    }
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -83,22 +125,50 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
     formPayload.append('kategori', formData.category);
     formPayload.append('nama_penulis', formData.authorName);
 
+    // Handle article images
     if (formData.articleImages.length > 0) {
-      const base64Data = formData.articleImages[0];
-      const blob = dataURLtoBlob(base64Data);
-      formPayload.append('gambar_artikel', blob, 'artikel.jpg');
+      const imageData = formData.articleImages[0];
+      
+      // Check if it's a base64 data URL (newly uploaded)
+      if (typeof imageData === 'string' && imageData.startsWith('data:image')) {
+        try {
+          const blob = dataURLtoBlob(imageData);
+          formPayload.append('gambar_artikel', blob, 'artikel.jpg');
+        } catch (error) {
+          console.error('Error processing article image:', error);
+          alert('Terjadi kesalahan saat memproses gambar artikel.');
+          return;
+        }
+      }
+      // If it's an existing URL, we don't need to upload it again
     }
 
-    if (formData.authorPhoto && formData.authorPhoto.startsWith('data:image')) {
-      const blob = dataURLtoBlob(formData.authorPhoto);
-      formPayload.append('foto_penulis', blob, 'penulis.jpg');
+    // Handle author photo
+    if (formData.authorPhoto) {
+      // Check if it's a base64 data URL (newly uploaded)
+      if (typeof formData.authorPhoto === 'string' && formData.authorPhoto.startsWith('data:image')) {
+        try {
+          const blob = dataURLtoBlob(formData.authorPhoto);
+          formPayload.append('foto_penulis', blob, 'penulis.jpg');
+        } catch (error) {
+          console.error('Error processing author photo:', error);
+          alert('Terjadi kesalahan saat memproses foto penulis.');
+          return;
+        }
+      }
+      // If it's an existing URL, we don't need to upload it again
     }
 
     fetch(`http://localhost:3000/api/artikel/${article?.id_artikel || article?.id}`, {
       method: 'PUT',
       body: formPayload
     })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
         alert('Artikel berhasil diperbarui!');
         if (onUpdate) {
@@ -108,8 +178,8 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
             isi: data.isi,
             kategori: data.kategori,
             penulis: data.nama_penulis,
-            gambarUrl: `/uploads/artikel/${data.gambar_artikel}`,
-            authorPhotoUrl: `/uploads/artikel/${data.foto_penulis}`,
+            gambarUrl: data.gambar_artikel ? `http://localhost:3000/uploads/artikel/${data.gambar_artikel}` : null,
+            authorPhotoUrl: data.foto_penulis ? `http://localhost:3000/uploads/artikel/${data.foto_penulis}` : null,
           };
           onUpdate(updatedData);
         }
@@ -118,18 +188,6 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
         console.error('Gagal:', err);
         alert('Terjadi kesalahan saat memperbarui artikel.');
       });
-  };
-
-  const dataURLtoBlob = (dataURL) => {
-    const [header, base64] = dataURL.split(',');
-    const mime = header.match(/:(.*?);/)[1];
-    const binary = atob(base64);
-    let len = binary.length;
-    const u8arr = new Uint8Array(len);
-    while (len--) {
-      u8arr[len] = binary.charCodeAt(len);
-    }
-    return new Blob([u8arr], { type: mime });
   };
 
   return (

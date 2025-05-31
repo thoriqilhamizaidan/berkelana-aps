@@ -1,4 +1,3 @@
-// backend/app.js
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -13,7 +12,7 @@ const jadwalRoutes = require('./routes/jadwal');
 const adminRoutes = require('./routes/adminRoutes');
 const artikelRoutes = require('./routes/artikelRoutes');
 const authRoutes = require('./routes/auth');
-// Hapus loginRoutes karena sudah ada di authRoutes
+const promoRoutes = require('./routes/promoRoutes'); // Merged from main branch
 
 // Middleware
 app.use(cors({
@@ -44,6 +43,7 @@ app.get('/', (req, res) => {
       jadwal: '/api/jadwal',
       admin: '/api/admin',
       artikel: '/api/artikel',
+      promo: '/api/promos', // Fixed to include promo route from the main branch
       uploads: '/uploads'
     },
     timestamp: new Date().toISOString()
@@ -56,6 +56,7 @@ app.use('/api/kendaraan', kendaraanRoutes);
 app.use('/api/jadwal', jadwalRoutes);
 app.use('/api', adminRoutes);
 app.use('/api', artikelRoutes);
+app.use('/api/promos', promoRoutes); // Fixed: Changed from '/api' to '/api/promos'
 
 // Database connection test
 const db = require('./models');
@@ -83,7 +84,8 @@ app.use('*', (req, res) => {
       kendaraan: '/api/kendaraan',
       jadwal: '/api/jadwal',
       admin: '/api/admin',
-      artikel: '/api/artikel'
+      artikel: '/api/artikel',
+      promo: '/api/promos' // Fixed: Included promo route in availableEndpoints
     }
   });
 });
