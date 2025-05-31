@@ -1,5 +1,5 @@
 const { tabel_admin } = require('../models');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt'); // Changed from bcryptjs to bcrypt
 
 module.exports = {
   getAllAdmins: async (req, res) => {

@@ -1,14 +1,65 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import OTPModal from "../user/otpmodal";
+import authService from '../services/authService';
 
 const ForgotPassword = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [showOtpModal, setShowOtpModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [resetToken, setResetToken] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setShowOtpModal(true);      
+    setError("");
+    setLoading(true);
+
+    try {
+      const result = await authService.forgotPassword(email);
+      
+      if (result.success) {
+        setShowOtpModal(true);
+      } else {
+        setError(result.message || 'Gagal mengirim OTP');
+      }
+    } catch (err) {
+      setError(err.message || 'Terjadi kesalahan');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOTPSubmit = async (otp) => {
+    try {
+      const result = await authService.verifyOTP(email, otp);
+      
+      if (result.success) {
+        setResetToken(result.resetToken);
+        setShowOtpModal(false);
+        // Navigate to reset password page with token
+        navigate('/reset-password', { 
+          state: { email, resetToken: result.resetToken } 
+        });
+      } else {
+        throw new Error(result.message || 'OTP tidak valid');
+      }
+    } catch (err) {
+      throw err; // Let OTPModal handle the error
+    }
+  };
+
+  const handleResendOTP = async () => {
+    try {
+      const result = await authService.resendOTP(email);
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Gagal mengirim ulang OTP');
+      }
+    } catch (err) {
+      throw err; // Let OTPModal handle the error
+    }
   };
 
   return (
@@ -47,6 +98,13 @@ const ForgotPassword = () => {
             Jangan khawatir. Tuliskan email untuk membuat kata sandi baru.
           </p>
         </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="mb-12">
             <label
@@ -67,18 +125,21 @@ const ForgotPassword = () => {
           </div>
           <button
             type="submit"
-            className="block mx-auto bg-purple-300 hover:bg-purple-400 text-white font-bold py-3 px-16 rounded-xl text-lg transition"
+            disabled={loading}
+            className={`block mx-auto ${loading ? 'bg-purple-200' : 'bg-purple-300 hover:bg-purple-400'} 
+              text-white font-bold py-3 px-16 rounded-xl text-lg transition`}
           >
-            Kirim
+            {loading ? 'Mengirim...' : 'Kirim'}
           </button>
         </form>
+        
         {/* OTP Modal */}
         <OTPModal
           open={showOtpModal}
           email={email} 
           onClose={() => setShowOtpModal(false)}
-          onResend={() => {/* handle resend logic if needed */}}
-          onSubmit={(otp) => {/* handle OTP submit if needed */}}
+          onResend={handleResendOTP}
+          onSubmit={handleOTPSubmit}
         />
       </div>
     </div>

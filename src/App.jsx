@@ -20,6 +20,7 @@ import PromoPage from './user/promopage';
 import LoginForm from './user/loginform'
 import RegisterForm from './user/registerform'
 import ForgotPassword from './user/forgotpassword'
+import ResetPassword from './user/resetpassword'
 import ChangePassword from './user/changepassword'
 import UserAccount from './user/useraccount'
 import NotificationsPage from './user/notificationspage'
@@ -27,7 +28,7 @@ import NotificationsPage from './user/notificationspage'
 // Import halaman admin
 import AdminDashboard from './admin/Dashboard';
 import AdminSidebar from './admin/Sidebar';
-import DetailKendaraan from './admin/detailkendaraan'; // Import DetailKendaraan
+import DetailKendaraan from './admin/detailkendaraan';
 import KelolaArtikel from './admin/kelolaartikel';
 import TambahArtikel from './admin/tambahartikel';
 import EditArtikel from './admin/editartikel';
@@ -211,6 +212,7 @@ const AdminLayout = () => {
   );
 };
 
+// Protected Route Component for regular users
 const ProtectedRoute = ({ children }) => {
   const { isLoggedIn, loading } = useAuth();
 
@@ -220,13 +222,19 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// DISABLED: AdminProtectedRoute -> langsung tampilkan halaman admin
-// const AdminProtectedRoute = ({ children }) => {
-//   const { isLoggedIn, isAdmin, loading } = useAuth();
-//   if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
-//   if (!isLoggedIn || !isAdmin) return <Navigate to="/daftar-masuk" />;
-//   return children;
-// };
+// ENABLE: AdminProtectedRoute untuk membatasi akses
+const AdminProtectedRoute = ({ children }) => {
+  const { isLoggedIn, isAdmin, loading } = useAuth();
+  
+  if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  
+  // Jika belum login atau bukan admin, redirect ke login
+  if (!isLoggedIn || !isAdmin()) {
+    return <Navigate to="/daftar-masuk" />;
+  }
+  
+  return children;
+};
 
 function AppRoutes() {
   return (
@@ -234,10 +242,19 @@ function AppRoutes() {
       <Route path="/daftar-masuk" element={<LoginForm />} />
       <Route path="/daftar" element={<RegisterForm />} />
       <Route path="/lupa-sandi" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
-      {/* ROUTE ADMIN TANPA LOGIN */}
-      <Route path="/admin/*" element={<AdminLayout />} />
-      <Route path="/admin/etiket/:kodePesanan" element={<ETicketAdmin />} />
+      {/* ROUTE ADMIN DENGAN PROTEKSI */}
+      <Route path="/admin/*" element={
+        <AdminProtectedRoute>
+          <AdminLayout />
+        </AdminProtectedRoute>
+      } />
+      <Route path="/admin/etiket/:kodePesanan" element={
+        <AdminProtectedRoute>
+          <ETicketAdmin />
+        </AdminProtectedRoute>
+      } />
 
       <Route element={<MainLayoutWrapper />}>
         <Route path="/" element={<Homepage />} />
