@@ -49,8 +49,13 @@ const TambahArtikel = ({ onBack, onSave }) => {
         formPayload.append('foto_penulis', formData.authorPhoto);
       }
 
+      // >>>> Tambahkan token Authorization
+      const token = localStorage.getItem('token');
       fetch('http://localhost:3000/api/artikel', {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formPayload
       })
         .then(res => res.json())
@@ -225,6 +230,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
               </div>
             </div>
 
+            {/* Tambahan preview gambar artikel */}
             {formData.articleImagePreview ? (
               <div className="flex justify-start">
                 <div className="relative">

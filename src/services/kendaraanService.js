@@ -16,6 +16,11 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     console.log(`Making ${config.method?.toUpperCase()} request to: ${config.url}`);
+    // Add Authorization header here
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -94,7 +99,6 @@ class KendaraanService {
       Object.keys(fieldMapping).forEach(key => {
         if (formData[key] !== undefined && formData[key] !== null) {
           if (key === 'fasilitas') {
-            // Send fasilitas as JSON string
             form.append(fieldMapping[key], JSON.stringify(formData[key]));
           } else if (key === 'gambar' && formData[key] instanceof File) {
             form.append(fieldMapping[key], formData[key]);
@@ -114,7 +118,6 @@ class KendaraanService {
       return response.data;
     } catch (error) {
       console.error('Error creating kendaraan:', error);
-      // Extract error message from response
       const errorMessage = error.response?.data?.message || error.message || 'Gagal menambahkan kendaraan';
       throw new Error(errorMessage);
     }
@@ -140,7 +143,6 @@ class KendaraanService {
       Object.keys(fieldMapping).forEach(key => {
         if (formData[key] !== undefined && formData[key] !== null) {
           if (key === 'fasilitas') {
-            // Send fasilitas as JSON string
             form.append(fieldMapping[key], JSON.stringify(formData[key]));
           } else if (key === 'gambar' && formData[key] instanceof File) {
             form.append(fieldMapping[key], formData[key]);
