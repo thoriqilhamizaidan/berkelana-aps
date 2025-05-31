@@ -3,6 +3,7 @@ const router = express.Router();
 const artikelController = require('../controllers/artikelController');
 const multer = require('multer');
 const path = require('path');
+const { authenticate, authorizeAdmin } = require('../middleware/auth');
 
 // Setup upload
 const storage = multer.diskStorage({
@@ -19,10 +20,13 @@ const uploadFields = upload.fields([
   { name: 'foto_penulis', maxCount: 1 }
 ]);
 
+// Public routes - anyone can view
 router.get('/artikel', artikelController.getAll);
 router.get('/artikel/:id', artikelController.getById);
-router.post('/artikel', uploadFields, artikelController.create);
-router.put('/artikel/:id', uploadFields, artikelController.update);
-router.delete('/artikel/:id', artikelController.delete);
+
+// Admin only routes - need authentication and admin role
+router.post('/artikel', authenticate, authorizeAdmin, uploadFields, artikelController.create);
+router.put('/artikel/:id', authenticate, authorizeAdmin, uploadFields, artikelController.update);
+router.delete('/artikel/:id', authenticate, authorizeAdmin, artikelController.delete);
 
 module.exports = router;

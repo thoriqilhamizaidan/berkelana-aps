@@ -4,6 +4,7 @@ const kendaraanController = require('../controllers/kendaraanController');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { authenticate, authorizeAdmin } = require('../middleware/auth');
 
 // Konfigurasi multer untuk upload gambar kendaraan
 const storage = multer.diskStorage({
@@ -22,12 +23,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Rute untuk CRUD kendaraan
+// Public routes - anyone can view
 router.get('/', kendaraanController.getAllKendaraan);
-router.get('/tipe/:tipe', kendaraanController.getKendaraanByTipe); // Route baru untuk get by tipe
+router.get('/tipe/:tipe', kendaraanController.getKendaraanByTipe);
 router.get('/:id', kendaraanController.getKendaraanById);
-router.post('/', upload.single('gambar'), kendaraanController.createKendaraan);
-router.put('/:id', upload.single('gambar'), kendaraanController.updateKendaraan);
-router.delete('/:id', kendaraanController.deleteKendaraan);
+
+// Admin only routes - need authentication and admin role
+router.post('/', authenticate, authorizeAdmin, upload.single('gambar'), kendaraanController.createKendaraan);
+router.put('/:id', authenticate, authorizeAdmin, upload.single('gambar'), kendaraanController.updateKendaraan);
+router.delete('/:id', authenticate, authorizeAdmin, kendaraanController.deleteKendaraan);
 
 module.exports = router;

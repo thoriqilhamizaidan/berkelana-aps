@@ -1,19 +1,25 @@
-// backend/app.js atau backend/index.js
+// backend/app.js
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const multer = require('multer');
+require('dotenv').config(); // Load environment variables
+
 const app = express();
 
 // Import routes
 const kendaraanRoutes = require('./routes/kendaraan');
 const jadwalRoutes = require('./routes/jadwal');
-const loginRoutes = require('./routes/login');
 const adminRoutes = require('./routes/adminRoutes');
 const artikelRoutes = require('./routes/artikelRoutes');
+const authRoutes = require('./routes/auth');
+// Hapus loginRoutes karena sudah ada di authRoutes
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3001', 'http://localhost:3000'], // Include Vite default port
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -24,14 +30,20 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 // Root route untuk testing
 app.get('/', (req, res) => {
   res.json({
-    message: 'Berkelana APS-6 Backend API',
+    message: 'Berkelana APS-5 Backend API',
     version: '1.0.0',
     status: 'Server is running successfully!',
     endpoints: {
+      auth: {
+        login: 'POST /api/login',
+        register: 'POST /api/register',
+        forgotPassword: 'POST /api/forgot-password',
+        profile: 'GET /api/profile'
+      },
       kendaraan: '/api/kendaraan',
       jadwal: '/api/jadwal',
-      login: '/api/login',
       admin: '/api/admin',
+      artikel: '/api/artikel',
       uploads: '/uploads'
     },
     timestamp: new Date().toISOString()
@@ -39,11 +51,26 @@ app.get('/', (req, res) => {
 });
 
 // API Routes
+app.use('/api', authRoutes); // Semua auth routes
 app.use('/api/kendaraan', kendaraanRoutes);
 app.use('/api/jadwal', jadwalRoutes);
-app.use('/api', loginRoutes); 
 app.use('/api', adminRoutes);
 app.use('/api', artikelRoutes);
+
+// Database connection test
+const db = require('./models');
+
+// Test koneksi database saat startup
+db.sequelize
+  .authenticate()
+  .then(() => {
+    console.log('✅ Database connected successfully');
+    // Log available models
+    console.log('📦 Available models:', Object.keys(db).filter(key => key !== 'sequelize' && key !== 'Sequelize'));
+  })
+  .catch(err => {
+    console.error('❌ Unable to connect to the database:', err);
+  });
 
 // 404 handler untuk route yang tidak ditemukan
 app.use('*', (req, res) => {
@@ -52,10 +79,11 @@ app.use('*', (req, res) => {
     message: 'Endpoint not found',
     availableEndpoints: {
       root: '/',
+      auth: '/api/login, /api/register, /api/forgot-password',
       kendaraan: '/api/kendaraan',
       jadwal: '/api/jadwal',
-      login: '/api/login',
-      admin: '/api/admin'
+      admin: '/api/admin',
+      artikel: '/api/artikel'
     }
   });
 });

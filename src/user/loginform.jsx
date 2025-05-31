@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
-import { useAuth } from './context/AuthContext.jsx'; // pastikan path ini benar
+import { useAuth } from './context/AuthContext.jsx';
+import authService from '../services/authService'; // Import langsung authService
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -14,6 +16,26 @@ const LoginForm = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Check if coming from register or other page with success message
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // Clear the message from location state to prevent it showing again on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  // Auto hide success message after 5 seconds
+  useEffect(() => {
+    if (successMessage) {
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [successMessage]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -21,32 +43,31 @@ const LoginForm = () => {
       ...prev,
       [id]: value
     }));
+    // Clear error when user starts typing
+    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage(''); // Clear success message on new login attempt
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      });
-
-      const result = await response.json();
+      const result = await authService.login(formData.email, formData.password);
 
       if (result.success) {
         const userData = {
-          email: formData.email,
-          role_admin: result.role
+          id: result.user.id,
+          email: result.user.email,
+          nama: result.user.nama,
+          role: result.role,
+          ...result.user
         };
 
-        localStorage.setItem('admin', JSON.stringify(userData));
         login(userData);
 
-        // ✅ Redirect berdasarkan role
+        // Redirect based on role
         if (result.role === 'superadmin' || result.role === 'admin') {
           navigate('/admin');
         } else {
@@ -57,7 +78,7 @@ const LoginForm = () => {
         setError(result.message || 'Login gagal');
       }
     } catch (err) {
-      setError('Gagal terhubung ke server');
+      setError(err.message || 'Gagal terhubung ke server');
     } finally {
       setLoading(false);
     }
@@ -104,9 +125,29 @@ const LoginForm = () => {
               <h1 className="text-4xl font-bold">Login</h1>
             </div>
 
+            {/* Success Message */}
+            {successMessage && (
+              <div className="mb-4 p-4 bg-green-100 text-green-700 rounded-lg flex items-center justify-between">
+                <span>{successMessage}</span>
+                <button 
+                  onClick={() => setSuccessMessage('')}
+                  className="ml-4 text-green-700 hover:text-green-900 font-bold"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
+            {/* Error Message */}
             {error && (
-              <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-                {error}
+              <div className="mb-4 p-4 bg-red-100 text-red-700 rounded-lg flex items-center justify-between">
+                <span>{error}</span>
+                <button 
+                  onClick={() => setError('')}
+                  className="ml-4 text-red-700 hover:text-red-900 font-bold"
+                >
+                  ×
+                </button>
               </div>
             )}
 
@@ -123,6 +164,7 @@ const LoginForm = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -139,6 +181,7 @@ const LoginForm = () => {
                     value={formData.password}
                     onChange={handleChange}
                     required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -150,18 +193,26 @@ const LoginForm = () => {
                 </Link>
               </div>
 
-              {/* Submit */}
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full ${loading ? 'bg-purple-300' : 'bg-purple-400 hover:bg-purple-500'} 
+                className={`w-full ${loading ? 'bg-purple-300 cursor-not-allowed' : 'bg-purple-400 hover:bg-purple-500'} 
                   text-white font-bold py-4 rounded-xl text-xl transition mb-4`}
               >
-                {loading ? 'Memproses...' : 'Login'}
+                {loading ? (
+                  <span className="flex items-center justify-center">
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Memproses...
+                  </span>
+                ) : 'Login'}
               </button>
             </form>
 
-            {/* Daftar */}
+            {/* Register Link */}
             <div className="text-center mt-2 mb-2">
               <p className="text-gray-600 text-lg">
                 Belum punya akun?{" "}
@@ -171,6 +222,7 @@ const LoginForm = () => {
               </p>
             </div>
 
+            {/* Terms and Privacy */}
             <p className="text-center text-xs text-black mt-2">
               Dengan login, kamu menyetujui{" "}
               <Link to="/syarat-ketentuan" className="font-bold text-purple-600 hover:text-purple-800 transition-colors">

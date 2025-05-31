@@ -1,55 +1,128 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useRef, useEffect } from 'react';
 
-const OTPModal = ({
-  open,
-  onClose,
-  email,
-  onResend,
-  onSubmit,
-}) => {
-  const inputsRef = useRef([]);
+const OTPModal = ({ open, email, onClose, onResend, onSubmit }) => {
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [countdown, setCountdown] = useState(0);
   const [animate, setAnimate] = useState(false);
+  const inputRefs = useRef([]);
 
-  // Animate the modal when open changes to true
+  // Animate the modal when open changes
   useEffect(() => {
     if (open) {
+      setCountdown(60); // Start 60 seconds countdown
       setTimeout(() => setAnimate(true), 10);
     } else {
       setAnimate(false);
+      // Reset state when modal closes
+      setOtp(['', '', '', '', '', '']);
+      setError('');
     }
   }, [open]);
 
-  const handleInputChange = (e, idx) => {
+  // Countdown timer
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  const handleChange = (e, index) => {
     const value = e.target.value;
-    if (/^[0-9a-zA-Z]$/.test(value) && idx < 5) {
-      if (inputsRef.current[idx + 1]) {
-        inputsRef.current[idx + 1].focus();
+    
+    // Handle single digit input
+    if (/^[0-9]$/.test(value)) {
+      const newOtp = [...otp];
+      newOtp[index] = value;
+      setOtp(newOtp);
+      setError('');
+
+      // Move to next input
+      if (index < 5) {
+        inputRefs.current[index + 1].focus();
       }
     }
+    
+    // Handle paste
     if (value.length > 1) {
-      // handle paste
-      const chars = value.split("");
+      const chars = value.split('').slice(0, 6);
+      const newOtp = [...otp];
       chars.forEach((char, i) => {
-        if (inputsRef.current[idx + i]) {
-          inputsRef.current[idx + i].value = char;
+        if (i < 6 && /^[0-9]$/.test(char)) {
+          newOtp[i] = char;
         }
       });
-      if (inputsRef.current[idx + chars.length]) {
-        inputsRef.current[idx + chars.length].focus();
+      setOtp(newOtp);
+      
+      // Focus on the next empty input or the last input
+      const nextEmptyIndex = newOtp.findIndex(digit => digit === '');
+      if (nextEmptyIndex !== -1) {
+        inputRefs.current[nextEmptyIndex].focus();
+      } else {
+        inputRefs.current[5].focus();
       }
     }
   };
 
-  const handleKeyDown = (e, idx) => {
-    if (e.key === "Backspace" && !e.target.value && idx > 0) {
-      inputsRef.current[idx - 1].focus();
+  const handleKeyDown = (e, index) => {
+    if (e.key === 'Backspace') {
+      if (!otp[index] && index > 0) {
+        // Move to previous input if current is empty
+        inputRefs.current[index - 1].focus();
+        const newOtp = [...otp];
+        newOtp[index - 1] = '';
+        setOtp(newOtp);
+      } else {
+        // Clear current input
+        const newOtp = [...otp];
+        newOtp[index] = '';
+        setOtp(newOtp);
+      }
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const otp = inputsRef.current.map((input) => input.value).join("");
-    if (onSubmit) onSubmit(otp);
+    const otpString = otp.join('');
+    
+    if (otpString.length !== 6) {
+      setError('Masukkan 6 digit OTP');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      await onSubmit(otpString);
+      // Clear OTP on success
+      setOtp(['', '', '', '', '', '']);
+    } catch (err) {
+      setError(err.message || 'OTP tidak valid');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (countdown > 0) return;
+
+    setResendLoading(true);
+    setError('');
+
+    try {
+      await onResend();
+      setCountdown(60); // Reset countdown
+      setOtp(['', '', '', '', '', '']);
+      // Success message is handled by parent component
+    } catch (err) {
+      setError(err.message || 'Gagal mengirim ulang OTP');
+    } finally {
+      setResendLoading(false);
+    }
   };
 
   if (!open) return null;
@@ -69,49 +142,86 @@ const OTPModal = ({
         >
           &times;
         </button>
+        
         {/* Title */}
         <h1 className="text-5xl font-bold text-center mb-6 text-black">
           Masukkan kode OTP
         </h1>
+        
         <p className="text-center text-xl mb-1 text-black">
           Masukkan kode yang dikirim via email ke:
         </p>
         <p className="text-center font-bold text-2xl mb-10 text-black break-all">
           {email}
         </p>
-        {/* OTP Inputs */}
-        <form onSubmit={handleSubmit}>
-          <div className="flex justify-center mb-8 gap-4">
-            {[0, 1, 2, 3, 4, 5].map((idx) => (
-              <input
-                key={idx}
-                ref={(el) => (inputsRef.current[idx] = el)}
-                maxLength={1}
-                className="w-16 h-16 text-center text-3xl border-2 border-purple-300 rounded-xl shadow-[0_4px_8px_0_rgba(128,90,213,0.12)] focus:outline-none focus:border-purple-500 transition"
-                onChange={(e) => handleInputChange(e, idx)}
-                onKeyDown={(e) => handleKeyDown(e, idx)}
-                style={{ fontFamily: "inherit" }}
-                autoFocus={idx === 0}
-                inputMode="numeric"
-                pattern="[0-9]*"
-              />
-            ))}
+
+        {/* Error message */}
+        {error && (
+          <div className="mb-6 p-3 bg-red-100 text-red-700 rounded-lg text-center">
+            {error}
           </div>
+        )}
+
+        {/* OTP Inputs */}
+        <div className="flex justify-center mb-8 gap-4">
+          {otp.map((digit, index) => (
+            <input
+              key={index}
+              ref={el => inputRefs.current[index] = el}
+              type="text"
+              maxLength="6"
+              value={digit}
+              onChange={e => handleChange(e, index)}
+              onKeyDown={e => handleKeyDown(e, index)}
+              onKeyPress={e => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSubmit(e);
+                }
+              }}
+              className="w-16 h-16 text-center text-3xl border-2 border-purple-300 rounded-xl shadow-[0_4px_8px_0_rgba(128,90,213,0.12)] focus:outline-none focus:border-purple-500 transition"
+              disabled={loading}
+              autoFocus={index === 0}
+              inputMode="numeric"
+              pattern="[0-9]*"
+            />
+          ))}
+        </div>
+
+        {/* Verify button - visible for manual submit */}
+        <div className="flex justify-center mb-6">
           <button
-            type="submit"
-            className="hidden"
+            onClick={handleSubmit}
+            disabled={loading || otp.join('').length !== 6}
+            className={`px-8 py-3 rounded-xl font-bold transition
+              ${loading || otp.join('').length !== 6
+                ? 'bg-purple-200 text-white cursor-not-allowed' 
+                : 'bg-purple-400 hover:bg-purple-500 text-white'
+              }`}
           >
-            Submit
+            {loading ? 'Memverifikasi...' : 'Verifikasi'}
           </button>
-        </form>
+        </div>
+
         {/* Resend */}
-        <p
-          className="text-center mt-2 cursor-pointer text-black hover:text-purple-500"
-          style={{ fontSize: "15px" }}
-          onClick={onResend}
-        >
-          Kirim Ulang Kode
-        </p>
+        <div className="text-center">
+          <p
+            className={`cursor-pointer transition ${
+              countdown > 0 
+                ? 'text-gray-400 cursor-not-allowed' 
+                : 'text-black hover:text-purple-500'
+            }`}
+            style={{ fontSize: "15px" }}
+            onClick={countdown > 0 ? undefined : handleResend}
+          >
+            {resendLoading 
+              ? 'Mengirim...' 
+              : countdown > 0 
+                ? `Kirim ulang kode dalam ${countdown}s` 
+                : 'Kirim Ulang Kode'
+            }
+          </p>
+        </div>
       </div>
     </div>
   );

@@ -18,17 +18,29 @@ export const AuthProvider = ({ children }) => {
   // Check if user is logged in on initial load
   useEffect(() => {
     const checkLoginStatus = () => {
+      const token = localStorage.getItem('token');
       const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
-      setIsLoggedIn(loggedIn);
-
-      if (loggedIn) {
-        const storedUser = JSON.parse(localStorage.getItem('admin'));
-        if (storedUser) {
-          setUser(storedUser);
-        } else {
-          setUser(null);
+      
+      if (token && loggedIn) {
+        // Try to get user data from localStorage
+        let userData = localStorage.getItem('user');
+        if (!userData) {
+          userData = localStorage.getItem('admin');
+        }
+        
+        if (userData) {
+          try {
+            const parsedUser = JSON.parse(userData);
+            setUser(parsedUser);
+            setIsLoggedIn(true);
+          } catch (error) {
+            console.error('Error parsing user data:', error);
+            // Clear invalid data
+            logout();
+          }
         }
       } else {
+        setIsLoggedIn(false);
         setUser(null);
       }
 
@@ -41,17 +53,41 @@ export const AuthProvider = ({ children }) => {
   // Login function
   const login = (userData) => {
     localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('admin', JSON.stringify(userData));
+    
+    // Store user data - check if it's admin or regular user
+    if (userData.role === 'admin' || userData.role === 'superadmin') {
+      localStorage.setItem('admin', JSON.stringify(userData));
+    }
+    localStorage.setItem('user', JSON.stringify(userData));
+    
     setIsLoggedIn(true);
     setUser(userData);
   };
 
   // Logout function
   const logout = () => {
+    // Clear all auth related data
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('admin');
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    sessionStorage.clear();
+    
     setIsLoggedIn(false);
     setUser(null);
+  };
+
+  // Check if user is admin or superadmin
+  const isAdmin = () => {
+    if (!user) return false;
+    return user.role === 'admin' || user.role === 'superadmin' || 
+           user.role_admin === 'admin' || user.role_admin === 'superadmin';
+  };
+
+  // Check if user is superadmin
+  const isSuperAdmin = () => {
+    if (!user) return false;
+    return user.role === 'superadmin' || user.role_admin === 'superadmin';
   };
 
   const value = {
@@ -59,7 +95,9 @@ export const AuthProvider = ({ children }) => {
     user,
     loading,
     login,
-    logout
+    logout,
+    isAdmin,
+    isSuperAdmin
   };
 
   return (

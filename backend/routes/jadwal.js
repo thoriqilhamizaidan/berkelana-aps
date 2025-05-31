@@ -2,23 +2,16 @@
 const express = require('express');
 const router = express.Router();
 const jadwalController = require('../controllers/jadwalController');
+const { authenticate, authorizeAdmin } = require('../middleware/auth');
 
-// Get jadwal with filters
+// Public routes - anyone can view
 router.get('/filter', jadwalController.getJadwalByFilter);
-
-// Get all jadwal
 router.get('/', jadwalController.getAllJadwal);
-
-// Get single jadwal
 router.get('/:id', jadwalController.getJadwalById);
 
-// Create new jadwal
-router.post('/', jadwalController.createJadwal);
-
-// Update jadwal
-router.put('/:id', jadwalController.updateJadwal);
-
-// Delete jadwal
-router.delete('/:id', jadwalController.deleteJadwal);
+// Admin only routes - need authentication and admin role
+router.post('/', authenticate, authorizeAdmin, jadwalController.createJadwal);
+router.put('/:id', authenticate, authorizeAdmin, jadwalController.updateJadwal);
+router.delete('/:id', authenticate, authorizeAdmin, jadwalController.deleteJadwal);
 
 module.exports = router;
