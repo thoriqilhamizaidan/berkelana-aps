@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Image, ArrowLeft } from 'lucide-react';
+import { Upload, Image } from 'lucide-react';
 
 const TambahArtikel = ({ onBack, onSave }) => {
   const [formData, setFormData] = useState({
@@ -17,10 +17,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e, fieldName) => {
@@ -49,12 +46,22 @@ const TambahArtikel = ({ onBack, onSave }) => {
         formPayload.append('foto_penulis', formData.authorPhoto);
       }
 
+      const token = localStorage.getItem('token'); // Ganti sesuai tempat penyimpanan token
+
       fetch('http://localhost:3000/api/artikel', {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
         body: formPayload
       })
-        .then(res => res.json())
-        .then(data => {
+        .then(async res => {
+          if (res.status === 401) {
+            alert('Unauthorized: Silakan login ulang.');
+            return;
+          }
+
+          const data = await res.json();
           alert('Artikel berhasil ditambahkan!');
           setFormData({
             title: '',
@@ -85,7 +92,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
           alert('Terjadi kesalahan saat menambahkan artikel.');
         });
     } else {
-      alert('Mohon lengkapi semua field yang required!');
+      alert('Mohon lengkapi semua field yang wajib diisi!');
     }
   };
 
@@ -100,6 +107,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
 
         <div className="bg-gray-100 rounded-lg shadow-sm p-8">
           <div className="space-y-6">
+            {/* Input Judul */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
                 Tambah judul artikel
@@ -109,11 +117,11 @@ const TambahArtikel = ({ onBack, onSave }) => {
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                placeholder=""
+                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg"
               />
             </div>
 
+            {/* Input Isi */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
                 Tambah isi artikel
@@ -123,11 +131,11 @@ const TambahArtikel = ({ onBack, onSave }) => {
                 value={formData.content}
                 onChange={handleInputChange}
                 rows={4}
-                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 resize-none"
-                placeholder=""
+                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg resize-none"
               />
             </div>
 
+            {/* Select Kategori */}
             <div>
               <label className="block text-sm text-gray-600 mb-3">
                 Kategori artikel
@@ -136,7 +144,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
                 name="category"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
+                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg"
               >
                 <option value="">Pilih kategori artikel</option>
                 {categories.map((cat) => (
@@ -147,6 +155,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
               </select>
             </div>
 
+            {/* Input Penulis */}
             <div>
               <label className="block text-sm text-gray-600 mb-4">
                 Tambah penulis
@@ -159,15 +168,12 @@ const TambahArtikel = ({ onBack, onSave }) => {
                     name="authorName"
                     value={formData.authorName}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400"
-                    placeholder=""
+                    className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm text-gray-600 mb-2">
-                    Foto Penulis
-                  </label>
+                  <label className="block text-sm text-gray-600 mb-2">Foto Penulis</label>
                   <div className="relative">
                     <input
                       type="file"
@@ -193,7 +199,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
                                 authorPhotoPreview: null
                               }));
                             }}
-                            className="w-4 h-4 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center z-20"
+                            className="w-4 h-4 bg-red-500 text-white rounded-full text-xs"
                           >
                             ×
                           </button>
@@ -208,10 +214,9 @@ const TambahArtikel = ({ onBack, onSave }) => {
               </div>
             </div>
 
+            {/* Input Gambar Artikel */}
             <div>
-              <label className="block text-sm text-gray-600 mb-3">
-                Tambah gambar
-              </label>
+              <label className="block text-sm text-gray-600 mb-3">Tambah gambar</label>
               <div className="relative">
                 <input
                   type="file"
@@ -225,6 +230,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
               </div>
             </div>
 
+            {/* Preview */}
             {formData.articleImagePreview ? (
               <div className="flex justify-start">
                 <div className="relative">
@@ -242,7 +248,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
                         articleImagePreview: null
                       }))
                     }
-                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 flex items-center justify-center"
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs"
                   >
                     ×
                   </button>
@@ -256,17 +262,18 @@ const TambahArtikel = ({ onBack, onSave }) => {
               </div>
             )}
 
+            {/* Tombol */}
             <div className="flex justify-end gap-4 pt-4">
               <button
                 onClick={onBack}
-                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
+                className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium"
               >
                 Kembali
               </button>
               <button
                 type="button"
                 onClick={handleSubmit}
-                className="px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
+                className="px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium"
               >
                 Simpan
               </button>

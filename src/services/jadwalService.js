@@ -1,4 +1,3 @@
-// src/services/jadwalService.js
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
@@ -12,10 +11,14 @@ const apiClient = axios.create({
   }
 });
 
-// Request interceptor
+// Add request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    console.log(`Making ${config.method?.toUpperCase()} request to: ${config.url}`);
+    // Attach the token to the headers
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -24,33 +27,36 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor
+// Add response interceptor for error handling
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   (error) => {
     console.error('Response error:', error);
-    
+
     if (error.code === 'ECONNABORTED') {
       throw new Error('Request timeout. Periksa koneksi internet Anda.');
     }
-    
+
     if (error.response?.status === 404) {
       throw new Error('Endpoint tidak ditemukan.');
     }
-    
+
     if (error.response?.status === 500) {
       throw new Error('Terjadi kesalahan server. Silakan coba lagi.');
     }
-    
+
     if (!error.response) {
       throw new Error('Tidak dapat terhubung ke server. Pastikan backend sedang berjalan.');
     }
-    
+
     throw error;
   }
 );
 
 class JadwalService {
+  // Get all jadwal
   async getAllJadwal() {
     try {
       const response = await apiClient.get('/jadwal');
@@ -61,6 +67,7 @@ class JadwalService {
     }
   }
 
+  // Get jadwal by ID
   async getJadwalById(id) {
     try {
       const response = await apiClient.get(`/jadwal/${id}`);
@@ -71,21 +78,7 @@ class JadwalService {
     }
   }
 
-  async getJadwalByFilter(filters) {
-    try {
-      const params = new URLSearchParams();
-      Object.keys(filters).forEach(key => {
-        if (filters[key]) params.append(key, filters[key]);
-      });
-      
-      const response = await apiClient.get(`/jadwal/filter?${params.toString()}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching filtered jadwal:', error);
-      throw error;
-    }
-  }
-
+  // Create a new jadwal
   async createJadwal(jadwalData) {
     try {
       const response = await apiClient.post('/jadwal', jadwalData);
@@ -97,6 +90,7 @@ class JadwalService {
     }
   }
 
+  // Update an existing jadwal
   async updateJadwal(id, jadwalData) {
     try {
       const response = await apiClient.put(`/jadwal/${id}`, jadwalData);
@@ -108,6 +102,7 @@ class JadwalService {
     }
   }
 
+  // Delete a jadwal
   async deleteJadwal(id) {
     try {
       const response = await apiClient.delete(`/jadwal/${id}`);

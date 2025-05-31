@@ -17,9 +17,14 @@ const TambahAdmin = ({ onBack, onSave }) => {
 
   const handleSubmit = async () => {
     if (formData.email && formData.password && formData.status && formData.role) {
+      const token = localStorage.getItem('token');
+
       const res = await fetch('http://localhost:3000/api/admin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           email_admin: formData.email,
           password_admin: formData.password,
@@ -32,6 +37,8 @@ const TambahAdmin = ({ onBack, onSave }) => {
         alert('Admin berhasil ditambahkan.');
         setFormData({ email: '', password: '', status: '', role: '' });
         onSave();
+      } else if (res.status === 401) {
+        alert('Unauthorized: Sesi login habis atau token tidak valid.');
       } else {
         alert('Gagal menambahkan admin.');
       }

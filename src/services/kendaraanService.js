@@ -1,4 +1,3 @@
-// src/services/kendaraanService.js
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
@@ -12,10 +11,14 @@ const apiClient = axios.create({
   }
 });
 
-// Add request interceptor (optional - untuk logging)
+// Add request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    console.log(`Making ${config.method?.toUpperCase()} request to: ${config.url}`);
+    // Attach the token to the headers
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
     return config;
   },
   (error) => {
@@ -24,36 +27,37 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Add response interceptor (untuk error handling global)
+// Add response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
   (error) => {
     console.error('Response error:', error);
-    
+
     // Handle common errors
     if (error.code === 'ECONNABORTED') {
       throw new Error('Request timeout. Periksa koneksi internet Anda.');
     }
-    
+
     if (error.response?.status === 404) {
       throw new Error('Endpoint tidak ditemukan.');
     }
-    
+
     if (error.response?.status === 500) {
       throw new Error('Terjadi kesalahan server. Silakan coba lagi.');
     }
-    
+
     if (!error.response) {
       throw new Error('Tidak dapat terhubung ke server. Pastikan backend sedang berjalan.');
     }
-    
+
     throw error;
   }
 );
 
 class KendaraanService {
+  // Get all kendaraan
   async getAllKendaraan() {
     try {
       const response = await apiClient.get('/kendaraan');
@@ -64,6 +68,7 @@ class KendaraanService {
     }
   }
 
+  // Get kendaraan by ID
   async getKendaraanById(id) {
     try {
       const response = await apiClient.get(`/kendaraan/${id}`);
@@ -74,10 +79,11 @@ class KendaraanService {
     }
   }
 
+  // Create a new kendaraan
   async createKendaraan(formData) {
     try {
       const form = new FormData();
-      
+
       // Convert camelCase to snake_case for backend
       const fieldMapping = {
         tipeArmada: 'tipe_armada',
@@ -94,7 +100,6 @@ class KendaraanService {
       Object.keys(fieldMapping).forEach(key => {
         if (formData[key] !== undefined && formData[key] !== null) {
           if (key === 'fasilitas') {
-            // Send fasilitas as JSON string
             form.append(fieldMapping[key], JSON.stringify(formData[key]));
           } else if (key === 'gambar' && formData[key] instanceof File) {
             form.append(fieldMapping[key], formData[key]);
@@ -104,26 +109,20 @@ class KendaraanService {
         }
       });
 
-      // For FormData, axios automatically sets Content-Type to multipart/form-data
-      const response = await apiClient.post('/kendaraan', form, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      });
-      
+      const response = await apiClient.post('/kendaraan', form);
       return response.data;
     } catch (error) {
       console.error('Error creating kendaraan:', error);
-      // Extract error message from response
       const errorMessage = error.response?.data?.message || error.message || 'Gagal menambahkan kendaraan';
       throw new Error(errorMessage);
     }
   }
 
+  // Update an existing kendaraan
   async updateKendaraan(id, formData) {
     try {
       const form = new FormData();
-      
+
       // Convert camelCase to snake_case for backend
       const fieldMapping = {
         tipeArmada: 'tipe_armada',
@@ -140,7 +139,6 @@ class KendaraanService {
       Object.keys(fieldMapping).forEach(key => {
         if (formData[key] !== undefined && formData[key] !== null) {
           if (key === 'fasilitas') {
-            // Send fasilitas as JSON string
             form.append(fieldMapping[key], JSON.stringify(formData[key]));
           } else if (key === 'gambar' && formData[key] instanceof File) {
             form.append(fieldMapping[key], formData[key]);
@@ -150,12 +148,7 @@ class KendaraanService {
         }
       });
 
-      const response = await apiClient.put(`/kendaraan/${id}`, form, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
-      });
-      
+      const response = await apiClient.put(`/kendaraan/${id}`, form);
       return response.data;
     } catch (error) {
       console.error('Error updating kendaraan:', error);
@@ -164,6 +157,7 @@ class KendaraanService {
     }
   }
 
+  // Delete a kendaraan
   async deleteKendaraan(id) {
     try {
       const response = await apiClient.delete(`/kendaraan/${id}`);
@@ -175,6 +169,7 @@ class KendaraanService {
     }
   }
 
+  // Get image URL for kendaraan
   getImageUrl(filename) {
     if (!filename) return null;
     return `${API_BASE_URL.replace('/api', '')}/uploads/kendaraan/${filename}`;
