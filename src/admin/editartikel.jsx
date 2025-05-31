@@ -35,7 +35,7 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleFileUpload = (e, type) => {
@@ -46,9 +46,9 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
       const reader = new FileReader();
       reader.onload = (event) => {
         if (type === 'author') {
-          setFormData(prev => ({ ...prev, authorPhoto: event.target.result }));
+          setFormData((prev) => ({ ...prev, authorPhoto: event.target.result }));
         } else if (type === 'article') {
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             articleImages: [...prev.articleImages, event.target.result],
           }));
@@ -59,59 +59,53 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
   };
 
   const removeImage = (index) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       articleImages: prev.articleImages.filter((_, i) => i !== index),
     }));
   };
 
   const removeAuthorPhoto = () => {
-    setFormData(prev => ({ ...prev, authorPhoto: null }));
+    setFormData((prev) => ({ ...prev, authorPhoto: null }));
   };
 
   const dataURLtoBlob = (dataURL) => {
     try {
-      // Check if dataURL is valid
-      if (!dataURL || typeof dataURL !== 'string') {
-        throw new Error('Invalid dataURL');
-      }
-
-      // Check if it contains the expected comma separator
-      if (!dataURL.includes(',')) {
-        throw new Error('Invalid dataURL format - missing comma separator');
-      }
-
       const [header, base64] = dataURL.split(',');
-      
-      // Check if header exists and has the expected format
-      if (!header || !base64) {
-        throw new Error('Invalid dataURL format - missing header or base64 data');
-      }
-
-      // Extract MIME type with better error handling
       const mimeMatch = header.match(/:(.*?);/);
-      if (!mimeMatch || !mimeMatch[1]) {
-        throw new Error('Invalid dataURL format - cannot extract MIME type');
-      }
-
       const mime = mimeMatch[1];
       const binary = atob(base64);
       let len = binary.length;
       const u8arr = new Uint8Array(len);
-      
       while (len--) {
         u8arr[len] = binary.charCodeAt(len);
       }
-      
       return new Blob([u8arr], { type: mime });
     } catch (error) {
       console.error('Error converting dataURL to blob:', error);
-      // Return a default empty blob if conversion fails
       return new Blob([], { type: 'image/jpeg' });
     }
   };
 
-  const handleSubmit = (e) => {
+  // Helper function to get proper image URL
+  const getImageUrl = (imageData) => {
+    if (!imageData) return null;
+    
+    // If it's already a data URL, return as is
+    if (imageData.startsWith('data:image')) {
+      return imageData;
+    }
+    
+    // If it's already a full URL, return as is
+    if (imageData.startsWith('http://') || imageData.startsWith('https://')) {
+      return imageData;
+    }
+    
+    // Otherwise, it's a filename, so construct the full URL
+    return `http://localhost:3000/uploads/artikel/${imageData}`;
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.title || !formData.content || !formData.authorName) {
@@ -125,69 +119,49 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
     formPayload.append('kategori', formData.category);
     formPayload.append('nama_penulis', formData.authorName);
 
-    // Handle article images
     if (formData.articleImages.length > 0) {
       const imageData = formData.articleImages[0];
-      
-      // Check if it's a base64 data URL (newly uploaded)
       if (typeof imageData === 'string' && imageData.startsWith('data:image')) {
-        try {
-          const blob = dataURLtoBlob(imageData);
-          formPayload.append('gambar_artikel', blob, 'artikel.jpg');
-        } catch (error) {
-          console.error('Error processing article image:', error);
-          alert('Terjadi kesalahan saat memproses gambar artikel.');
-          return;
-        }
+        const blob = dataURLtoBlob(imageData);
+        formPayload.append('gambar_artikel', blob, 'artikel.jpg');
       }
-      // If it's an existing URL, we don't need to upload it again
     }
 
-    // Handle author photo
-    if (formData.authorPhoto) {
-      // Check if it's a base64 data URL (newly uploaded)
-      if (typeof formData.authorPhoto === 'string' && formData.authorPhoto.startsWith('data:image')) {
-        try {
-          const blob = dataURLtoBlob(formData.authorPhoto);
-          formPayload.append('foto_penulis', blob, 'penulis.jpg');
-        } catch (error) {
-          console.error('Error processing author photo:', error);
-          alert('Terjadi kesalahan saat memproses foto penulis.');
-          return;
-        }
-      }
-      // If it's an existing URL, we don't need to upload it again
+    if (formData.authorPhoto && formData.authorPhoto.startsWith('data:image')) {
+      const blob = dataURLtoBlob(formData.authorPhoto);
+      formPayload.append('foto_penulis', blob, 'penulis.jpg');
     }
 
-    fetch(`http://localhost:3000/api/artikel/${article?.id_artikel || article?.id}`, {
-      method: 'PUT',
-      body: formPayload
-    })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        alert('Artikel berhasil diperbarui!');
-        if (onUpdate) {
-          const updatedData = {
-            ...data,
-            artikel: data.judul,
-            isi: data.isi,
-            kategori: data.kategori,
-            penulis: data.nama_penulis,
-            gambarUrl: data.gambar_artikel ? `http://localhost:3000/uploads/artikel/${data.gambar_artikel}` : null,
-            authorPhotoUrl: data.foto_penulis ? `http://localhost:3000/uploads/artikel/${data.foto_penulis}` : null,
-          };
-          onUpdate(updatedData);
-        }
-      })
-      .catch(err => {
-        console.error('Gagal:', err);
-        alert('Terjadi kesalahan saat memperbarui artikel.');
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:3000/api/artikel/${article?.id_artikel || article?.id}`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formPayload,
       });
+
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const data = await res.json();
+
+      alert('Artikel berhasil diperbarui!');
+      if (onUpdate) {
+        const updatedData = {
+          ...data,
+          artikel: data.judul,
+          isi: data.isi,
+          kategori: data.kategori,
+          penulis: data.nama_penulis,
+          gambarUrl: data.gambar_artikel ? `http://localhost:3000/uploads/artikel/${data.gambar_artikel}` : null,
+          authorPhotoUrl: data.foto_penulis ? `http://localhost:3000/uploads/artikel/${data.foto_penulis}` : null,
+        };
+        onUpdate(updatedData);
+      }
+    } catch (err) {
+      console.error('Gagal:', err);
+      alert('Terjadi kesalahan saat memperbarui artikel.');
+    }
   };
 
   return (
@@ -195,9 +169,7 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
       <div className="max-w-4xl mx-auto">
         <div className="bg-white rounded-lg shadow-sm p-8">
           <div className="mb-8">
-            <h1 className="text-xl font-semibold text-gray-800">
-              Artikel | Edit Artikel
-            </h1>
+            <h1 className="text-xl font-semibold text-gray-800">Artikel | Edit Artikel</h1>
           </div>
 
           <div className="space-y-6">
@@ -207,6 +179,7 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
+                placeholder="Judul artikel"
                 className="w-full px-4 py-3 border font-bold border-purple-400 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-400 text-gray-700 bg-white"
                 required
               />
@@ -214,37 +187,20 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
 
             <div className="bg-gray-100 p-6 rounded-lg border border-gray-200 space-y-8">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Edit judul artikel
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-purple-400 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-400 text-gray-700 bg-white"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Edit isi artikel
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Edit isi artikel</label>
                 <textarea
                   name="content"
                   value={formData.content}
                   onChange={handleInputChange}
                   rows="6"
+                  placeholder="Tulis isi artikel di sini..."
                   className="w-full px-4 py-3 border border-purple-400 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-700 resize-none bg-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Tambah kategori artikel
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Tambah kategori artikel</label>
                 <select
                   name="category"
                   value={formData.category}
@@ -260,9 +216,7 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Edit penulis
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Edit penulis</label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-xs text-gray-600 mb-2">Nama</label>
@@ -271,6 +225,7 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
                       name="authorName"
                       value={formData.authorName}
                       onChange={handleInputChange}
+                      placeholder="Nama penulis"
                       className="w-full px-4 py-3 border border-purple-400 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-400 text-gray-700 bg-white"
                       required
                     />
@@ -289,9 +244,12 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
                         {formData.authorPhoto ? (
                           <div className="flex items-center gap-2">
                             <img
-                              src={formData.authorPhoto}
+                              src={getImageUrl(formData.authorPhoto)}
                               alt="Author"
                               className="h-8 w-8 object-cover rounded-full border-2 border-gray-300"
+                              onError={(e) => {
+                                e.target.src = 'https://via.placeholder.com/50x50?text=Error';
+                              }}
                             />
                             <button
                               type="button"
@@ -305,7 +263,7 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
                             </button>
                           </div>
                         ) : (
-                          <div></div>
+                          <span className="text-gray-400 text-sm">Pilih file</span>
                         )}
                         <Upload className="w-5 h-5 text-gray-400" />
                       </div>
@@ -315,9 +273,7 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Edit gambar artikel
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Edit gambar artikel</label>
                 <div className="relative">
                   <input
                     type="file"
@@ -326,8 +282,11 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
                     onChange={(e) => handleFileUpload(e, 'article')}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
-                  <div className="w-full px-4 py-8 border border-purple-400 rounded-lg bg-white flex items-center justify-end">
-                    <Upload className="w-5 h-5 text-gray-400" />
+                  <div className="w-full px-4 py-8 border border-purple-400 rounded-lg bg-white flex items-center justify-center">
+                    <div className="text-center">
+                      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <span className="text-gray-400 text-sm">Klik atau drag gambar ke sini</span>
+                    </div>
                   </div>
                 </div>
 
@@ -336,9 +295,12 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
                     {formData.articleImages.map((img, index) => (
                       <div key={index} className="relative group">
                         <img
-                          src={img}
+                          src={getImageUrl(img)}
                           alt={`Gambar ${index + 1}`}
                           className="w-full h-20 object-cover rounded-md shadow-sm border border-gray-200"
+                          onError={(e) => {
+                            e.target.src = 'https://via.placeholder.com/150x150?text=Error';
+                          }}
                         />
                         <button
                           type="button"

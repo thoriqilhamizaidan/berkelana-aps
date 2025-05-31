@@ -7,7 +7,7 @@ const KelolaAdmin = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [adminToDelete, setAdminToDelete] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentView, setCurrentView] = useState('list'); // 'list', 'edit', 'add'
+  const [currentView, setCurrentView] = useState('list');
   const [selectedAdmin, setSelectedAdmin] = useState(null);
   const itemsPerPage = 5;
 
@@ -15,24 +15,51 @@ const KelolaAdmin = () => {
     fetchAdmins();
   }, []);
 
-  const fetchAdmins = () => {
-    fetch('http://localhost:3000/api/admin')
-      .then(res => res.json())
-      .then(data => setAdmins(data))
-      .catch(err => console.error('Gagal ambil data admin:', err));
+  const fetchAdmins = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('http://localhost:3000/api/admin', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (res.status === 401) {
+        alert('Unauthorized: Silakan login ulang.');
+        setAdmins([]);
+        return;
+      }
+
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setAdmins(data);
+      } else {
+        console.error('Data bukan array:', data);
+        setAdmins([]);
+      }
+    } catch (err) {
+      console.error('Gagal ambil data admin:', err);
+      setAdmins([]);
+    }
   };
 
   const handleDeleteAdmin = (id) => {
-    fetch(`http://localhost:3000/api/admin/${id}`, { method: 'DELETE' })
-      .then(res => {
-        if (res.ok) {
-          setAdmins(prev => prev.filter(admin => admin.id_admin !== id));
-          alert('Admin berhasil dihapus.');
-        }
-      });
+    const token = localStorage.getItem('token');
+    fetch(`http://localhost:3000/api/admin/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    }).then(res => {
+      if (res.ok) {
+        setAdmins(prev => prev.filter(admin => admin.id_admin !== id));
+        alert('Admin berhasil dihapus.');
+      }
+    });
   };
 
   const paginatedData = useMemo(() => {
+    if (!Array.isArray(admins)) return [];
     const startIndex = (currentPage - 1) * itemsPerPage;
     return admins.slice(startIndex, startIndex + itemsPerPage);
   }, [admins, currentPage]);
@@ -48,8 +75,7 @@ const KelolaAdmin = () => {
     if (adminToDelete) {
       handleDeleteAdmin(adminToDelete);
       setShowConfirmModal(false);
-      
-      // Jika halaman saat ini kosong setelah delete, pindah ke halaman sebelumnya
+
       const remainingItems = admins.length - 1;
       const maxPage = Math.ceil(remainingItems / itemsPerPage);
       if (currentPage > maxPage && maxPage > 0) {
@@ -63,7 +89,6 @@ const KelolaAdmin = () => {
   };
 
   const handleEditClick = (admin) => {
-    console.log('Edit admin clicked:', admin);
     setSelectedAdmin(admin);
     setCurrentView('edit');
   };
@@ -78,17 +103,13 @@ const KelolaAdmin = () => {
   };
 
   const handleUpdate = () => {
-    // Refresh data setelah update
     fetchAdmins();
-    // Kembali ke list
     setCurrentView('list');
     setSelectedAdmin(null);
   };
 
   const handleSave = () => {
-    // Refresh data setelah menambah admin baru
     fetchAdmins();
-    // Kembali ke list
     setCurrentView('list');
   };
 
@@ -97,17 +118,14 @@ const KelolaAdmin = () => {
 
     const pageNumbers = [];
     const maxVisiblePages = 10;
-    
-    // Tentukan range halaman yang akan ditampilkan
+
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
-    // Adjust startPage jika endPage sudah di maksimum
+
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
-    // Nomor halaman
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(
         <button
@@ -124,7 +142,6 @@ const KelolaAdmin = () => {
       );
     }
 
-    // Tambahkan "Selanjutnya" di ujung kanan
     pageNumbers.push(
       <span key="selanjutnya" className="ml-4 text-sm text-gray-600">
         Selanjutnya
@@ -138,10 +155,9 @@ const KelolaAdmin = () => {
     );
   };
 
-  // Render form edit jika currentView adalah 'edit'
   if (currentView === 'edit' && selectedAdmin) {
     return (
-      <EditKelolaAdmin 
+      <EditKelolaAdmin
         admin={selectedAdmin}
         onBack={handleBack}
         onUpdate={handleUpdate}
@@ -149,32 +165,28 @@ const KelolaAdmin = () => {
     );
   }
 
-  // Render form tambah admin
   if (currentView === 'add') {
     return (
-      <TambahAdmin 
+      <TambahAdmin
         onBack={handleBack}
         onSave={handleSave}
       />
     );
   }
 
-  // Render default: list admin
   return (
     <div className="min-h-screen bg-white p-6 pt-18">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Kelola Admin</h1>
-          <button 
-            onClick={handleTambahClick} 
+          <button
+            onClick={handleTambahClick}
             className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
           >
             Tambah Data +
           </button>
         </div>
 
-        {/* Tabel Admin */}
         <div className="bg-gray-100 rounded-lg shadow-sm overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-100">
@@ -217,8 +229,8 @@ const KelolaAdmin = () => {
                       >
                         Edit
                       </button>
-                      <button 
-                        onClick={() => handleDeleteClick(admin.id_admin)} 
+                      <button
+                        onClick={() => handleDeleteClick(admin.id_admin)}
                         className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-medium"
                       >
                         Hapus
@@ -231,16 +243,14 @@ const KelolaAdmin = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         {renderPagination()}
       </div>
 
-      {/* Modal Konfirmasi */}
       {showConfirmModal && (
-        <div className="fixed inset-0 flex items-center justify-center  bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 z-50">
           <div className="bg-white rounded-lg p-6 w-96 relative">
-            <button 
-              onClick={() => setShowConfirmModal(false)} 
+            <button
+              onClick={() => setShowConfirmModal(false)}
               className="absolute top-3 right-3 text-black text-xl font-bold"
             >
               ×

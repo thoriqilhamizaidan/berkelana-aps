@@ -252,23 +252,30 @@ const EditJadwal = ({ jadwal, onSubmit, onCancel, loading: parentLoading }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+  
     if (!validateForm()) {
       return;
     }
-
+  
+    // Validate hargaOngkos before submitting
+    const hargaOngkosValue = parseInt(formData.hargaOngkos);
+    if (hargaOngkosValue > 1000000000) {  // Adjust this limit according to your database's constraints
+      alert("Harga ongkos terlalu besar. Silakan periksa nilai harga.");
+      return;
+    }
+  
     try {
       setSubmitting(true);
-
+  
       // Format date and time for backend
       const departureDateTime = new Date(`${formData.tanggalKeberangkatan}T${formData.waktuKeberangkatan}:00`);
       const arrivalDateTime = new Date(`${formData.tanggalKeberangkatan}T${formData.waktuSampai}:00`);
-      
+  
       // If arrival is next day, add one day
       if (arrivalDateTime < departureDateTime) {
         arrivalDateTime.setDate(arrivalDateTime.getDate() + 1);
       }
-
+  
       const jadwalData = {
         id_kendaraan: parseInt(formData.idKendaraan),
         kota_awal: formData.ruteKeberangkatan.toUpperCase(),
@@ -276,13 +283,13 @@ const EditJadwal = ({ jadwal, onSubmit, onCancel, loading: parentLoading }) => {
         waktu_keberangkatan: departureDateTime.toISOString(),
         waktu_sampai: arrivalDateTime.toISOString(),
         durasi: parseInt(formData.estimasiDurasi),
-        harga: parseInt(formData.hargaOngkos),
+        harga: hargaOngkosValue,  // Ensure the value is within range
         id_promo: jadwal?.id_promo || null
       };
-
+  
       const jadwalId = jadwal?.id_jadwal || jadwal?.id;
       const response = await jadwalService.updateJadwal(jadwalId, jadwalData);
-
+  
       if (response.success) {
         alert('Jadwal berhasil diperbarui!');
         onSubmit(response.data);
@@ -294,6 +301,7 @@ const EditJadwal = ({ jadwal, onSubmit, onCancel, loading: parentLoading }) => {
       setSubmitting(false);
     }
   };
+  
 
   const isLoading = parentLoading || submitting || loadingKendaraan;
 

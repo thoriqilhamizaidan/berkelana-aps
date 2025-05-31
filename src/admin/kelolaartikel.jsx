@@ -14,7 +14,7 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
     const fetchArticles = () => {
       setLoading(true);
       setError(null);
-      
+
       fetch("http://localhost:3000/api/artikel")
         .then((res) => {
           if (!res.ok) {
@@ -23,13 +23,10 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
           return res.json();
         })
         .then((data) => {
-          console.log('Fetched data:', data); // Debug log
-          
           // Check if data is an array
           if (!Array.isArray(data)) {
             throw new Error('Data yang diterima bukan array');
           }
-          
           const mapped = data.map(item => {
             const tanggalUpload = new Date(item.createdAt).toLocaleDateString('id-ID', {
               weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
@@ -50,7 +47,6 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
           setArticles(sorted);
         })
         .catch((err) => {
-          console.error('Fetch error:', err);
           setError(`Gagal memuat artikel: ${err.message}`);
           setArticles([]); // Set empty array on error
         })
@@ -87,23 +83,27 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
     setShowConfirmModal(true);
   };
 
+  // ---- Hanya bagian ini yang diupdate ----
   const handleConfirmDelete = () => {
     if (articleToDelete) {
-      // Call API to delete article
+      const token = localStorage.getItem('token');
       fetch(`http://localhost:3000/api/artikel/${articleToDelete}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       })
         .then(res => res.json())
         .then(data => {
           // Remove article from local state
-          setArticles(prev => prev.filter(article => 
+          setArticles(prev => prev.filter(article =>
             (article.id_artikel || article.id) !== articleToDelete
           ));
-          
+
           if (onDeleteArticle) {
             onDeleteArticle(articleToDelete);
           }
-          
+
           setShowConfirmModal(false);
           setArticleToDelete(null);
 
@@ -112,17 +112,17 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
           if (currentPage > maxPage && maxPage > 0) {
             setCurrentPage(maxPage);
           }
-          
+
           alert('Artikel berhasil dihapus!');
         })
         .catch(err => {
-          console.error('Delete error:', err);
           alert('Gagal menghapus artikel!');
           setShowConfirmModal(false);
           setArticleToDelete(null);
         });
     }
   };
+  // ---- End update ----
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
