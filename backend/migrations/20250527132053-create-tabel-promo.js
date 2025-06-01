@@ -46,8 +46,25 @@ module.exports = {
         type: Sequelize.DATE,
       },
     });
+
+    // Check if is_active column exists, if not add it
+    const tableDescription = await queryInterface.describeTable('tabel_promo');
+    
+    if (!tableDescription.is_active) {
+      await queryInterface.addColumn('tabel_promo', 'is_active', {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
+        allowNull: false
+      });
+    }
   },
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('tabel_promo');
-  },
+  const tableDescription = await queryInterface.describeTable('tabel_promo');
+
+  if (tableDescription.is_active) {
+    await queryInterface.removeColumn('tabel_promo', 'is_active');
+  }
+
+  await queryInterface.dropTable('tabel_promo');
+}
 };
