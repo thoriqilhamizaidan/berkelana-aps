@@ -81,7 +81,7 @@ const DetailPromoModal = ({ show, promo, onClose }) => {
                 ? promo.details
                 : String(promo.details || "").split("\n")
               ).map((d, idx) => (
-                <li key={idx}>{d}</li>
+                <li key={`${idx}-${d}`}>{d}</li>
               ))}
             </ul>
           </div>

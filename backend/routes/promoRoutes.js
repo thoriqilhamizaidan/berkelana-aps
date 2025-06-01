@@ -30,6 +30,9 @@ router.post('/', upload.single('gambar'), promoController.createPromo);
 // Update promo by ID (with image upload)
 router.put('/:id', upload.single('gambar'), promoController.updatePromo);
 
+// Toggle active status promo (NEW ROUTE)
+router.post('/:id/toggle-active', promoController.toggleActivePromo);
+
 // Delete promo by ID
 router.delete('/:id', promoController.deletePromo);
 

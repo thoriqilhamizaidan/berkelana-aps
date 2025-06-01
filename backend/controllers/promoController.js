@@ -16,7 +16,7 @@ const mapPromoToFrontend = (promo) => {
     image: promoData.gambar ? `/uploads/${promoData.gambar}` : null,
     berlakuHingga: promoData.berlakuhingga,
     id_admin: promoData.id_admin,
-    is_active: promoData.deletedAt === null, // Active if not soft deleted
+    is_active: !promoData.deletedAt, // Active if not soft-deleted
     createdAt: promoData.createdAt,
     updatedAt: promoData.updatedAt
   };
@@ -28,90 +28,239 @@ const mapFrontendToDatabase = (frontendData) => {
     judul: frontendData.title,
     detail: frontendData.details,
     kode_promo: frontendData.code,
-    potongan: frontendData.potongan,
-    berlakuhingga: frontendData.berlakuHingga,
-    id_admin: frontendData.id_admin
+    potongan: parseInt(frontendData.potongan) || 0,
+    berlakuhingga: frontendData.berlakuHingga ? new Date(frontendData.berlakuHingga) : null,
+    id_admin: parseInt(frontendData.id_admin) || null
   };
 };
 
-// Get all promos
+// Get all promos (including soft deleted for status management)
 exports.getPromos = async (req, res) => {
   try {
-    const promos = await Promo.findAll();
-    const mappedPromos = promos.map(mapPromoToFrontend);
+    console.log('Getting all promos...');
+    
+    // Get all promos including soft deleted
+    const promos = await Promo.findAll({
+      paranoid: false, // Include soft deleted records
+      order: [['createdAt', 'DESC']]
+    });
+    
+    console.log(`Found ${promos.length} promos in database`);
+    
+    const mappedPromos = promos.map(promo => mapPromoToFrontend(promo));
+    
+    console.log(`Mapped ${mappedPromos.length} promos for frontend`);
+    
     res.json(mappedPromos);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error getting promos:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch promos',
+      error: error.message 
+    });
   }
 };
 
 // Get promo by ID
 exports.getPromoById = async (req, res) => {
   try {
-    const promo = await Promo.findByPk(req.params.id);
+    const { id } = req.params;
+    console.log(`Getting promo by ID: ${id}`);
+    
+    const promo = await Promo.findByPk(id, {
+      paranoid: false // Include soft deleted
+    });
+    
     if (!promo) {
-      return res.status(404).json({ message: 'Promo not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Promo not found' 
+      });
     }
+    
     const mappedPromo = mapPromoToFrontend(promo);
     res.json(mappedPromo);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error getting promo by ID:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch promo',
+      error: error.message 
+    });
   }
 };
 
 // Create new promo
 exports.createPromo = async (req, res) => {
   try {
+    console.log('Creating new promo with data:', req.body);
+    console.log('Uploaded file:', req.file);
+    
+    // Map frontend data to database format
     const dbData = mapFrontendToDatabase(req.body);
     
-    // If file uploaded, set gambar to the filename
+    // Add image filename if uploaded
     if (req.file) {
       dbData.gambar = req.file.filename;
     }
     
+    console.log('Database data to insert:', dbData);
+    
     const promo = await Promo.create(dbData);
+    console.log('Created promo:', promo.toJSON());
+    
     const mappedPromo = mapPromoToFrontend(promo);
-    res.status(201).json(mappedPromo);
+    
+    res.status(201).json({
+      success: true,
+      message: 'Promo created successfully',
+      data: mappedPromo
+    });
   } catch (error) {
-    console.error(error);
-    res.status(400).json({ message: error.message });
+    console.error('Error creating promo:', error);
+    res.status(400).json({ 
+      success: false,
+      message: 'Failed to create promo',
+      error: error.message 
+    });
   }
 };
 
 // Update promo by ID
 exports.updatePromo = async (req, res) => {
   try {
-    const promo = await Promo.findByPk(req.params.id);
+    const { id } = req.params;
+    console.log(`Updating promo ID: ${id} with data:`, req.body);
+    
+    const promo = await Promo.findByPk(id, {
+      paranoid: false // Can update soft deleted promos
+    });
+    
     if (!promo) {
-      return res.status(404).json({ message: 'Promo not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Promo not found' 
+      });
     }
     
+    // Map frontend data to database format
     const dbData = mapFrontendToDatabase(req.body);
     
-    // If file uploaded, set gambar to the filename
+    // Add image filename if uploaded
     if (req.file) {
       dbData.gambar = req.file.filename;
     }
     
+    console.log('Database data to update:', dbData);
+    
     await promo.update(dbData);
-    const updatedPromo = await Promo.findByPk(req.params.id);
+    
+    // Fetch updated promo
+    const updatedPromo = await Promo.findByPk(id, {
+      paranoid: false
+    });
+    
     const mappedPromo = mapPromoToFrontend(updatedPromo);
-    res.json(mappedPromo);
+    
+    res.json({
+      success: true,
+      message: 'Promo updated successfully',
+      data: mappedPromo
+    });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    console.error('Error updating promo:', error);
+    res.status(400).json({ 
+      success: false,
+      message: 'Failed to update promo',
+      error: error.message 
+    });
   }
 };
 
-// Delete promo by ID (HARD DELETE: always remove from DB)
+// Toggle active status (soft delete/restore)
+exports.toggleActivePromo = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { is_active } = req.body;
+    
+    console.log(`Toggling promo ID: ${id} to active: ${is_active}`);
+    
+    const promo = await Promo.findByPk(id, {
+      paranoid: false // Find including soft deleted
+    });
+    
+    if (!promo) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Promo not found' 
+      });
+    }
+    
+    if (is_active) {
+      // Activate: restore from soft delete
+      await promo.restore();
+      console.log(`Promo ID: ${id} activated (restored)`);
+    } else {
+      // Deactivate: soft delete
+      await promo.destroy();
+      console.log(`Promo ID: ${id} deactivated (soft deleted)`);
+    }
+    
+    // Fetch updated promo
+    const updatedPromo = await Promo.findByPk(id, {
+      paranoid: false
+    });
+    
+    const mappedPromo = mapPromoToFrontend(updatedPromo);
+    
+    res.json({
+      success: true,
+      message: `Promo ${is_active ? 'activated' : 'deactivated'} successfully`,
+      data: mappedPromo
+    });
+  } catch (error) {
+    console.error('Error toggling promo active status:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to toggle promo status',
+      error: error.message 
+    });
+  }
+};
+
+// Delete promo by ID (HARD DELETE)
 exports.deletePromo = async (req, res) => {
   try {
-    const promo = await Promo.findByPk(req.params.id, { paranoid: false });
+    const { id } = req.params;
+    console.log(`Hard deleting promo ID: ${id}`);
+    
+    const promo = await Promo.findByPk(id, { 
+      paranoid: false 
+    });
+    
     if (!promo) {
-      return res.status(404).json({ message: 'Promo not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Promo not found' 
+      });
     }
-    await promo.destroy({ force: true }); // <-- HARD DELETE
-    res.json({ message: 'Promo deleted permanently' });
+    
+    // Hard delete (permanent removal)
+    await promo.destroy({ force: true });
+    
+    console.log(`Promo ID: ${id} permanently deleted`);
+    
+    res.json({ 
+      success: true,
+      message: 'Promo deleted permanently' 
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error deleting promo:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to delete promo',
+      error: error.message 
+    });
   }
 };
