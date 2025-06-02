@@ -1,3 +1,4 @@
+// models/Notification.js - Create this file
 'use strict';
 const { Model } = require('sequelize');
 
@@ -7,15 +8,16 @@ module.exports = (sequelize, DataTypes) => {
       // Define associations here if needed
       // Notification.belongsTo(models.Admin, { foreignKey: 'id_admin' });
       // Notification.belongsTo(models.Artikel, { foreignKey: 'id_artikel' });
+      // Notification.belongsTo(models.Promo, { foreignKey: 'promo_id' });
     }
   }
-
+  
   Notification.init({
     id_notifikasi: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
-      allowNull: false,
+      allowNull: false
     },
     type: {
       type: DataTypes.STRING(20),
@@ -24,19 +26,19 @@ module.exports = (sequelize, DataTypes) => {
     },
     title: {
       type: DataTypes.STRING(255),
-      allowNull: true,
+      allowNull: true
     },
     content: {
       type: DataTypes.STRING(255),
-      allowNull: true,
+      allowNull: true
     },
     isi_notif: {
       type: DataTypes.TEXT,
-      allowNull: true,
+      allowNull: true
     },
     footer: {
       type: DataTypes.TEXT,
-      allowNull: true,
+      allowNull: true
     },
     is_read: {
       type: DataTypes.BOOLEAN,
@@ -45,38 +47,27 @@ module.exports = (sequelize, DataTypes) => {
     },
     id_admin: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: true
     },
     id_artikel: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: true
     },
     promo_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    createdAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    updatedAt: {
-      type: DataTypes.DATE,
-      allowNull: true,
+      allowNull: true
     },
     deletedAt: {
       type: DataTypes.DATE,
-      allowNull: true,
-    },
+      allowNull: true
+    }
   }, {
     sequelize,
     modelName: 'Notification',
     tableName: 'tabel_notifikasi',
-    timestamps: true,
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt',
-    paranoid: true,
-    deletedAt: 'deletedAt',
+    paranoid: true, // Enable soft deletes
+    timestamps: true
   });
-
+  
   return Notification;
 };

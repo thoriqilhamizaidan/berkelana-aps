@@ -10,33 +10,36 @@ const NotificationsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
+  
+  // Fetch notifications from API
   const fetchNotifications = async () => {
     try {
       setLoading(true);
       setError(null);
-
+      
       const response = await fetch('http://localhost:3000/api/notifications', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       });
-
+      
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
+      
       const result = await response.json();
-
+      
       if (result.success && result.data) {
         setNotifications(result.data);
       } else {
+        // If no notifications or error, use empty array
         setNotifications([]);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
       setError('Gagal memuat notifikasi');
+      // Use fallback data if API fails
       setNotifications([
         {
           id: 1,
@@ -52,13 +55,16 @@ const NotificationsPage = () => {
       setLoading(false);
     }
   };
-
+  
   useEffect(() => {
     fetchNotifications();
+    
+    // Refresh notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
+    
     return () => clearInterval(interval);
   }, []);
-
+  
   const handleMarkAsRead = async (id) => {
     try {
       const response = await fetch(`http://localhost:3000/api/notifications/${id}/read`, {
@@ -67,28 +73,27 @@ const NotificationsPage = () => {
           'Content-Type': 'application/json',
         },
       });
-
+      
       if (response.ok) {
-        setNotifications(notifications.map(notification =>
+        setNotifications(notifications.map(notification => 
           notification.id === id ? { ...notification, isRead: true } : notification
         ));
-        window.dispatchEvent(new Event("notification-read-updated"));
       } else {
         console.error('Failed to mark notification as read');
-        setNotifications(notifications.map(notification =>
+        // Fallback: update UI anyway
+        setNotifications(notifications.map(notification => 
           notification.id === id ? { ...notification, isRead: true } : notification
         ));
-        window.dispatchEvent(new Event("notification-read-updated"));
       }
     } catch (error) {
       console.error('Error marking notification as read:', error);
-      setNotifications(notifications.map(notification =>
+      // Fallback: update UI anyway
+      setNotifications(notifications.map(notification => 
         notification.id === id ? { ...notification, isRead: true } : notification
       ));
-      window.dispatchEvent(new Event("notification-read-updated"));
     }
   };
-
+  
   const handleMarkAllAsRead = async () => {
     try {
       const response = await fetch('http://localhost:3000/api/notifications/mark-all-read', {
@@ -97,19 +102,18 @@ const NotificationsPage = () => {
           'Content-Type': 'application/json',
         },
       });
-
+      
       if (response.ok) {
         setNotifications(notifications.map(notification => ({ ...notification, isRead: true })));
-        window.dispatchEvent(new Event("notification-read-updated"));
       } else {
         console.error('Failed to mark all notifications as read');
+        // Fallback: update UI anyway
         setNotifications(notifications.map(notification => ({ ...notification, isRead: true })));
-        window.dispatchEvent(new Event("notification-read-updated"));
       }
     } catch (error) {
       console.error('Error marking all notifications as read:', error);
+      // Fallback: update UI anyway
       setNotifications(notifications.map(notification => ({ ...notification, isRead: true })));
-      window.dispatchEvent(new Event("notification-read-updated"));
     }
   };
 
@@ -128,7 +132,7 @@ const NotificationsPage = () => {
 
   const getNotificationBgColor = (type, isRead) => {
     if (isRead) return 'bg-gray-50';
-
+    
     switch (type) {
       case 'reminder':
         return 'bg-blue-50';
@@ -158,11 +162,12 @@ const NotificationsPage = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen font-sans">
+      {/* Header section */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <button
+              <button 
                 onClick={() => navigate(-1)}
                 className="mr-4 text-gray-900 hover:text-emerald-400 transition-colors"
                 aria-label="Go back"
@@ -179,7 +184,7 @@ const NotificationsPage = () => {
               </div>
             </div>
             {notifications.length > 0 && notifications.some(n => !n.isRead) && (
-              <button
+              <button 
                 onClick={handleMarkAllAsRead}
                 className="text-sm text-emerald-500 font-medium hover:text-emerald-600 transition-colors"
                 disabled={loading}
@@ -191,6 +196,7 @@ const NotificationsPage = () => {
         </div>
       </div>
 
+      {/* Error message */}
       {error && (
         <div className="max-w-3xl mx-auto px-4 pt-4">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -199,6 +205,7 @@ const NotificationsPage = () => {
         </div>
       )}
 
+      {/* Notifications container */}
       <div className="max-w-3xl mx-auto px-4 py-6">
         {loading ? (
           <div className="flex justify-center items-center h-64">
@@ -207,7 +214,7 @@ const NotificationsPage = () => {
         ) : notifications.length > 0 ? (
           <div className="space-y-4">
             {notifications.map((notification) => (
-              <div
+              <div 
                 key={notification.id}
                 className={`${getNotificationBgColor(notification.type, notification.isRead)} rounded-lg p-4 cursor-pointer transition-all hover:shadow-md border ${!notification.isRead ? 'border-emerald-200' : 'border-gray-200'}`}
                 onClick={() => handleMarkAsRead(notification.id)}
@@ -237,13 +244,13 @@ const NotificationsPage = () => {
                         )}
                       </div>
                     </div>
-
+                    
                     {notification.details && (
                       <p className={`text-sm ${notification.isRead ? 'text-gray-400' : 'text-gray-600'} mt-2 whitespace-pre-line`}>
                         {notification.details}
                       </p>
                     )}
-
+                    
                     {notification.footer && (
                       <div className={`text-sm ${notification.isRead ? 'text-gray-400' : 'text-gray-600'} mt-3 p-3 bg-white rounded-md border-l-4 ${notification.type === 'promo' ? 'border-purple-400' : 'border-emerald-400'}`}>
                         <p className="font-medium">{notification.footer}</p>
@@ -259,7 +266,7 @@ const NotificationsPage = () => {
             <div className="text-5xl mb-4">📭</div>
             <h3 className="text-xl font-medium text-gray-900">Tidak ada notifikasi</h3>
             <p className="text-gray-600 mt-2">Anda akan menerima notifikasi terkait perjalanan dan promo di sini.</p>
-            <button
+            <button 
               onClick={fetchNotifications}
               className="mt-4 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors"
               disabled={loading}
@@ -269,7 +276,8 @@ const NotificationsPage = () => {
           </div>
         )}
       </div>
-
+      
+      {/* Footer */}
       <Footer />
     </div>
   );
