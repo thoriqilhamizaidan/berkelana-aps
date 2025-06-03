@@ -24,6 +24,9 @@ const uploadFields = upload.fields([
 router.get('/artikel', artikelController.getAll);
 router.get('/artikel/:id', artikelController.getById);
 
+// New route to increment view count - public route (no auth required)
+router.patch('/artikel/:id/increment-views', artikelController.incrementViews);
+
 // Admin only routes - need authentication and admin role
 router.post('/artikel', authenticate, authorizeAdmin, uploadFields, artikelController.create);
 router.put('/artikel/:id', authenticate, authorizeAdmin, uploadFields, artikelController.update);

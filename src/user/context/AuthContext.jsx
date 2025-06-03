@@ -91,14 +91,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const value = {
-    isLoggedIn,
-    user,
-    loading,
-    login,
-    logout,
-    isAdmin,
-    isSuperAdmin
-  };
+  isLoggedIn,
+  user,
+  setUser, // ✅ Tambahkan ini
+  loading,
+  login,
+  logout,
+  isAdmin,
+  isSuperAdmin
+};
+
 
   return (
     <AuthContext.Provider value={value}>

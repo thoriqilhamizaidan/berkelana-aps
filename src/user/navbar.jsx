@@ -250,11 +250,23 @@ const Navbar = () => {
                     type="button"
                   >
                     <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-emerald1 hover:scale-105 ">
-                      <img 
-                        src={user?.avatar || "images/freya.jpeg"} 
-                        alt="User Profile" 
-                        className="w-full h-12 object-cover"
-                      />
+                      
+  {user?.profil_user ? (
+  <img
+    src={user.profil_user.startsWith('http') ? user.profil_user : `http://localhost:3000${user.profil_user}`}
+    alt="User Profile"
+    className="w-full h-12 object-cover"
+    onError={(e) => {
+      e.target.onerror = null;
+      e.target.src = "/images/default-avatar.png";
+    }}
+  />
+) : (
+  <div className="w-full h-full flex items-center justify-center bg-gray-200">
+    <i className="fas fa-user-circle text-3xl text-gray-600"></i>
+  </div>
+)}
+
                     </div>
                   </button>
 
