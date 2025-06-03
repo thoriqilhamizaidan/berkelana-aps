@@ -278,7 +278,7 @@ function AppRoutes() {
 
         <Route path="/promo" element={<PromoPage />} />
         <Route path="/artikel" element={<Artikel />} />
-        <Route path="/artikel/detail" element={<ArtikelDetail />} />
+        <Route path="/artikel/detail/:id" element={<ArtikelDetail />} />
         <Route path="/tentang-kami" element={<TentangKami />} />
         <Route path="/syarat-ketentuan" element={<TermsAndConditions />} />
       </Route>

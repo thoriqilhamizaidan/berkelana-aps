@@ -86,21 +86,23 @@ exports.login = async (req, res) => {
       // Generate token
       const token = generateToken(user, 'user');
 
-      return res.json({
-        success: true,
-        message: 'Login berhasil',
-        role: 'user',
-        token,
-        user: {
-          id: user.id_user,
-          email: user.email_user,
-          nama: user.nama_user,
-          no_hp: user.no_hp_user,
-          alamat: user.alamat_user,
-          gender: user.gender_user,
-          tanggal_lahir: user.tanggallahir_user
-        }
-      });
+        return res.json({
+  success: true,
+  message: 'Login berhasil',
+  role: 'user',
+  token,
+  user: {
+    id: user.id_user,
+    email: user.email_user,
+    nama: user.nama_user,
+    no_hp: user.no_hp_user,
+    alamat: user.alamat_user,
+    gender: user.gender_user,
+    tanggal_lahir: user.tanggallahir_user,
+    avatar: user.profil_user,
+    profil_user: user.profil_user // ✅ Tambahkan baris ini!
+  }
+});
     }
 
     // Check in Admin table
@@ -242,7 +244,8 @@ exports.register = async (req, res) => {
         no_hp: newUser.no_hp_user,
         gender: newUser.gender_user,
         tanggal_lahir: newUser.tanggallahir_user,
-        alamat: newUser.alamat_user
+        alamat: newUser.alamat_user,
+        avatar: newUser.profil_user
       }
     });
 
@@ -630,15 +633,17 @@ exports.updateProfile = async (req, res) => {
       return res.json({
         success: true,
         message: 'Profil berhasil diperbarui',
-        user: {
-          id: user.id_user,
-          email: user.email_user,
-          nama: user.nama_user,
-          no_hp: user.no_hp_user,
-          alamat: user.alamat_user,
-          gender: user.gender_user,
-          tanggal_lahir: user.tanggallahir_user
-        }
+       user: {
+  id: user.id_user,
+  email: user.email_user,
+  nama: user.nama_user,
+  no_hp: user.no_hp_user,
+  alamat: user.alamat_user,
+  gender: user.gender_user,
+  tanggal_lahir: user.tanggallahir_user,
+  avatar: user.profil_user,
+  profil_user: user.profil_user // ✅ Tambahkan ini!
+}
       });
     } else {
       return res.status(403).json({
@@ -652,6 +657,56 @@ exports.updateProfile = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Gagal memperbarui profil',
+      error: error.message
+    });
+  }
+};
+
+// Upload Avatar
+exports.uploadAvatar = async (req, res) => {
+  try {
+    // Check if user is authenticated
+    if (!req.user || req.user.role !== 'user') {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - User login required'
+      });
+    }
+
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tidak ada file yang diupload'
+      });
+    }
+
+    const userId = req.user.id;
+    const filePath = `/uploads/${req.file.filename}`;
+
+    // Update user profile picture
+    await User.update(
+      { profil_user: filePath },
+      { where: { id_user: userId } }
+    );
+
+    // Get updated user data
+    const updatedUser = await User.findByPk(userId, {
+      attributes: { exclude: ['pass_user'] }
+    });
+
+    return res.json({
+      success: true,
+      message: 'Foto profil berhasil diperbarui',
+      avatar: filePath,
+      user: updatedUser
+    });
+
+  } catch (error) {
+    console.error('Upload avatar error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Gagal upload foto profil',
       error: error.message
     });
   }
