@@ -21,6 +21,7 @@ const uploadFields = upload.fields([
 ]);
 
 // Public routes - anyone can view
+
 router.get('/artikel', artikelController.getAll);
 router.get('/artikel/:id', artikelController.getById);
 

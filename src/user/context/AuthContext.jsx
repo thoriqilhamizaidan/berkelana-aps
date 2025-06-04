@@ -24,9 +24,7 @@ export const AuthProvider = ({ children }) => {
       if (token && loggedIn) {
         // Try to get user data from localStorage
         let userData = localStorage.getItem('user');
-        if (!userData) {
-          userData = localStorage.getItem('admin');
-        }
+        
         
         if (userData) {
           try {

@@ -214,13 +214,18 @@ const AdminLayout = () => {
 
 // Protected Route Component for regular users
 const ProtectedRoute = ({ children }) => {
-  const { isLoggedIn, loading } = useAuth();
+  const { isLoggedIn, isAdmin, loading } = useAuth();
 
   if (loading) return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+
   if (!isLoggedIn) return <Navigate to="/daftar-masuk" />;
+
+  // Cegah admin/superadmin mengakses halaman user
+  if (isAdmin()) return <Navigate to="/admin" />;
 
   return children;
 };
+
 
 // ENABLE: AdminProtectedRoute untuk membatasi akses
 const AdminProtectedRoute = ({ children }) => {
@@ -235,6 +240,17 @@ const AdminProtectedRoute = ({ children }) => {
   
   return children;
 };
+
+const HomeRedirect = () => {
+  const { isLoggedIn, isAdmin } = useAuth();
+
+  if (isLoggedIn) {
+    return isAdmin() ? <Navigate to="/admin" /> : <Navigate to="/tiket-saya" />;
+  }
+
+  return <Homepage />;
+};
+
 
 function AppRoutes() {
   return (
@@ -257,7 +273,7 @@ function AppRoutes() {
       } />
 
       <Route element={<MainLayoutWrapper />}>
-        <Route path="/" element={<Homepage />} />
+        <Route path="/" element={<Homepage />}  />
         <Route path="/pesan-tiket" element={<PesanTiket />} />
         <Route path="/cari-tiket" element={<PesanTiket />} />
         <Route path="/pemesanan-1" element={<Pemesanan1 />} />

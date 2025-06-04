@@ -126,31 +126,47 @@ const getArticlesByCategory = async (category) => {
 // Fungsi untuk mendapatkan artikel populer
 const getPopularArticles = async (limit = 6) => {
   try {
+    // First try the specific endpoint
     const response = await fetch(`${API_BASE_URL}/artikel/popular?limit=${limit}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (response.ok) {
+      return await response.json();
     }
-    return await response.json();
+    
+    // If specific endpoint doesn't exist, fallback to general endpoint
+    console.log('Popular endpoint not available, using fallback');
+    const allArticles = await fetchArticles();
+    
+    // Sort by views/popularity (assuming there's a field like 'jumlah_pembaca' or 'views')
+    const sortedArticles = allArticles.sort((a, b) => {
+      const viewsA = a.jumlah_pembaca || a.views || 0;
+      const viewsB = b.jumlah_pembaca || b.views || 0;
+      return viewsB - viewsA;
+    });
+    
+    return sortedArticles.slice(0, limit);
   } catch (error) {
     console.error('Error fetching popular articles:', error);
     throw error;
   }
 };
 
-// Fungsi untuk mendapatkan artikel terbaru
+// Fungsi untuk mendapatkan artikel terbaru - FIXED VERSION
 const getLatestArticles = async (limit = 10) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/artikel/latest?limit=${limit}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return await response.json();
+    const allArticles = await fetchArticles();
+
+    const sortedArticles = allArticles.sort((a, b) => {
+      const dateA = new Date(a.tanggal_publikasi || a.created_at || a.date || 0);
+      const dateB = new Date(b.tanggal_publikasi || b.created_at || b.date || 0);
+      return dateB.getTime() - dateA.getTime(); // Urut dari terbaru ke terlama
+    });
+
+    return sortedArticles.slice(0, limit); // Ambil hanya sesuai limit
   } catch (error) {
-    console.error('Error fetching latest articles:', error);
+    console.error('Error fetching latest articles (fallback):', error);
     throw error;
   }
 };
-
 // Export semua fungsi untuk digunakan di tempat lain
 export default {
   fetchArticles,
