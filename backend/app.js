@@ -13,6 +13,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const artikelRoutes = require('./routes/artikelRoutes');
 const authRoutes = require('./routes/auth');
 const promoRoutes = require('./routes/promoRoutes'); // Merged from main branch
+const transaksiRoutes = require('./routes/transaksiRoutes');
 
 // Middleware
 app.use(cors({
@@ -21,6 +22,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/api', transaksiRoutes);
 
 // Serve static files (images)
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
@@ -100,7 +102,7 @@ app.use((error, req, res, next) => {
       });
     }
   }
-  
+
   console.error(error);
   res.status(500).json({
     success: false,

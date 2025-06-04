@@ -4,6 +4,16 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Promo extends Model {
     static associate(models) {
+      Promo.hasMany(models.tabel_headtransaksi, { 
+        foreignKey: 'id_promo',
+        as: 'HeadTransaksi'
+      });
+      
+      // Relasi dengan Jadwal
+      Promo.hasMany(models.Jadwal, { 
+        foreignKey: 'id_promo',
+        as: 'Jadwal'
+      });
     }
   }
 

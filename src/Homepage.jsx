@@ -4,23 +4,25 @@ import { Link, useNavigate } from 'react-router-dom';
 import Navbar from './user/navbar';
 import Footer from './user/footer';
 
-// Add League Spartan font import - can be placed in the main CSS file as well
-// This is commented out as normally it would be in a separate CSS file
-// but showing how it would be imported
-/*
-@import url('https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700&display=swap');
-
-:root {
-  font-family: 'League Spartan', sans-serif;
-}
-*/
-
 export default function BerkelanaLandingPage() {
   const [currentArticleIndex, setCurrentArticleIndex] = useState(0);
   const [showNotification, setShowNotification] = useState(false);
   const [copiedCode, setCopiedCode] = useState('');
   const navigate = useNavigate();
   const articlesRef = useRef(null);
+  
+  // Search form states
+  const [fromCity, setFromCity] = useState('');
+  const [toCity, setToCity] = useState('');
+  const [departDate, setDepartDate] = useState('');
+  const [accommodation, setAccommodation] = useState('Bus');
+  const [loading, setLoading] = useState(false);
+  
+  // Cities list
+  const cities = [
+    'Jakarta', 'Bandung', 'Surabaya', 'Yogyakarta', 'Malang', 
+    'Semarang', 'Solo', 'Denpasar', 'Makassar', 'Medan'
+  ];
   
   // Sample article data
   const articles = [
@@ -79,6 +81,29 @@ export default function BerkelanaLandingPage() {
       slug: "backpacking-hemat"
     }
   ];
+  
+  // Swap cities function
+  const swapCities = () => {
+    const temp = fromCity;
+    setFromCity(toCity);
+    setToCity(temp);
+  };
+  
+  // Handle search
+  const handleSearch = () => {
+    if (!fromCity || !toCity || !departDate) {
+      alert('Please fill in all fields');
+      return;
+    }
+    
+    setLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      // Navigate to search results or handle search logic
+      console.log('Searching for:', { fromCity, toCity, departDate, accommodation });
+    }, 1500);
+  };
 
   // Handle scrolling articles left and right
   const scrollArticles = (direction) => {
@@ -157,7 +182,7 @@ export default function BerkelanaLandingPage() {
       )}
 
       {/* Hero Section */}
-      <section className="relative h-125 bg-cover bg-center pt-16">
+      <section className="relative h-160 bg-cover bg-center pt-16">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
         <div className="absolute inset-0 z-0">
           {/* Mountain background image */}
@@ -170,70 +195,82 @@ export default function BerkelanaLandingPage() {
           <h1 className="text-5xl font-bold mb-2">Berkelana kemana hari ini?</h1>
           <p className="text-lg mb-12">Bersama Berkelana - Perjalanan Tak Terbatas, Keindahan Tanpa Batas</p>
           
-          {/* Search Form */}
-          <div className="bg-purplelight  rounded-lg p-6 w-full max-w-350">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          {/* Updated Search Form */}
+          <div className="bg-white/90 backdrop-blur-sm rounded-lg p-5 w-full max-w-5xl shadow-lg">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
               <div className="flex flex-col md:col-span-3">
-                <label className="text-gray-600 text-sm mb-1 mr-74">Dari</label>
-                <select className="w-full border border-gray-200 p-3 rounded text-gray-800 appearance-none bg-white" style={fontStyle}>
+                <label className="text-gray-600 text-sm mb-1">Dari</label>
+                <select 
+                  className="w-full border border-gray-300 p-2 rounded text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  value={fromCity}
+                  onChange={(e) => setFromCity(e.target.value)}
+                >
                   <option value="">Pilih Kota</option>
-                  <option value="Jakarta">Jakarta</option>
-                  <option value="Bandung">Bandung</option>
-                  <option value="Surabaya">Surabaya</option>
-                  <option value="Yogyakarta">Yogyakarta</option>
-                  <option value="Malang">Malang</option>
+                  {cities.map((city, index) => (
+                    <option key={index} value={city}>{city}</option>
+                  ))}
                 </select>
               </div>
               
-              {/* Arrow Icon */}
-              <div className="flex items-end justify-center md:col-span-1 pb-3">
-                <ArrowLeftRight className="text-gray-500" size={24} />
+              <div className="flex items-center justify-center md:col-span-1">
+                <button 
+                  onClick={swapCities}
+                  className="text-purple-600 hover:text-purple-800 transition-colors duration-200 mt-5"
+                >
+                  <ArrowLeftRight size={24} />
+                </button>
               </div>
               
               <div className="flex flex-col md:col-span-3">
-                <label className="text-gray-600 text-sm mb-1 mr-76">Ke</label>
-                <select className="w-full border border-gray-200 p-3 rounded text-gray-800 appearance-none bg-white" style={fontStyle}>
+                <label className="text-gray-600 text-sm mb-1">Ke</label>
+                <select 
+                  className="w-full border border-gray-300 p-2 rounded text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  value={toCity}
+                  onChange={(e) => setToCity(e.target.value)}
+                >
                   <option value="">Pilih Kota</option>
-                  <option value="Jakarta">Jakarta</option>
-                  <option value="Bandung">Bandung</option>
-                  <option value="Surabaya">Surabaya</option>
-                  <option value="Yogyakarta">Yogyakarta</option>
-                  <option value="Malang">Malang</option>
+                  {cities.map((city, index) => (
+                    <option key={index} value={city}>{city}</option>
+                  ))}
                 </select>
               </div>
               
               <div className="flex flex-col md:col-span-2">
-                <label className=" relative right-6 text-gray-600 text-sm mb-1 mr-20">Tanggal Pergi</label>
-                <div className="relative">
-                  <input 
-                    type="date" 
-                    placeholder="Pilih Tanggal" 
-                    className="w-full border border-gray-200 bg-white p-3 rounded text-gray-800 appearance-none"
-                    style={fontStyle}
-                  />
-                  <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                </div>
+                <label className="text-gray-600 text-sm mb-1">Tanggal Pergi</label>
+                <input 
+                  type="date" 
+                  className="w-full border border-gray-300 p-2 rounded text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  value={departDate}
+                  onChange={(e) => setDepartDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                />
               </div>
               
               <div className="flex flex-col md:col-span-2">
-                <label className=" text-gray-600 text-sm mb-1 mr-28">Pilih Akomodasi</label>
-                <select className="w-full border border-gray-200 p-3 rounded text-gray-800 appearance-none bg-white" style={fontStyle}>
-                  <option value="">Pilih Akomodasi</option>
-                  <option>Bus</option>
-                  <option>Shuttle</option>
+                <label className="text-gray-600 text-sm mb-1">Akomodasi</label>
+                <select 
+                  className="w-full border border-gray-300 p-2 rounded text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  value={accommodation}
+                  onChange={(e) => setAccommodation(e.target.value)}
+                >
+                  <option value="Bus">Bus</option>
+                  <option value="Shuttle">Shuttle</option>
                 </select>
               </div>
               
               <div className="md:col-span-1 flex items-end">
-                <button className="bg-emerald1 hover:bg-green-600 text-white font-bold p-3 rounded focus:outline-none w-full flex items-center justify-center cursor-pointer">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                  </svg>
-                  Cari
+                <button 
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-500 w-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleSearch}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    </div>
+                  ) : (
+                    <span>Cari</span>
+                  )}
                 </button>
               </div>
             </div>
@@ -319,7 +356,7 @@ export default function BerkelanaLandingPage() {
               Serbu diskon <span className="text-purple-500">#Berkelana</span>
             </h2>
             <button 
-              className="bg-emerald1 text-white px-4 py-2 rounded-lg flex items-center mt-4 md:mt-0 cursor-pointer hover:bg-green-600 transition-colors"
+              className="bg-green-500 text-white px-4 py-2 rounded-lg flex items-center mt-4 md:mt-0 cursor-pointer hover:bg-green-600 transition-colors"
               onClick={goToPromoPage}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -522,7 +559,7 @@ export default function BerkelanaLandingPage() {
     {/* View All Button */}
     <div className="flex justify-center mt-8">
       <button 
-        className="bg-emerald1 text-white px-6 py-3 rounded-lg flex items-center hover:bg-green-600 transition-colors cursor-pointer"
+        className="bg-green-500 text-white px-6 py-3 rounded-lg flex items-center hover:bg-green-600 transition-colors cursor-pointer"
         onClick={goToArticlesPage}
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
