@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Navbar from './navbar';
 import Footer from './footer';
 import { ChevronLeft } from 'lucide-react';
 import { Icon } from '@iconify/react'; 
+import { transaksiService } from '../services/api';
 
 const Pemesanan1 = () => {
   const location = useLocation();
@@ -34,19 +34,171 @@ const Pemesanan1 = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log('Form submitted:', formData);
-    // Navigate to next page
-    navigate('/pemesanan-2', { state: { ticket, formData } });
+    
+    // Validasi form
+    if (!formData.namaPesanan || !formData.noHandphone || !formData.email || !formData.namaPenumpang1) {
+      alert('Mohon lengkapi semua data yang wajib diisi');
+      return;
+    }
+
+    try {
+      // Hitung jumlah penumpang
+      const passengerCount = [
+        formData.namaPenumpang1,
+        formData.namaPenumpang2,
+        formData.namaPenumpang3
+      ].filter(Boolean).length;
+
+      // Hitung total
+      const ticketPrice = ticket?.harga || 150000;
+      const baseTotal = ticketPrice * passengerCount;
+      const adminFee = 10000;
+      const totalAmount = baseTotal + adminFee;
+
+      // Data untuk head transaksi
+      const headTransaksiData = {
+        nama_pemesan: formData.namaPesanan,
+        no_hp_pemesan: formData.noHandphone,
+        email_pemesan: formData.email,
+        total: totalAmount,
+        status: 'pending',
+        potongan: 0
+      };
+
+      console.log('Sending head transaksi data:', headTransaksiData);
+      console.log('Ticket data:', ticket);
+
+      // Simpan head transaksi
+      const headResponse = await transaksiService.createHeadTransaksi(headTransaksiData);
+      
+      console.log('Head transaksi created:', headResponse);
+
+      if (headResponse.success) {
+        // Navigate ke pemesanan-2 dengan id_headtransaksi
+        navigate('/pemesanan-2', { 
+          state: { 
+            ticket, 
+            formData,
+            id_headtransaksi: headResponse.data.id_headtransaksi,
+            totalAmount: totalAmount
+          } 
+        });
+      } else {
+        throw new Error(headResponse.message || 'Gagal menyimpan data pemesanan');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      alert('Gagal menyimpan data pemesanan. Silakan coba lagi.');
+    }
   };
+
+  // Helper functions untuk booking summary
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Tanggal tidak tersedia';
+    const date = new Date(dateString);
+    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
+                   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    
+    const dayName = days[date.getDay()];
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    
+    return `${dayName}, ${day} ${month} ${year}`;
+  };
+
+  const formatTime = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('id-ID', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: false 
+    });
+  };
+
+  const calculateDuration = (startTime, endTime) => {
+    if (!startTime || !endTime) {
+      // Fallback ke field durasi dari database jika ada
+      if (ticket?.durasi) {
+        return `${ticket.durasi} jam`;
+      }
+      return 'N/A';
+    }
+    
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    const diffMs = end - start;
+    
+    if (diffMs <= 0) return 'N/A';
+    
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours === 0) {
+      return `${minutes} menit`;
+    } else if (minutes === 0) {
+      return `${hours} jam`;
+    } else {
+      return `${hours} jam ${minutes} menit`;
+    }
+  };
+
+  const getFacilityIcon = (facilityName) => {
+    const facilityIcons = {
+      'AC': 'mynaui:air-conditioner-solid',
+      'Air Conditioner': 'mynaui:air-conditioner-solid',
+      'Hiburan Sentral': 'f7:tv-fill',
+      'TV': 'f7:tv-fill',
+      'Entertainment': 'f7:tv-fill',
+      'Wi-Fi': 'material-symbols:wifi-rounded',
+      'WiFi': 'material-symbols:wifi-rounded',
+      'Internet': 'material-symbols:wifi-rounded',
+      'Kursi Recliner': 'ph:seat-fill',
+      'Recliner': 'ph:seat-fill',
+      'Reclining Seat': 'ph:seat-fill',
+      'Seat': 'ph:seat-fill',
+      'Selimut': 'material-symbols:bed',
+      'Blanket': 'material-symbols:bed',
+      'Snack': 'tabler:bottle-filled',
+      'Mineral dan Snack': 'tabler:bottle-filled',
+      'Food': 'tabler:bottle-filled',
+      'Mineral': 'tabler:bottle-filled'
+    };
+
+    const facilityNameLower = facilityName.toLowerCase();
+    const exactMatch = Object.keys(facilityIcons).find(key => 
+      key.toLowerCase() === facilityNameLower
+    );
+    
+    if (exactMatch) {
+      return facilityIcons[exactMatch];
+    }
+    
+    const partialMatch = Object.keys(facilityIcons).find(key => 
+      facilityNameLower.includes(key.toLowerCase()) ||
+      key.toLowerCase().includes(facilityNameLower)
+    );
+    
+    if (partialMatch) {
+      return facilityIcons[partialMatch];
+    }
+    
+    return 'material-symbols:check-circle';
+  };
+
+  // Calculate passenger count for summary
+  const passengerCount = [
+    formData.namaPenumpang1,
+    formData.namaPenumpang2,
+    formData.namaPenumpang3
+  ].filter(Boolean).length || 1; // Minimum 1 passenger
 
   return (
     <>
-      
-      
-      {/* Simplified container structure - removed redundant containers */}
       <div className="max-w-6xl mx-auto py-6 px-4">
         {/* Back button and title */}
         <div className="flex items-center mb-4">
@@ -306,66 +458,110 @@ const Pemesanan1 = () => {
             </form>
           </div>
           
-          {/* Right Side - Booking Summary */}
+          {/* Right Side - Dynamic Booking Summary */}
           <div className="lg:col-span-1">
             <div className="bg-purple-100 rounded-lg p-4 sticky top-4">
-              <h3 className="font-bold text-lg mb-3">Selasa, 29 April 2025</h3>
+              <h3 className="font-bold text-lg mb-3">
+                {formatDate(ticket?.waktu_keberangkatan)}
+              </h3>
               
               <div className="space-y-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="font-bold text-black">GROGOL</div>
-                    <div className="text-sm text-gray-600">04:20</div>
+                    <div className="font-bold text-black">
+                      {ticket?.kota_awal?.toUpperCase() || 'KOTA ASAL'}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {formatTime(ticket?.waktu_keberangkatan)}
+                    </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      JI Plaza Mayjen<br />
-                      Raya No.111
+                      Terminal {ticket?.kota_awal || 'N/A'}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-black">CIAMPELAS</div>
-                    <div className="text-sm text-gray-600">09:50</div>
+                    <div className="font-bold text-black">
+                      {ticket?.kota_tujuan?.toUpperCase() || 'KOTA TUJUAN'}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {formatTime(ticket?.waktu_sampai)}
+                    </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      Jl. Ciampelas No GHI
+                      Terminal {ticket?.kota_tujuan || 'N/A'}
                     </div>
                   </div>
                 </div>
                 
                 <div className="text-sm text-gray-700 mt-3">
-                  Estimasi waktu: 5 jam perjalanan
+                  Estimasi waktu: {calculateDuration(ticket?.waktu_keberangkatan, ticket?.waktu_sampai)}
                 </div>
                 
                 <div className="pt-3 border-t">
-                  <div className="font-bold mb-1">Tipe Bus: Largest</div>
-                  <div className="text-sm text-gray-700">Kapasitas kursi: 28 kursi</div>
-                  <div className="text-sm text-gray-700">Format kursi: 2-2</div>
+                  <div className="font-bold mb-1">
+                    Tipe Bus: {ticket?.kendaraan?.tipe_armada || ticket?.busType || 'N/A'}
+                  </div>
+                  <div className="text-sm text-gray-700">
+                    Kapasitas kursi: {ticket?.kendaraan?.kapasitas_kursi || 'N/A'} kursi
+                  </div>
+                  <div className="text-sm text-gray-700">
+                    Format kursi: {ticket?.kendaraan?.format_kursi || 'N/A'}
+                  </div>
+                  {ticket?.kendaraan?.nomor_armada && (
+                    <div className="text-sm text-gray-700">
+                      Nomor armada: {ticket.kendaraan.nomor_armada}
+                    </div>
+                  )}
                 </div>
                 
                 <div className="pt-3 border-t">
                   <div className="font-bold mb-1">Fasilitas:</div>
                   <div className="grid grid-cols-2 gap-1 text-sm">
-                    <div className="flex items-center">
-                      <Icon icon="mynaui:air-conditioner-solid" className="w-4 h-4 mr-1 text-purple-600" />
-                      <span>AC</span>
+                    {ticket?.kendaraan?.fasilitas && ticket.kendaraan.fasilitas.length > 0 ? (
+                      ticket.kendaraan.fasilitas.slice(0, 6).map((facility, index) => (
+                        <div key={index} className="flex items-center">
+                          <Icon 
+                            icon={getFacilityIcon(facility)} 
+                            className="w-4 h-4 mr-1 text-purple-600" 
+                          />
+                          <span>{facility}</span>
+                        </div>
+                      ))
+                    ) : ticket?.amenities && ticket.amenities.length > 0 ? (
+                      ticket.amenities.slice(0, 6).map((amenity, index) => (
+                        <div key={index} className="flex items-center">
+                          <Icon 
+                            icon={getFacilityIcon(amenity)} 
+                            className="w-4 h-4 mr-1 text-purple-600" 
+                          />
+                          <span>{amenity}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="flex items-center col-span-2">
+                        <Icon 
+                          icon="material-symbols:info" 
+                          className="w-4 h-4 mr-1 text-purple-600" 
+                        />
+                        <span className="text-gray-500">Fasilitas tidak tersedia</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Pricing Summary */}
+                <div className="pt-3 border-t">
+                  <div className="font-bold mb-1">Rincian Harga:</div>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span>Harga tiket ({passengerCount}x)</span>
+                      <span>Rp {((ticket?.harga || 150000) * passengerCount).toLocaleString()}</span>
                     </div>
-                    <div className="flex items-center">
-                      <Icon icon="f7:tv-fill" className="w-4 h-4 mr-1 text-purple-600" />
-                      <span>Hiburan Sentral</span>
+                    <div className="flex justify-between">
+                      <span>Biaya admin</span>
+                      <span>Rp 10.000</span>
                     </div>
-                    <div className="flex items-center">
-                      <Icon icon="material-symbols:wifi-rounded" className="w-4 h-4 mr-1 text-purple-600" />
-                      <span>Wi-Fi</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Icon icon="ph:seat-fill" className="w-4 h-4 mr-1 text-purple-600" />
-                      <span>Kursi Recliner</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Icon icon="material-symbols:bed" className="w-4 h-4 mr-1 text-purple-600" />
-                      <span>Selimut</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Icon icon="tabler:bottle-filled" className="w-4 h-4 mr-1 text-purple-600" />
-                      <span>Mineral dan Snack</span>
+                    <div className="flex justify-between font-bold pt-1 border-t">
+                      <span>Total</span>
+                      <span>Rp {((ticket?.harga || 150000) * passengerCount + 10000).toLocaleString()}</span>
                     </div>
                   </div>
                 </div>

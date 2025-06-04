@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import Navbar from './navbar';
 import Footer from './footer';
 import { ChevronLeft } from 'lucide-react';
+import { transaksiService } from '../services/api';
 
 const Pemesanan2 = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { ticket, formData } = location.state || {};
+  const { ticket, formData, id_headtransaksi, totalAmount } = location.state || {};
   
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [passengerSeats, setPassengerSeats] = useState({});
@@ -120,25 +120,113 @@ const Pemesanan2 = () => {
     setActivePassenger(passenger);
   };
   
-  const handleSubmit = () => {
-    // Check if all passengers have seats assigned
+  const handleSubmit = async () => {
+    // Validasi dasar
     const allSeatsAssigned = Object.values(passengerSeats).every(seat => seat !== null);
     
     if (!allSeatsAssigned) {
       alert('Silahkan pilih kursi untuk semua penumpang');
       return;
     }
-    
-    // Process payment or navigate to payment page
-    console.log('Proceeding to payment with seats:', passengerSeats);
-    navigate('/pembayaran', { 
-      state: { 
-        ticket, 
-        formData, 
-        passengerSeats,
-        totalPrice: calculateTotal()
-      } 
-    });
+  
+    if (!id_headtransaksi) {
+      alert('Data pemesanan tidak ditemukan. Silakan ulangi dari awal.');
+      navigate('/pemesanan-1');
+      return;
+    }
+  
+    // TAMBAHAN: Validasi ticket
+    if (!ticket?.id_jadwal && !ticket?.id) {
+      alert('Data jadwal tidak valid. Silakan pilih tiket ulang.');
+      navigate('/pesan-tiket');
+      return;
+    }
+  
+    try {
+      console.log('Processing seat selection and detail transaksi...');
+
+      // Siapkan data detail transaksi untuk setiap penumpang
+      const detailTransaksiData = [];
+      
+      // Penumpang 1
+      if (formData?.namaPenumpang1 && passengerSeats[formData.namaPenumpang1]) {
+        detailTransaksiData.push({
+          id_headtransaksi: id_headtransaksi,
+          id_jadwal: (() => {
+          const jadwalId = ticket?.id_jadwal || ticket?.id || ticket?.jadwal?.id_jadwal;
+          console.log('Using jadwal ID:', jadwalId, 'from ticket:', ticket);
+          return jadwalId;
+        })(),
+          nama_penumpang: formData.namaPenumpang1,
+          gender: formData.jenisKelamin1,
+          harga_kursi: ticket?.harga || 150000,
+          nomor_kursi: passengerSeats[formData.namaPenumpang1]
+        });
+      }
+
+      // Penumpang 2
+      if (formData?.namaPenumpang2 && passengerSeats[formData.namaPenumpang2]) {
+        detailTransaksiData.push({
+          id_headtransaksi: id_headtransaksi,
+          id_jadwal: (() => {
+          const jadwalId = ticket?.id_jadwal || ticket?.id || ticket?.jadwal?.id_jadwal;
+          console.log('Using jadwal ID:', jadwalId, 'from ticket:', ticket);
+          return jadwalId;
+        })(),
+          nama_penumpang: formData.namaPenumpang2,
+          gender: formData.jenisKelamin2,
+          harga_kursi: ticket?.harga || 150000,
+          nomor_kursi: passengerSeats[formData.namaPenumpang2]
+        });
+      }
+
+      // Penumpang 3
+      if (formData?.namaPenumpang3 && passengerSeats[formData.namaPenumpang3]) {
+        detailTransaksiData.push({
+          id_headtransaksi: id_headtransaksi,
+          id_jadwal: (() => {
+          const jadwalId = ticket?.id_jadwal || ticket?.id || ticket?.jadwal?.id_jadwal;
+          console.log('Using jadwal ID:', jadwalId, 'from ticket:', ticket);
+          return jadwalId;
+        })(),
+          nama_penumpang: formData.namaPenumpang3,
+          gender: formData.jenisKelamin3,
+          harga_kursi: ticket?.harga || 150000,
+          nomor_kursi: passengerSeats[formData.namaPenumpang3]
+        });
+      }
+
+      console.log('Detail transaksi data:', detailTransaksiData);
+
+      // Simpan semua detail transaksi
+      const detailResponse = await transaksiService.createMultipleDetailTransaksi(detailTransaksiData);
+      
+      console.log('Detail transaksi created:', detailResponse);
+
+      // Update total di head transaksi
+      const finalTotal = calculateTotal();
+      await transaksiService.updateHeadTransaksi(id_headtransaksi, {
+        total: finalTotal
+      });
+
+      console.log('Head transaksi updated with total:', finalTotal);
+
+      // Navigate to payment page
+      navigate('/pembayaran', { 
+        state: { 
+          ticket, 
+          formData, 
+          passengerSeats,
+          id_headtransaksi: id_headtransaksi,
+          totalPrice: finalTotal,
+          detailTransaksi: detailTransaksiData
+        } 
+      });
+
+    } catch (error) {
+      console.error('Error processing seat selection:', error);
+      alert('Gagal menyimpan pilihan kursi. Silakan coba lagi.');
+    }
   };
   
   // Get the passenger who selected this seat (if any)

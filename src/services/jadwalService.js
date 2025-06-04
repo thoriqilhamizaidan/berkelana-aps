@@ -83,20 +83,26 @@ class JadwalService {
   }
 
   // Get filtered jadwal data based on filters
-  async getJadwalByFilter(filters) {
-    try {
-      const params = new URLSearchParams();
-      Object.keys(filters).forEach(key => {
-        if (filters[key]) params.append(key, filters[key]);
-      });
+async getJadwalByFilter(filters) {
+  try {
+    const params = new URLSearchParams();
+    Object.keys(filters).forEach(key => {
+      if (filters[key]) params.append(key, filters[key]);
+    });
 
-      const response = await apiClient.get(`/jadwal/filter?${params.toString()}`);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching filtered jadwal:', error);
-      throw error;
-    }
+    console.log('Request URL:', `/jadwal/filter?${params.toString()}`);
+    const response = await apiClient.get(`/jadwal/filter?${params.toString()}`);
+    console.log('Raw response:', response);
+    
+    // Pastikan return data yang benar
+    return {
+      data: response.data?.data || []
+    };
+  } catch (error) {
+    console.error('Error fetching filtered jadwal:', error);
+    throw error;
   }
+}
 
   // Create a new jadwal
   async createJadwal(jadwalData) {

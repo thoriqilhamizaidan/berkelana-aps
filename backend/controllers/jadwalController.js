@@ -8,7 +8,18 @@ const getAllJadwal = async (req, res) => {
     const jadwal = await Jadwal.findAll({
       include: [{
         model: Kendaraan,
-        attributes: ['id_kendaraan', 'tipe_armada', 'nomor_armada', 'nomor_kendaraan']
+        as: 'Kendaraan', // ✅ TAMBAHKAN ALIAS
+        attributes: [
+          'id_kendaraan', 
+          'tipe_armada', 
+          'nomor_armada', 
+          'nomor_kendaraan', 
+          'format_kursi', 
+          'kapasitas_kursi', 
+          'fasilitas',
+          'nama_kondektur',
+          'nomor_kondektur'
+        ]
       }],
       order: [['waktu_keberangkatan', 'ASC']]
     });
@@ -36,7 +47,18 @@ const getJadwalById = async (req, res) => {
     const jadwal = await Jadwal.findByPk(id, {
       include: [{
         model: Kendaraan,
-        attributes: ['id_kendaraan', 'tipe_armada', 'nomor_armada', 'nomor_kendaraan', 'nama_kondektur', 'nomor_kondektur']
+        as: 'Kendaraan', // ✅ TAMBAHKAN ALIAS
+        attributes: [
+          'id_kendaraan', 
+          'tipe_armada', 
+          'nomor_armada', 
+          'nomor_kendaraan', 
+          'format_kursi', 
+          'kapasitas_kursi', 
+          'fasilitas',
+          'nama_kondektur',
+          'nomor_kondektur'
+        ]
       }]
     });
     
@@ -104,11 +126,22 @@ const createJadwal = async (req, res) => {
       id_promo: id_promo || null
     });
 
-    // Fetch dengan relasi
+    // Fetch dengan relasi yang lengkap
     const newJadwal = await Jadwal.findByPk(jadwal.id_jadwal, {
       include: [{
         model: Kendaraan,
-        attributes: ['id_kendaraan', 'tipe_armada', 'nomor_armada', 'nomor_kendaraan']
+        as: 'Kendaraan', // ✅ TAMBAHKAN ALIAS
+        attributes: [
+          'id_kendaraan', 
+          'tipe_armada', 
+          'nomor_armada', 
+          'nomor_kendaraan', 
+          'format_kursi', 
+          'kapasitas_kursi', 
+          'fasilitas',
+          'nama_kondektur',
+          'nomor_kondektur'
+        ]
       }]
     });
 
@@ -175,11 +208,22 @@ const updateJadwal = async (req, res) => {
 
     await jadwal.update(updateData);
 
-    // Fetch updated dengan relasi
+    // Fetch updated dengan relasi yang lengkap
     const updatedJadwal = await Jadwal.findByPk(id, {
       include: [{
         model: Kendaraan,
-        attributes: ['id_kendaraan', 'tipe_armada', 'nomor_armada', 'nomor_kendaraan']
+        as: 'Kendaraan', // ✅ TAMBAHKAN ALIAS
+        attributes: [
+          'id_kendaraan', 
+          'tipe_armada', 
+          'nomor_armada', 
+          'nomor_kendaraan', 
+          'format_kursi', 
+          'kapasitas_kursi', 
+          'fasilitas',
+          'nama_kondektur',
+          'nomor_kondektur'
+        ]
       }]
     });
 
@@ -232,22 +276,38 @@ const deleteJadwal = async (req, res) => {
 const getJadwalByFilter = async (req, res) => {
   try {
     const { kota_awal, kota_tujuan, tanggal, tipe_armada } = req.query;
+    console.log('Filter params:', { kota_awal, kota_tujuan, tanggal, tipe_armada });
+    
     const where = {};
 
-    if (kota_awal) where.kota_awal = { [Op.like]: `%${kota_awal}%` };
-    if (kota_tujuan) where.kota_tujuan = { [Op.like]: `%${kota_tujuan}%` };
+    // Filter kota
+    if (kota_awal) {
+      where.kota_awal = kota_awal;
+    }
+    if (kota_tujuan) {
+      where.kota_tujuan = kota_tujuan;
+    }
+    
+    // Filter tanggal
     if (tanggal) {
       const startDate = new Date(tanggal);
       startDate.setHours(0, 0, 0, 0);
       const endDate = new Date(tanggal);
       endDate.setHours(23, 59, 59, 999);
       where.waktu_keberangkatan = { [Op.between]: [startDate, endDate] };
+    } else {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      where.waktu_keberangkatan = { [Op.gte]: today };
     }
 
+    // Include kendaraan dengan filter tipe_armada jika ada
     const include = [{
       model: Kendaraan,
-      attributes: ['id_kendaraan', 'tipe_armada', 'nomor_armada', 'nomor_kendaraan'],
-      where: tipe_armada ? { tipe_armada } : {}
+      as: 'Kendaraan', // ✅ TAMBAHKAN ALIAS
+      attributes: ['id_kendaraan', 'tipe_armada', 'nomor_armada', 'nomor_kendaraan', 'format_kursi', 'kapasitas_kursi', 'fasilitas'],
+      where: tipe_armada ? { tipe_armada } : {},
+      required: true
     }];
 
     const jadwal = await Jadwal.findAll({
@@ -255,6 +315,8 @@ const getJadwalByFilter = async (req, res) => {
       include,
       order: [['waktu_keberangkatan', 'ASC']]
     });
+
+    console.log(`Found ${jadwal.length} jadwal`);
 
     res.status(200).json({
       success: true,
