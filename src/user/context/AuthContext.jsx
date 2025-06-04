@@ -24,9 +24,7 @@ export const AuthProvider = ({ children }) => {
       if (token && loggedIn) {
         // Try to get user data from localStorage
         let userData = localStorage.getItem('user');
-        if (!userData) {
-          userData = localStorage.getItem('admin');
-        }
+        
         
         if (userData) {
           try {
@@ -91,14 +89,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const value = {
-    isLoggedIn,
-    user,
-    loading,
-    login,
-    logout,
-    isAdmin,
-    isSuperAdmin
-  };
+  isLoggedIn,
+  user,
+  setUser, // ✅ Tambahkan ini
+  loading,
+  login,
+  logout,
+  isAdmin,
+  isSuperAdmin
+};
+
 
   return (
     <AuthContext.Provider value={value}>

@@ -1,10 +1,20 @@
 // src/services/authService.js
+
+// Try different ports - update this based on where your backend is actually running
 const API_URL = 'http://localhost:3000/api';
+
+// Common alternatives if 3000 doesn't work:
+// const API_URL = 'http://localhost:5000/api';  // Very common for Express servers
+// const API_URL = 'http://localhost:8000/api';  // Common for Python/Django
+// const API_URL = 'http://localhost:3001/api';  // If React is on 3000
+// const API_URL = 'http://localhost:4000/api';  // Another common choice
 
 class AuthService {
   // Login
   async login(email, password) {
     try {
+      console.log('Attempting to connect to:', `${API_URL}/login`); // Debug log
+      
       const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: {
@@ -12,6 +22,11 @@ class AuthService {
         },
         body: JSON.stringify({ email, password }),
       });
+
+      // Check if the response is ok
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       
@@ -24,13 +39,23 @@ class AuthService {
       return data;
     } catch (error) {
       console.error('Login error:', error);
-      throw new Error('Network error');
+      
+      // More specific error messages
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Cannot connect to server. Please check if the server is running.');
+      } else if (error.message.includes('HTTP error')) {
+        throw new Error(`Server error: ${error.message}`);
+      } else {
+        throw new Error('Network error');
+      }
     }
   }
 
   // Register
   async register(userData) {
     try {
+      console.log('Attempting to connect to:', `${API_URL}/register`); // Debug log
+      
       const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
         headers: {
@@ -38,6 +63,10 @@ class AuthService {
         },
         body: JSON.stringify(userData),
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       
@@ -50,7 +79,14 @@ class AuthService {
       return data;
     } catch (error) {
       console.error('Register error:', error);
-      throw new Error('Network error');
+      
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Cannot connect to server. Please check if the server is running.');
+      } else if (error.message.includes('HTTP error')) {
+        throw new Error(`Server error: ${error.message}`);
+      } else {
+        throw new Error('Network error');
+      }
     }
   }
 
@@ -65,10 +101,19 @@ class AuthService {
         body: JSON.stringify({ email }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       return await response.json();
     } catch (error) {
       console.error('Forgot password error:', error);
-      throw new Error('Network error');
+      
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Cannot connect to server. Please check if the server is running.');
+      } else {
+        throw new Error('Network error');
+      }
     }
   }
 
@@ -83,10 +128,19 @@ class AuthService {
         body: JSON.stringify({ email, otp }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       return await response.json();
     } catch (error) {
       console.error('Verify OTP error:', error);
-      throw new Error('Network error');
+      
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Cannot connect to server. Please check if the server is running.');
+      } else {
+        throw new Error('Network error');
+      }
     }
   }
 
@@ -101,10 +155,19 @@ class AuthService {
         body: JSON.stringify({ email, resetToken, newPassword }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       return await response.json();
     } catch (error) {
       console.error('Reset password error:', error);
-      throw new Error('Network error');
+      
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Cannot connect to server. Please check if the server is running.');
+      } else {
+        throw new Error('Network error');
+      }
     }
   }
 
@@ -121,10 +184,19 @@ class AuthService {
         body: JSON.stringify({ currentPassword, newPassword }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       return await response.json();
     } catch (error) {
       console.error('Change password error:', error);
-      throw new Error('Network error');
+      
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Cannot connect to server. Please check if the server is running.');
+      } else {
+        throw new Error('Network error');
+      }
     }
   }
 
@@ -139,10 +211,19 @@ class AuthService {
         body: JSON.stringify({ email }),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       return await response.json();
     } catch (error) {
       console.error('Resend OTP error:', error);
-      throw new Error('Network error');
+      
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Cannot connect to server. Please check if the server is running.');
+      } else {
+        throw new Error('Network error');
+      }
     }
   }
 
@@ -157,10 +238,19 @@ class AuthService {
         },
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       return await response.json();
     } catch (error) {
       console.error('Get profile error:', error);
-      throw new Error('Network error');
+      
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Cannot connect to server. Please check if the server is running.');
+      } else {
+        throw new Error('Network error');
+      }
     }
   }
 
@@ -177,10 +267,19 @@ class AuthService {
         body: JSON.stringify(profileData),
       });
 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       return await response.json();
     } catch (error) {
       console.error('Update profile error:', error);
-      throw new Error('Network error');
+      
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error('Cannot connect to server. Please check if the server is running.');
+      } else {
+        throw new Error('Network error');
+      }
     }
   }
 
@@ -204,6 +303,18 @@ class AuthService {
   // Get token
   getToken() {
     return localStorage.getItem('token');
+  }
+
+  // Test connection method
+  async testConnection() {
+    try {
+      const response = await fetch(`${API_URL}/health`, {
+        method: 'GET',
+      });
+      return response.ok;
+    } catch (error) {
+      return false;
+    }
   }
 }
 

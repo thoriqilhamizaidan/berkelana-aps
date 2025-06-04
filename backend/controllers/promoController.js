@@ -2,6 +2,7 @@
 
 const db = require('../models');
 const Promo = db.Promo;
+const notificationController = require('./NotificationController');
 
 // Helper function to map database fields to frontend expected fields
 const mapPromoToFrontend = (promo) => {
@@ -111,6 +112,15 @@ exports.createPromo = async (req, res) => {
     console.log('Created promo:', promo.toJSON());
     
     const mappedPromo = mapPromoToFrontend(promo);
+    
+    // Create notification for new promo
+    try {
+      await notificationController.createPromoNotification(mappedPromo);
+      console.log('Notification created for new promo');
+    } catch (notifError) {
+      console.error('Error creating promo notification:', notifError);
+      // Don't fail the promo creation if notification fails
+    }
     
     res.status(201).json({
       success: true,

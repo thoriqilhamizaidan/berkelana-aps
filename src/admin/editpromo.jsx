@@ -23,7 +23,6 @@ const EditPromo = ({ promo, onSubmit, onCancel, loading }) => {
     code: '',
     potongan: '',
     berlakuHingga: '',
-    id_admin: '',
     image: null,         // File object (if new)
     imagePreview: null,  // For preview and to show current image
   });
@@ -37,7 +36,6 @@ const EditPromo = ({ promo, onSubmit, onCancel, loading }) => {
         code: promo.code || '',
         potongan: promo.potongan || '',
         berlakuHingga: toDatetimeLocal(promo.berlakuHingga),
-        id_admin: promo.id_admin || '',
         image: null, // always reset file input on edit open
         imagePreview: promo.image || null,
       });
@@ -161,19 +159,6 @@ const EditPromo = ({ promo, onSubmit, onCancel, loading }) => {
                 type="datetime-local"
                 name="berlakuHingga"
                 value={formData.berlakuHingga}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg"
-                disabled={loading}
-              />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-600 mb-3">
-                ID Admin
-              </label>
-              <input
-                type="number"
-                name="id_admin"
-                value={formData.id_admin}
                 onChange={handleInputChange}
                 className="w-full px-4 py-3 border bg-white border-purple-400 rounded-lg"
                 disabled={loading}

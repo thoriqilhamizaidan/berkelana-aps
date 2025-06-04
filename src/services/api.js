@@ -2,11 +2,11 @@
 import kendaraanService from './kendaraanService';
 import jadwalService from './jadwalService';
 import authService from './authService';
-import transaksiService from './transaksiService'; // ✅ HAPUS KURUNG KURAWAL
+import artikelService from './artikelService'; // ✅ Menggunakan versi dari main
 
 export {
   kendaraanService,
   jadwalService,
   authService,
-  transaksiService,
+  artikelService
 };

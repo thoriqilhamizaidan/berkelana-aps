@@ -2,10 +2,20 @@ import React, { useState } from 'react';
 import { LogOut } from 'lucide-react';
 import { Icon } from '@iconify/react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../user/context/AuthContext';
 
 const Sidebar = ({ activeMenu, setActiveMenu, userRole = null }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
+  const { logout } = useAuth(); // ✅ gunakan logout dari AuthContext
+
+  // Fungsi logout
+  const handleLogout = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    logout(); // hapus data auth
+    navigate('/'); // arahkan ke homepage yang belum login
+  };
 
   // Fungsi untuk mendapatkan role user yang benar
   const getCurrentUserRole = () => {
@@ -194,26 +204,25 @@ const Sidebar = ({ activeMenu, setActiveMenu, userRole = null }) => {
         {/* Logout Button */}
         <div className={`absolute bottom-0 ${isCollapsed ? 'w-20' : 'w-72'} p-6 transition-all duration-500`}>
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              localStorage.removeItem('admin');
-              localStorage.removeItem('user');
-              sessionStorage.clear();
-              navigate('/');
-            }}
-            className={`flex items-center ${
-              isCollapsed ? 'justify-center p-3' : 'space-x-3 px-4 py-3'
-            } text-gray-500 hover:text-red-500 transition-all duration-300 ease-in-out rounded-xl hover:bg-red-50 hover:shadow-md hover:shadow-red-100/50 group w-full`}
-            title={isCollapsed ? 'Log out' : ''}
-          >
-            <LogOut
-              size={isCollapsed ? 18 : 20}
-              className="transition-all duration-300 group-hover:transform group-hover:scale-110"
-            />
-            {!isCollapsed && (
-              <span className="font-medium text-sm transition-all duration-300">Log out</span>
-            )}
-          </button>
+  onClick={(e) => {
+    e.stopPropagation();
+    // Gunakan fungsi logout dari AuthContext (lebih terkontrol!)
+    logout();
+    navigate('/'); // Arahkan ke homepage
+  }}
+  className={`flex items-center ${
+    isCollapsed ? 'justify-center p-3' : 'space-x-3 px-4 py-3'
+  } text-gray-500 hover:text-red-500 transition-all duration-300 ease-in-out rounded-xl hover:bg-red-50 hover:shadow-md hover:shadow-red-100/50 group w-full`}
+  title={isCollapsed ? 'Log out' : ''}
+>
+  <LogOut
+    size={isCollapsed ? 18 : 20}
+    className="transition-all duration-300 group-hover:transform group-hover:scale-110"
+  />
+  {!isCollapsed && (
+    <span className="font-medium text-sm transition-all duration-300">Log out</span>
+  )}
+</button>
         </div>
       </div>
     </>

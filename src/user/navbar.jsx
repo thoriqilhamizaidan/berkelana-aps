@@ -1,4 +1,4 @@
-// src/user/navbar.jsx (updated)
+// src/user/navbar.jsx (updated with dynamic notification count)
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { BellIcon } from 'lucide-react';
@@ -10,6 +10,7 @@ const Navbar = () => {
   const { isLoggedIn, logout, user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const dropdownRef = useRef(null);
   
   // Tutup menu dropdown ketika rute berubah
@@ -36,6 +37,67 @@ const Navbar = () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showProfileMenu]);
+  
+  // Fetch unread notification count
+  const fetchUnreadNotificationCount = async () => {
+    if (!isLoggedIn) {
+      setUnreadNotificationCount(0);
+      return;
+    }
+    
+    try {
+      const response = await fetch('http://localhost:3000/api/notifications', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data) {
+          const unreadCount = result.data.filter(notification => !notification.isRead).length;
+          setUnreadNotificationCount(unreadCount);
+        } else {
+          setUnreadNotificationCount(0);
+        }
+      } else {
+        // Fallback - set to 0 if API fails
+        setUnreadNotificationCount(0);
+      }
+    } catch (error) {
+      console.error('Error fetching notification count:', error);
+      // Fallback - set to 0 if API fails
+      setUnreadNotificationCount(0);
+    }
+  };
+
+  // Effect untuk fetch notification count ketika user login/logout
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchUnreadNotificationCount();
+      
+      // Set interval untuk refresh notification count setiap 30 detik
+      const interval = setInterval(fetchUnreadNotificationCount, 30000);
+      
+      // Cleanup interval saat component unmount atau user logout
+      return () => clearInterval(interval);
+    } else {
+      setUnreadNotificationCount(0);
+    }
+  }, [isLoggedIn]);
+
+  // Effect untuk refresh notification count ketika kembali dari halaman notifikasi
+  useEffect(() => {
+    if (isLoggedIn && location.pathname !== '/notifikasi') {
+      // Refresh count ketika navigasi dari halaman notifikasi
+      const timeoutId = setTimeout(() => {
+        fetchUnreadNotificationCount();
+      }, 1000);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [location.pathname, isLoggedIn]);
   
   useEffect(() => {
     // Load Font Awesome
@@ -79,6 +141,7 @@ const Navbar = () => {
     e.stopPropagation();
     logout();
     setShowProfileMenu(false);
+    setUnreadNotificationCount(0); // Reset notification count on logout
     navigate('/');
   };
 
@@ -164,16 +227,18 @@ const Navbar = () => {
           <div className="flex items-center space-x-4 mr-2">
             {isLoggedIn ? (
               <>
-                {/* Notification Bell - Updated with navigation to /notifikasi */}
+                {/* Notification Bell - Updated with dynamic count */}
                 <div className="relative top-1">
                   <button 
                     className="text-gray-900 hover:text-emerald-400 focus:outline-none"
                     onClick={handleNotificationClick}
                   >
                     <i className="fas fa-bell text-2xl"></i>
-                    <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
-                      2
-                    </span>
+                    {unreadNotificationCount > 0 && (
+                      <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full min-w-[20px] h-5">
+                        {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                      </span>
+                    )}
                   </button>
                 </div>
 
@@ -185,11 +250,23 @@ const Navbar = () => {
                     type="button"
                   >
                     <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-emerald1 hover:scale-105 ">
-                      <img 
-                        src={user?.avatar || "images/freya.jpeg"} 
-                        alt="User Profile" 
-                        className="w-full h-12 object-cover"
-                      />
+                      
+  {user?.profil_user ? (
+  <img
+    src={user.profil_user.startsWith('http') ? user.profil_user : `http://localhost:3000${user.profil_user}`}
+    alt="User Profile"
+    className="w-full h-12 object-cover"
+    onError={(e) => {
+      e.target.onerror = null;
+      e.target.src = "/images/default-avatar.png";
+    }}
+  />
+) : (
+  <div className="w-full h-full flex items-center justify-center bg-gray-200">
+    <i className="fas fa-user-circle text-3xl text-gray-600"></i>
+  </div>
+)}
+
                     </div>
                   </button>
 
@@ -280,14 +357,19 @@ const Navbar = () => {
           >
             Tentang Kami
           </Link>
-          {/* Add Notifications link to mobile menu */}
+          {/* Add Notifications link to mobile menu with count */}
           {isLoggedIn && (
             <Link
               to="/notifikasi"
-              className="font-bold text-gray-900 hover:text-emerald-400 block px-3 py-2 text-sm uppercase tracking-wider"
+              className="font-bold text-gray-900 hover:text-emerald-400 block px-3 py-2 text-sm uppercase tracking-wider flex items-center justify-between"
               onClick={() => setMobileMenuOpen(false)}
             >
               Notifikasi
+              {unreadNotificationCount > 0 && (
+                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
+                  {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
+                </span>
+              )}
             </Link>
           )}
           {!isLoggedIn && (

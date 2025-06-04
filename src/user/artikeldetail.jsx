@@ -1,22 +1,89 @@
-import { useState } from 'react';
-import { Bell, Search, X, Mail } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft, User, Eye, Calendar, Tag, Search, Mail, X } from 'lucide-react';
 import Navbar from './navbar';
 import Footer from './footer';
-import { useNavigate } from 'react-router-dom';
+import artikelService from '../services/artikelService';
 
-export default function ArtikelDetail() {
+const ArtikelDetail = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [article, setArticle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [relatedArticles, setRelatedArticles] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('destinasi');
   const [email, setEmail] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const navigate = useNavigate();
-  
-  // Enhanced tab change handler with navigation
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    
-    // Navigate to the appropriate article category page
-    navigate(`/artikel?category=${tab}`);
+
+  useEffect(() => {
+    const fetchArticleDetail = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        // Fetch artikel berdasarkan ID
+        const articleData = await artikelService.getArticleById(id);
+        
+        if (!articleData) {
+          throw new Error('Artikel tidak ditemukan');
+        }
+
+        // Transform data untuk konsistensi
+        const transformedArticle = {
+          ...articleData,
+          id: articleData.id_artikel,
+          penulis: articleData.nama_penulis,
+          judul: articleData.judul,
+          tanggal: new Date(articleData.createdAt).toLocaleDateString('id-ID', {
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric'
+          }),
+          gambarUrl: articleData.gambar_artikel ? 
+            `http://localhost:3000/uploads/artikel/${articleData.gambar_artikel}` : null,
+          authorPhotoUrl: articleData.foto_penulis ? 
+            `http://localhost:3000/uploads/artikel/${articleData.foto_penulis}` : null,
+          isiArtikel: articleData.isi || 'Konten artikel tidak tersedia.',
+          jumlah_pembaca: parseInt(articleData.jumlah_pembaca) || 0
+        };
+
+        setArticle(transformedArticle);
+
+        // Update view count
+        await artikelService.incrementArticleViews(id);
+        
+        // Fetch artikel terkait (opsional)
+        try {
+          const allArticles = await artikelService.fetchArticles();
+          const related = allArticles
+            .filter(a => a.id_artikel !== parseInt(id) && a.kategori === articleData.kategori)
+            .slice(0, 3);
+          setRelatedArticles(related);
+        } catch (relatedError) {
+          console.warn('Gagal mengambil artikel terkait:', relatedError);
+        }
+
+      } catch (error) {
+        console.error('Error fetching article detail:', error);
+        setError(`Gagal memuat artikel: ${error.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchArticleDetail();
+    }
+  }, [id]);
+
+  const handleBackClick = () => {
+    navigate('/artikel');
+  };
+
+  const handleRelatedArticleClick = (articleId) => {
+    navigate(`/artikel/detail/${articleId}`);
   };
 
   const openModal = () => {
@@ -27,213 +94,428 @@ export default function ArtikelDetail() {
     setIsModalOpen(false);
   };
 
-  return (
-    <>
-      
-        {/* Hero Section with Background */}
-<section className="relative h-125 bg-cover bg-center pt-16">
-  {/* Overlay Gradient */}
-  <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    // Search functionality if needed
+  };
 
-  {/* Background Image */}
-  <div className="absolute inset-0 z-0">
-    <img src="../images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
-  </div>
-
-  {/* Content */}
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        {/* Hero Section with Background - FIXED PATH */}
+        <section className="relative h-125 bg-cover bg-center pt-16">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
+          <div className="absolute inset-0 z-0">
+            <img src="/images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
+          </div>
           <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center">
             <div className="max-w-3xl">
               <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">
                 Berkelana ke <span className="text-black">Newsroom</span>
               </h1>
-              
-              {/* Search Bar */}
-              <div className="relative mt-2 w-[280px]">
-                <input
-                  type="text"
-                  className="w-full py-1 px-2 pr-5 rounded-full border bg-white border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="Cari artikel"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button className="absolute right-0 top-0 bottom-0 px-4 bg-green-400 hover:bg-green-500 rounded-r-full flex items-center justify-center">
-                  <Search size={16} className="text-white" />
-                </button>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-        {/* Article Content would go here */}
-        <div className="container mx-auto py-10 px-6">
-          {/* Tab Navigation */}
-          <h2 className="text-2xl font-bold text-center mb-6">Artikel</h2>
-          
-          <div className="flex justify-center mb-8">
-            <div className="bg-gray-100 rounded-full p-1 flex space-x-1">
-              <button 
-                className={`px-6 py-2 rounded-full transition-all ${activeTab === 'populer' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
-                onClick={() => handleTabChange('populer')}
-              >
-                Populer
-              </button>
-              <button 
-                className={`px-6 py-2 rounded-full transition-all ${activeTab === 'terbaru' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
-                onClick={() => handleTabChange('terbaru')}
-              >
-                Terbaru
-              </button>
-              <button 
-                className={`px-6 py-2 rounded-full transition-all ${activeTab === 'destinasi' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
-                onClick={() => handleTabChange('destinasi')}
-              >
-                Destinasi
-              </button>
-              <button 
-                className={`px-6 py-2 rounded-full transition-all ${activeTab === 'inspirasi' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
-                onClick={() => handleTabChange('inspirasi')}
-              >
-                Inspirasi
-              </button>
             </div>
           </div>
+        </section>
+        
+        <div className="container mx-auto py-10 px-6">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-gray-600">Memuat artikel...</div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
-          {/* Article Content */}
-          <div className="max-w-4xl mx-auto bg-gray-100 rounded-lg p-6">
-            {/* Article Image */}
+  if (error || !article) {
+    return (
+      <div className="min-h-screen bg-white">
+        <Navbar />
+        {/* Hero Section with Background - FIXED PATH */}
+        <section className="relative h-125 bg-cover bg-center pt-16">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
+          <div className="absolute inset-0 z-0">
+            <img src="/images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
+          </div>
+          <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center">
+            <div className="max-w-3xl">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">
+                Berkelana ke <span className="text-black">Newsroom</span>
+              </h1>
+            </div>
+          </div>
+        </section>
+        
+        <div className="container mx-auto py-10 px-6">
+          <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-4">
+            {error || 'Artikel tidak ditemukan'}
+          </div>
+          <button 
+            onClick={handleBackClick}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded flex items-center"
+          >
+            <ArrowLeft size={16} className="mr-2" />
+            Kembali ke Artikel
+          </button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Hero Section with Background - FIXED PATH */}
+      <section className="relative h-125 bg-cover bg-center pt-16">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
+        <div className="absolute inset-0 z-0">
+          <img src="/images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
+        </div>
+        <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center">
+          <div className="max-w-3xl">
+            <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">
+              Berkelana ke <span className="text-black">Newsroom</span>
+            </h1>
+            
+            <form onSubmit={handleSearchSubmit} className="relative mt-2 w-[280px]">
+              <input
+                type="text"
+                className="w-full py-1 px-2 pr-5 rounded-full border bg-white border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Cari artikel"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button 
+                type="submit"
+                className="absolute right-0 top-0 bottom-0 px-4 bg-emerald1 hover:bg-green-500 rounded-r-full flex items-center justify-center"
+              >
+                <Search size={16} className="text-white" />
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      {/* Back Button */}
+      <div className="container mx-auto px-6 pt-8 pb-4">
+        <button 
+          onClick={handleBackClick}
+          className="flex items-center text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          <ArrowLeft size={20} className="mr-2" />
+          Kembali ke Artikel
+        </button>
+      </div>
+
+      {/* Article Content */}
+      <article className="container mx-auto px-6 pb-12">
+        <div className="max-w-4xl mx-auto bg-gray-100 rounded-lg p-6">
+          {/* Article Header */}
+          <header className="mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
+              {article.judul}
+            </h1>
+            
+            {/* Article Meta */}
+            <div className="flex flex-wrap items-center gap-4 mb-6">
+              <div className="flex items-center">
+                <div className="w-12 h-12 rounded-full overflow-hidden mr-3">
+                  {article.authorPhotoUrl ? (
+                    <img 
+                      src={article.authorPhotoUrl} 
+                      alt={article.penulis} 
+                      className="w-full h-full object-cover" 
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gray-400 flex items-center justify-center">
+                      <User size={24} className="text-white" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">{article.penulis}</p>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Calendar size={14} className="mr-1" />
+                    <span>{article.tanggal}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                {article.kategori && (
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center ${
+                    article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' :
+                    article.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    <Tag size={14} className="mr-1" />
+                    {article.kategori}
+                  </span>
+                )}
+                
+                <div className="flex items-center text-sm text-gray-600">
+                  <Eye size={14} className="mr-1" />
+                  <span>{article.jumlah_pembaca} views</span>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Featured Image dengan style border purple */}
+          {article.gambarUrl && (
             <div className="mb-6">
               <div className="rounded-lg overflow-hidden border-2 border-purple-300">
                 <img 
-                  src="../images/ard.png" 
-                  alt="Patung Sura dan Buaya" 
-                  className="w-full h-full object-cover"
+                  src={article.gambarUrl} 
+                  alt={article.judul} 
+                  className="w-full h-64 md:h-96 object-cover"
                 />
               </div>
             </div>
+          )}
 
-            {/* Article Title */}
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Mengenal Sejarah Kota Surabaya!</h1>
-
-            {/* Author Info */}
-            <div className="flex items-center mb-4">
-              <div className="h-8 w-8 rounded-full bg-gray-200 overflow-hidden mr-2">
-                <img 
-                  src="../images/arp.png" 
-                  alt="Author" 
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <div>
-                <p className="text-sm font-medium">Yosi Safyan</p>
-                <p className="text-xs text-gray-500">25 Apr 2023 · 3 min read</p>
-              </div>
-            </div>
-
-            {/* Article Content */}
-            <div className="prose max-w-none text-gray-700">
-              <p className="mb-4">
-                Kota Surabaya, yang sering disebut sebagai "Kota Pahlawan", merupakan salah satu kota terbesar di Indonesia yang memiliki sejarah panjang dan kaya akan budaya serta keberagaman. Terletak di bagian timur Pulau Jawa, Surabaya telah menjadi pusat perdagangan dan industri yang penting sejak zaman kolonial Belanda. Dikenal dengan semangat juang dan keberaniannya selama masa perjuangan kemerdekaan, Surabaya memiliki banyak tempat bersejarah dan monumen yang menggambarkan peran pentingnya dalam sejarah Indonesia. Selain itu, kota ini juga dikenal karena kelezatan kuliner, seni, dan tradisi lokal yang membuatnya menjadi destinasi wisata yang menarik bagi wisatawan lokal maupun mancanegara. Dengan berbagai potensi dan pesona-nya, Kota Surabaya terus berkembang dan menjadi salah satu destinasi utama di Indonesia.
-              </p>
-
-              <p className="mb-4">
-                Asal Usul Surabaya Nama tersebut juga terkait dengan legenda ikan hiu dan buaya yang berebut makanan. Cerita rakyat tentang adu hiu, sura, dan buaya terukir dalam sejarah nama kota Surabaya. Peristiwa ini pula yang melahirkan simbol Kota Surabaya, yakni Hiu Surabaya dan Buaya Baya. Ada pula yang mengatakan nama Surabaya berasal dari kata sura dan baya. Sura berarti keberanian atau kesalamatan, dan baya berarti bahaya. Oleh karena itu, Surabaya berarti "aman dari bahaya". Sebutan Surabaya mengartikan julukan "Kota Pahlawan" berasal dari pertempuran antara Raden Wijaya dan tentara Mongol pimpinan Kublai Khan pada tahun 1293.
-              </p>
-
-              <p className="mb-4">
-                Pertempuran ini kemudian dinamakan sebagai Hari berdinya Kota Surabaya pada tanggal 31 Mei. Gelar Kota Pahlawan diberikan kepada Kota Surabaya sebagai pengingat perjuangan para pahlawan pada pertempuran 10 November 1945. Itulah momen yang menginspirasi Kota Surabaya untuk melawan penjajah pasca Bung Tomo, - pidato Pertempuran ini menjadikan Surabaya sebagai kota pahlawan. Selain itu, tanggal 10 November juga diperingati sebagai Hari Pahlawan, tempat wisata di surabaya yang paling terkenal adalah wisata sejarah, yang terdapat banyak museum yang mengenang jasa para pahlawan di surabaya, dijajarkan monumen peringatan kepahlawanan misalnya. Traveler bisa memesan tiket objek wisata berikut ini melalui objek wisata Surabaya ini:
-              </p>
-
-              <ul className="list-disc pl-6 mb-4">
-                <li>Taman hiburan pantai kenjeran</li>
-                <li>Museum sepuluh november</li>
-                <li>Museum Dr. Soetomo</li>
-                <li>Museum Pendidikan</li>
-                <li>Museum Surabaya gedung siola</li>
-                <li>Museum H.O.S Tjokroaminoto</li>
-                <li>Museum W.R Soepratman</li>
-                <li>Rumah kelahiran bung tomo</li>
-                <li>Alun alun surabaya</li>
-                <li>Wisata perahu kalimas</li>
-              </ul>
-
-              <p>
-                disimpulkan bahwa kota Surabaya adalah sebuah kota yang kaya akan sejarah dan budaya, serta memiliki peran penting dalam perkembangan Indonesia. Sebagai Kota Pahlawan, Surabaya dikenal dengan semangat juangnya dalam merebut kemerdekaan dan pengaruh. Selain itu, Surabaya juga merupakan pusat perdagangan dan industri yang berkembang pesat. Keberagaman budaya, kuliner, seni, dan tradisi lokal menjadi daya tarik tersendiri bagi kota ini. Dengan potensi dan pesona-nya, Surabaya terus menjadi destinasi wisata yang menarik bagi wisatawan. Kesimpulannya, kota Surabaya merupakan sebuah tempat yang patut untuk dieksplorasi dan dinikmati kekayaan serta keragaman yang dimilikinya.
-              </p>
+          {/* Article Content */}
+          <div className="prose max-w-none">
+            <div className="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
+              {article.isiArtikel}
             </div>
           </div>
         </div>
+      </article>
 
-        {/* Banner Section with Purple Background above Footer */}
-        <div className="w-full bg-purple-500 py-12">
-          <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between">
-            <div className="mb-6 md:mb-0 md:w-1/2 text-left">
-              <h2 className="text-3xl md:text-4xl font-bold text-black mb-2">
-                Ingin berbagi pengalaman bersama <span className="text-white">#Berkelana</span> ?
-              </h2>
-            </div>
-            <div className="md:w-1/2">
-              <div className="flex shadow-lg rounded-lg overflow-hidden">
-                <input
-                  type="email"
-                  placeholder="Kirim pengalaman kalian ke email #Berkelana !"
-                  className="flex-grow px-4 py-3 bg-white text-black focus:outline-none"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <button
-                  type="button"
-                  className="bg-green-500 text-white px-4 py-3 hover:bg-green-600 focus:outline-none"
-                  onClick={openModal}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-white"
+      {/* Related Articles */}
+      {relatedArticles.length > 0 && (
+        <section className="bg-gray-50 py-12">
+          <div className="container mx-auto px-6">
+            <div className="max-w-4xl mx-auto">
+              <h2 className="text-2xl font-bold text-gray-900 mb-8">Artikel Terkait</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {relatedArticles.map((relatedArticle) => (
+                  <div 
+                    key={relatedArticle.id_artikel}
+                    className="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => handleRelatedArticleClick(relatedArticle.id_artikel)}
                   >
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-                    <polyline points="22,6 12,13 2,6" />
-                  </svg>
-                </button>
+                    <div className="h-48 overflow-hidden">
+                      {relatedArticle.gambar_artikel ? (
+                        <img 
+                          src={`http://localhost:3000/uploads/artikel/${relatedArticle.gambar_artikel}`}
+                          alt={relatedArticle.judul} 
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                          <span className="text-gray-500">Tidak ada gambar</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-bold text-gray-900 mb-2 line-clamp-2">
+                        {relatedArticle.judul}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2">
+                        {relatedArticle.nama_penulis}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          relatedArticle.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' :
+                          relatedArticle.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {relatedArticle.kategori || 'Umum'}
+                        </span>
+                        <div className="flex items-center text-xs text-gray-600">
+                          <Eye size={12} className="mr-1" />
+                          <span>{relatedArticle.jumlah_pembaca || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Banner Section dengan Purple Background above Footer */}
+      <div className="w-full bg-purple1 py-12">
+        <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between">
+          <div className="mb-6 md:mb-0 md:w-1/2 text-left">
+            <h2 className="text-3xl md:text-4xl font-bold text-black mb-2">
+              Ingin berbagi pengalaman bersama <span className="text-white">#Berkelana</span> ?
+            </h2>
+          </div>
+          <div className="md:w-1/2">
+            <div className="flex shadow-lg rounded-lg overflow-hidden">
+              <input
+                type="email"
+                placeholder="Kirim pengalaman kalian ke email #Berkelana !"
+                className="flex-grow px-4 py-3 bg-white text-black focus:outline-none"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <button
+                type="button"
+                className="bg-emerald1 text-white px-4 py-3 hover:bg-green-600 focus:outline-none"
+                onClick={openModal}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-white"
+                >
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                  <polyline points="22,6 12,13 2,6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Email Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 bg-black opacity-50" onClick={closeModal}></div>
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-4 relative z-10">
+            <button
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              onClick={closeModal}
+            >
+              <X size={24} />
+            </button>
+            
+            <div className="flex flex-col items-center text-center">
+              <div className="bg-purple-400 p-4 rounded-full mb-4">
+                <Mail size={32} className="text-white" />
+              </div>
+              
+              <h2 className="text-2xl font-bold mb-4">Kirim Pengalaman kalian pada kami!</h2>
+              
+              <p className="mb-2">kirim via email ke:</p>
+              <p className="font-bold mb-6">berkelanaindonesia@gmail.com</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FIXED FOOTER - Using React Router Link components */}
+      <footer className="bg-white font-[League_Spartan] text-base">
+        <div className="max-w-full mx-auto py-8 px-0">
+          <div className="flex flex-col md:flex-row justify-between items-start max-w-7xl mx-auto">
+            {/* Section 1 - Logo - First position (left) */}
+            <div className="mb-8 md:mb-0 md:mr-8">
+              <div className="mb-6">
+                <img
+                  src="/images/berkelana-logo.png"
+                  alt="Berkelana Logo"
+                  className="h-25"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/api/placeholder/160/60";
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Section 2 - Kontak (Nomor dan Email) */}
+            <div className="mb-8 md:mb-0 md:mr-8">
+              <h3 className="font-medium mb-4">Hubungi Kami</h3>
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <i className="fa-solid fa-phone-alt mr-2 text-gray-700"></i>
+                  <a href="tel:08124494015" className="text-gray-700 hover:text-emerald-400">
+                    08124494015
+                  </a>
+                </div>
+                <div className="flex items-center">
+                  <i className="fas fa-envelope mr-2 text-gray-700"></i>
+                  <a href="mailto:berkelanaindonesia@gmail.com" className="text-gray-700 hover:text-emerald-400">
+                    berkelanaindonesia@gmail.com
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3 - Cari Tiket dan Promo */}
+            <div className="mb-8 md:mb-0 md:mr-8">
+              <h3 className="font-medium mb-4">Layanan</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/cari-tiket" className="text-gray-700 hover:text-emerald-400">
+                    Cari tiket
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/promo" className="text-gray-700 hover:text-emerald-400">
+                    Promo
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 4 - Artikel, Tiket Saya, Syarat, Privacy */}
+            <div className="mb-8 md:mb-0 md:mr-8">
+              <h3 className="font-medium mb-4">Lainnya</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/artikel" className="text-gray-700 hover:text-emerald-400">
+                    Artikel
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/tiket-saya" className="text-gray-700 hover:text-emerald-400">
+                    Tiket Saya
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/tentang-kami" className="text-gray-700 hover:text-emerald-400">
+                    Tentang Kami
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/syarat-ketentuan" className="text-gray-700 hover:text-emerald-400">
+                    Kebijakan kami
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 5 - Social Media */}
+            <div className="mb-8 md:mb-0">
+              <h3 className="font-medium mb-4">Temukan Kami di</h3>
+              <div className="flex space-x-4">
+                <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400">
+                  <i className="fab fa-facebook-f text-gray-700 hover:text-emerald-400"></i>
+                </a>
+                <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400">
+                  <i className="fab fa-instagram text-gray-700 hover:text-emerald-400"></i>
+                </a>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Email Modal */}
-        {isModalOpen && (
-          <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="absolute inset-0 bg-black opacity-50" onClick={closeModal}></div>
-            <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-4 relative z-10">
-              <button
-                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-                onClick={closeModal}
-              >
-                <X size={24} />
-              </button>
-              
-              <div className="flex flex-col items-center text-center">
-                <div className="bg-purple-400 p-4 rounded-full mb-4">
-                  <Mail size={32} className="text-white" />
-                </div>
-                
-                <h2 className="text-2xl font-bold mb-4">Kirim Pengalaman kalian pada kami!</h2>
-                
-                <p className="mb-2">kirim via email ke:</p>
-                <p className="font-bold mb-6">maribekelana@gmail.com</p>
-              </div>
-            </div>
+        {/* Copyright Section */}
+        <div className="bg-emerald1 py-3">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p className="text-center text-black">
+              Copyright © 2025 BERKELANA®, All rights reserved.
+            </p>
           </div>
-        )}
-     
-      <Footer />
+        </div>
+      </footer>
     </>
   );
 };
+
+export default ArtikelDetail;

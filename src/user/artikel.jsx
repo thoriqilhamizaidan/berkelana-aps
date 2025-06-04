@@ -1,9 +1,9 @@
-import React, { useState, useRef } from 'react';
-import { Bell, Search, User, ChevronLeft, ChevronRight, X, Mail } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Bell, Search, User, ChevronLeft, ChevronRight, X, Mail, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import Navbar from './navbar';
 import Footer from './footer';
 import { Link, useNavigate } from 'react-router-dom';
-import ArtikelDetail from './artikeldetail';
+import artikelService from '../services/artikelService';
 
 const Artikel = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -11,12 +11,162 @@ const Artikel = () => {
   const [showDestinations, setShowDestinations] = useState(false);
   const [email, setEmail] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [articles, setArticles] = useState([]);
+  const [expandedArticle, setExpandedArticle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const carouselRef = useRef(null);
   const navigate = useNavigate();
+
+  // Mengambil data artikel saat komponen dimuat
+  useEffect(() => {
+    const fetchArticles = async () => {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const data = await artikelService.fetchArticles();
+        
+        // Check if data is an array
+        if (!Array.isArray(data)) {
+          throw new Error('Data yang diterima bukan array');
+        }
+        
+        // Transform data to match expected format
+        const transformedData = data.map(article => {
+          const tanggalUpload = new Date(article.createdAt).toLocaleDateString('id-ID', {
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric'
+          });
+          
+          return {
+            ...article,
+            id: article.id_artikel, // Make sure we have consistent ID
+            penulis: article.nama_penulis,
+            judul: article.judul,
+            tanggal: tanggalUpload,
+            gambarUrl: article.gambar_artikel ? `http://localhost:3000/uploads/artikel/${article.gambar_artikel}` : null,
+            authorPhotoUrl: article.foto_penulis ? `http://localhost:3000/uploads/artikel/${article.foto_penulis}` : null,
+            // Menggunakan isi dari database, bukan konten dummy
+            isiArtikel: article.isi || 'Konten artikel tidak tersedia.',
+            // Pastikan jumlah_pembaca ada dan merupakan number
+            jumlah_pembaca: parseInt(article.jumlah_pembaca) || 0
+          };
+        });
+        
+        // Sort by creation date - newest first by default
+        const sortedData = transformedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        setArticles(sortedData);
+        
+      } catch (error) {
+        console.error('Terjadi kesalahan saat mengambil artikel:', error);
+        setError(`Gagal memuat artikel: ${error.message}`);
+        setArticles([]); // Set empty array on error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticles();
+  }, []);
+
+  // Function to update article click count using service
+  const updateArticleClickCount = async (articleId) => {
+    try {
+      console.log('Starting updateArticleClickCount for ID:', articleId);
+      
+      // Pastikan articleId valid
+      if (!articleId) {
+        throw new Error('Invalid article ID');
+      }
+      
+      // Gunakan ID yang konsisten
+      const idToUse = articleId;
+      console.log('Using ID for API call:', idToUse);
+      
+      const updatedData = await artikelService.incrementArticleViews(idToUse);
+      console.log('API response:', updatedData);
+      
+      // Update local state dengan data dari server
+      setArticles(prevArticles => {
+        const updated = prevArticles.map(article => {
+          // Periksa kedua kemungkinan field ID
+          const articleCurrentId = article.id_artikel || article.id;
+          
+          if (articleCurrentId == idToUse) { // Gunakan == untuk menghindari masalah tipe data
+            console.log('Updating article in state:', article.judul);
+            return { 
+              ...article, 
+              jumlah_pembaca: updatedData.jumlah_pembaca || updatedData.views || (article.jumlah_pembaca + 1)
+            };
+          }
+          return article;
+        });
+        
+        console.log('State updated');
+        return updated;
+      });
+      
+    } catch (error) {
+      console.error('Error updating article view count:', error);
+      // Jangan blokir UI jika gagal, tapi log error untuk debugging
+    }
+  };
+
+  // Function to filter articles based on active tab and search query
+  const getFilteredArticles = () => {
+    let filtered = articles;
+    
+    // Filter by search query first
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(article => 
+        article.judul?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.penulis?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.kategori?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.isi?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    // Then filter/sort by active tab
+    if (activeTab === 'populer') {
+      // Filter artikel yang memiliki jumlah_pembaca > 0 (sudah pernah diklik/dibaca)
+      const popularArticles = filtered
+        .filter(article => {
+          const views = parseInt(article.jumlah_pembaca) || 0;
+          return views > 0; // Hanya artikel yang sudah pernah diklik/dibaca
+        })
+        .sort((a, b) => {
+          const aViews = parseInt(a.jumlah_pembaca) || 0;
+          const bViews = parseInt(b.jumlah_pembaca) || 0;
+          return bViews - aViews; // Sort descending berdasarkan jumlah pembaca
+        });
+      
+      // Batasi hanya 6 artikel teratas
+      return popularArticles.slice(0, 6);
+      
+    } else if (activeTab === 'terbaru') {
+      // Sort by creation date - newest first
+      return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else if (activeTab === 'destinasi') {
+      // Filter by category 'Destinasi'
+      return filtered.filter(article => 
+        article.kategori && article.kategori.toLowerCase() === 'destinasi'
+      );
+    } else if (activeTab === 'inspirasi') {
+      // Filter by category 'Inspirasi'
+      return filtered.filter(article => 
+        article.kategori && article.kategori.toLowerCase() === 'inspirasi'
+      );
+    }
+    return filtered;
+  };
 
   // Function to handle tab changes
   const handleTabChange = (tab) => {
     setActiveTab(tab);
+    setExpandedArticle(null); // Reset expanded article when changing tabs
     
     // Show destinations content when Destinasi tab is clicked
     if (tab === 'destinasi') {
@@ -26,10 +176,34 @@ const Artikel = () => {
     }
   };
 
+  // Function to handle article click (expand/collapse)
+  const handleArticleClick = async (articleId) => {
+    try {
+      // Update click count hanya jika artikel belum di-expand
+      if (expandedArticle !== articleId) {
+        await updateArticleClickCount(articleId);
+      }
+
+      // Toggle expand/collapse
+      if (expandedArticle === articleId) {
+        setExpandedArticle(null);
+      } else {
+        setExpandedArticle(articleId);
+      }
+    } catch (error) {
+      console.error('Error handling article click:', error);
+      // Tetap lanjutkan untuk expand/collapse meskipun update gagal
+      if (expandedArticle === articleId) {
+        setExpandedArticle(null);
+      } else {
+        setExpandedArticle(articleId);
+      }
+    }
+  };
+
   // Function to handle email submission
   const handleEmailSubmit = (e) => {
     e.preventDefault();
-    // Handle email submission logic here
     console.log('Email submitted:', email);
     setEmail('');
   };
@@ -43,10 +217,13 @@ const Artikel = () => {
     setIsModalOpen(false);
   };
 
-  // Function to navigate to article detail
-  const navigateToArticleDetail = () => {
-    navigate('/artikel/detail');
-  };
+  // Fungsi untuk menavigasi ke detail artikel
+const navigateToArticleDetail = async (articleId) => {
+  // Update jumlah pembaca sebelum navigasi
+  await updateArticleClickCount(articleId);
+  navigate(`/artikel/detail/${articleId}`);
+};
+
 
   // Functions to control carousel
   const scrollCarousel = (direction) => {
@@ -59,25 +236,92 @@ const Artikel = () => {
     }
   };
 
+  // Function to handle search
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    // Search is handled automatically through getFilteredArticles()
+  };
+
+  const filteredArticles = getFilteredArticles();
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white">
+        {/* Hero Section with Background */}
+        <section className="relative h-125 bg-cover bg-center pt-16">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
+          <div className="absolute inset-0 z-0">
+            <img src="../images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
+          </div>
+          <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center">
+            <div className="max-w-3xl">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">
+                Berkelana ke <span className="text-black">Newsroom</span>
+              </h1>
+            </div>
+          </div>
+        </section>
+        
+        <div className="container mx-auto py-10 px-6">
+          <div className="flex justify-center items-center h-64">
+            <div className="text-gray-600">Memuat artikel...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-white">
+        {/* Hero Section with Background */}
+        <section className="relative h-125 bg-cover bg-center pt-16">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
+          <div className="absolute inset-0 z-0">
+            <img src="../images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
+          </div>
+          <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center">
+            <div className="max-w-3xl">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">
+                Berkelana ke <span className="text-black">Newsroom</span>
+              </h1>
+            </div>
+          </div>
+        </section>
+        
+        <div className="container mx-auto py-10 px-6">
+          <div className="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Rest of the component remains the same...
   return (
     <>
-      
       {/* Hero Section with Background */}
       <section className="relative h-125 bg-cover bg-center pt-16">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
         <div className="absolute inset-0 z-0">
-          {/* Mountain background image */}
           <img src="../images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
         </div>
-        {/* Content */}
         <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center">
           <div className="max-w-3xl">
             <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">
               Berkelana ke <span className="text-black">Newsroom</span>
             </h1>
             
-            {/* Search Bar */}
-            <div className="relative mt-2 w-[280px]">
+            <form onSubmit={handleSearchSubmit} className="relative mt-2 w-[280px]">
               <input
                 type="text"
                 className="w-full py-1 px-2 pr-5 rounded-full border bg-white border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -85,530 +329,227 @@ const Artikel = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button className="absolute right-0 top-0 bottom-0 px-4 bg-emerald1 hover:bg-green-500 rounded-r-full flex items-center justify-center">
+              <button 
+                type="submit"
+                className="absolute right-0 top-0 bottom-0 px-4 bg-emerald1 hover:bg-green-500 rounded-r-full flex items-center justify-center"
+              >
                 <Search size={16} className="text-white" />
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </section>
 
       <div className="container mx-auto py-10 px-6">
-      {/* Tab Navigation */}
-      <h2 className="text-2xl font-bold text-center mb-6">Artikel</h2>
-      
-      <div className="flex justify-center mb-8">
-        <div className="bg-gray-100 rounded-full p-1 flex space-x-1">
-          <button 
-            className={`px-6 py-2 rounded-full transition-all ${activeTab === 'populer' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
-            onClick={() => handleTabChange('populer')}
-          >
-            Populer
-          </button>
-          <button 
-            className={`px-6 py-2 rounded-full transition-all ${activeTab === 'terbaru' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
-            onClick={() => handleTabChange('terbaru')}
-          >
-            Terbaru
-          </button>
-          <button 
-            className={`px-6 py-2 rounded-full transition-all ${activeTab === 'destinasi' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
-            onClick={() => handleTabChange('destinasi')}
-          >
-            Destinasi
-          </button>
-          <button 
-            className={`px-6 py-2 rounded-full transition-all ${activeTab === 'inspirasi' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
-            onClick={() => handleTabChange('inspirasi')}
-          >
-            Inspirasi
-          </button>
+        {/* Tab Navigation */}
+        <h2 className="text-2xl font-bold text-center mb-6">Artikel</h2>
+        
+        <div className="flex justify-center mb-8">
+          <div className="bg-gray-100 rounded-full p-1 flex space-x-1">
+            <button 
+              className={`px-6 py-2 rounded-full transition-all ${activeTab === 'populer' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
+              onClick={() => handleTabChange('populer')}
+            >
+              Populer
+            </button>
+            <button 
+              className={`px-6 py-2 rounded-full transition-all ${activeTab === 'terbaru' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
+              onClick={() => handleTabChange('terbaru')}
+            >
+              Terbaru
+            </button>
+            <button 
+              className={`px-6 py-2 rounded-full transition-all ${activeTab === 'destinasi' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
+              onClick={() => handleTabChange('destinasi')}
+            >
+              Destinasi
+            </button>
+            <button 
+              className={`px-6 py-2 rounded-full transition-all ${activeTab === 'inspirasi' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
+              onClick={() => handleTabChange('inspirasi')}
+            >
+              Inspirasi
+            </button>
+          </div>
+        </div>
+        
+        {/* Search Results Info */}
+        {searchQuery.trim() && (
+          <div className="mb-4 text-center">
+            <p className="text-gray-600">
+              Menampilkan {filteredArticles.length} hasil untuk "{searchQuery}"
+            </p>
+          </div>
+        )}
+        
+        {/* Articles Content */}
+        <div className="bg-gray-200 rounded-lg p-6">
+          {filteredArticles.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500">
+                {searchQuery.trim() 
+                  ? `Tidak ada artikel yang ditemukan untuk pencarian "${searchQuery}".`
+                  : activeTab === 'populer'
+                  ? 'Belum ada artikel populer. Artikel akan muncul setelah dibaca oleh pengguna.'
+                  : `Tidak ada artikel yang ditemukan untuk kategori ${activeTab}.`
+                }
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Tambahkan info khusus untuk tab populer */}
+              {activeTab === 'populer' && (
+                <div className="mb-4 text-center">
+                  <p className="text-gray-600 text-sm">
+                    Menampilkan {filteredArticles.length} artikel paling populer (berdasarkan jumlah pembaca)
+                  </p>
+                </div>
+              )}
+
+              {/* Jika ada artikel yang diperluas, tampilkan hanya artikel tersebut */}
+              {expandedArticle ? (
+                <div>
+                  {(() => {
+                    const article = filteredArticles.find(a => a.id_artikel === expandedArticle);
+                    if (!article) return null;
+                    
+                    return (
+                      <div className="bg-white rounded-lg overflow-hidden shadow-lg">
+                        {/* Header artikel yang diperluas */}
+                        <div 
+                          className="cursor-pointer hover:bg-gray-50 transition-colors"
+                          onClick={() => handleArticleClick(article.id_artikel)}
+                        >
+                          <div className="p-6 border-b">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <h3 className="text-2xl font-bold mb-4 text-gray-900">{article.judul}</h3>
+                                <div className="flex items-center">
+                                  <div className="w-10 h-10 rounded-full overflow-hidden mr-3">
+                                    {article.authorPhotoUrl ? (
+                                      <img src={article.authorPhotoUrl} alt={article.penulis} className="w-full h-full object-cover" />
+                                    ) : (
+                                      <div className="w-full h-full bg-gray-400 flex items-center justify-center">
+                                        <User size={20} className="text-white" />
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-gray-900">{article.penulis}</p>
+                                    <p className="text-sm text-gray-600">{article.tanggal}</p>
+                                  </div>
+                                </div>
+                                <div className="mt-3 flex items-center gap-3">
+                                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                    article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' :
+                                    article.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' :
+                                    article.kategori === 'Popular' ? 'bg-red-100 text-red-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }`}>
+                                    {article.kategori || 'Umum'}
+                                  </span>
+                                  <div className="flex items-center text-sm text-gray-600">
+                                    <Eye size={16} className="mr-1" />
+                                    <span>{article.jumlah_pembaca || 0} views</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="ml-4 flex items-center">
+                                <ChevronUp size={24} className="text-gray-500" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Konten detail artikel dari database */}
+                        <div className="p-6">
+                          {article.gambarUrl && (
+                            <div className="mb-6">
+                              <img 
+                                src={article.gambarUrl} 
+                                alt={article.judul} 
+                                className="w-full h-64 object-cover rounded-lg"
+                              />
+                            </div>
+                          )}
+                          <div className="prose max-w-none">
+                            <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+                              {article.isiArtikel}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              ) : (
+                /* Jika tidak ada artikel yang diperluas, tampilkan grid semua artikel */
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {filteredArticles.map((article) => (
+                    <div 
+                      key={article.id_artikel} 
+                      className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                      onClick={() => navigateToArticleDetail(article.id_artikel)} // Navigasi ke detail artikel
+                    >
+                      <div className={`h-48 overflow-hidden ${activeTab === 'destinasi' ? 'border-4 border-purple-400' : 'border-2 border-gray-300'} rounded-t-lg`}>
+                        {article.gambarUrl ? (
+                          <img 
+                            src={article.gambarUrl} 
+                            alt={article.judul} 
+                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                            <span className="text-gray-500">Tidak ada gambar</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <div className="flex justify-between items-start mb-4">
+                          <h3 className="font-bold flex-1">{article.judul}</h3>
+                          <ChevronDown size={20} className="text-gray-500 ml-2 flex-shrink-0" />
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
+                            {article.authorPhotoUrl ? (
+                              <img src={article.authorPhotoUrl} alt={article.penulis} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-gray-400 flex items-center justify-center">
+                                <User size={16} className="text-white" />
+                              </div>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">{article.penulis}</p>
+                            <p className="text-xs text-gray-600">{article.tanggal}</p>
+                          </div>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' :
+                            article.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' :
+                            article.kategori === 'Popular' ? 'bg-red-100 text-red-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {article.kategori || 'Umum'}
+                          </span>
+                          <div className="flex items-center text-xs text-gray-600">
+                            <Eye size={12} className="mr-1" />
+                            <span>{article.jumlah_pembaca || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
-      
-      {activeTab === 'destinasi' ? (
-        /* Destinations Content - with purple border around images */
-        <div className="bg-gray-200 rounded-lg p-6">
-          {/* Featured destination (large at top) */}
-          <div className="mb-12">
-            <div 
-              className="rounded-lg overflow-hidden border border-purple-200 shadow-sm cursor-pointer hover:shadow-lg hover:border-purple-300 transition-all transform hover:-translate-y-1 duration-300"
-              onClick={navigateToArticleDetail}
-            >
-              <div className="h-64 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                <img 
-                  src="../images/ard.png" 
-                  alt="Surabaya" 
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-              <div className="p-6 bg-gray-100">
-                <h3 className="text-xl font-bold mb-3">Mengenal Sejarah Kota Surabaya</h3>
-                <div className="flex items-center text-sm text-gray-500">
-                  <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                    <img src="../images/arp.png" alt="Putrayasa" className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Yosi Sofyan</p>
-                    <p className="text-xs">26 Apr 2023 • 3 min read</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Grid of destination articles - With purple borders around images */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Destination Card 1 */}
-            <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-              <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                <img 
-                  src="../images/ard1.png" 
-                  alt="Banyuwangi" 
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold mb-4">Jelajahi Wisata Banyuwangi ala Rafal Hady, Sunrise of Java</h3>
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                    <img src="../images/arp.png" alt="Putrayasa" className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Putrayasa Putra</p>
-                    <p className="text-xs text-gray-600">25 Apr 2023 • 4 Min Read</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Destination Card 2 */}
-            <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-              <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                <img 
-                  src="../images/ard2.png" 
-                  alt="Alun-Alun Batu" 
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold mb-4">Lokasi, Fasilitas, Aktivitas Seru di Alun-Alun Batu</h3>
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                    <img src="../images/arp.png" alt="Hana" className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Hana Ananda</p>
-                    <p className="text-xs text-gray-600">23 Apr 2023 • 6 Min Read</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Destination Card 3 */}
-            <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-              <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                <img 
-                  src="../images/ard3.png" 
-                  alt="Filipina" 
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold mb-4">Seru-seruan Wisata di Filipina, Ngapain Aja Nih?</h3>
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                    <img src="../images/arp.png" alt="Abdul" className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Abdul Rahman</p>
-                    <p className="text-xs text-gray-600">22 Apr 2023 • 5 Min Read</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Additional Cards */}
-            {/* Destination Card 4 */}
-            <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-              <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                <img 
-                  src="../images/ard4.png" 
-                  alt="Batu Kuda" 
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold mb-4">Wisata Alam Batu Kuda Manglayang di Bandung Timur</h3>
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                    <img src="../images/arp.png" alt="Abdul" className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Abdul Rahman</p>
-                    <p className="text-xs text-gray-600">22 Apr 2023 • 5 Min Read</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Destination Card 5 */}
-            <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-              <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                <img 
-                  src="../images/ard5.png" 
-                  alt="Gunung Gede" 
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold mb-4">Nikmati Kesejukan Surga Tropis Kaki Gunung Gede</h3>
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                    <img src="../images/arp.png" alt="Abdul" className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Abdul Rahman</p>
-                    <p className="text-xs text-gray-600">22 Apr 2023 • 5 Min Read</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Destination Card 6 */}
-            <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-              <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                <img 
-                  src="../images/ard6.png" 
-                  alt="Gunung Kidul" 
-                  className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                />
-              </div>
-              <div className="p-4">
-                <h3 className="font-bold mb-4">Gunung Kidul: Surga Tersembunyi di selatan Yogyakarta</h3>
-                <div className="flex items-center">
-                  <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                    <img src="../images/arp.png" alt="Abdul" className="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Abdul Rahman</p>
-                    <p className="text-xs text-gray-600">22 Apr 2023 • 5 Min Read</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* Default Content with purple borders around images */
-        <>
-          {/* Featured Articles Carousel */}
-          <div className="relative">
-            <button 
-              className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors"
-              onClick={() => scrollCarousel('left')}
-            >
-              <ChevronLeft size={24} />
-            </button>
-            
-            <div 
-              ref={carouselRef}
-              className="flex space-x-6 overflow-x-auto scrollbar-hide pb-2" 
-              style={{ scrollBehavior: 'smooth' }}
-            >
-              {/* Article Card 1 */}
-              <div className="flex-none w-full md:w-1/3">
-                <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                    <img 
-                      src="../images/arp1.png" 
-                      alt="Ketupat" 
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold mb-4">Me Time di Tengah Ketupat dan Perintilannya</h3>
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                        <img src="../images/arp.png" alt="Stefanie" className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">Stefanie Tirza</p>
-                        <p className="text-xs text-gray-600">24 Apr 2023 • 3 Min Read</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Article Card 2 */}
-              <div className="flex-none w-full md:w-1/3">
-                <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                    <img 
-                      src="../images/arp2.png" 
-                      alt="Kota Rantau" 
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold mb-4">Kembali ke Kota Rantau Bersama 'Rebecca'</h3>
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                        <img src="../images/arp.png" alt="Pandu" className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">Pandu Surya</p>
-                        <p className="text-xs text-gray-600">18 Apr 2023 • 7 Min Read</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Article Card 3 */}
-              <div className="flex-none w-full md:w-1/3">
-                <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                    <img 
-                      src="../images/arp1.png" 
-                      alt="Kebersamaan Liburan" 
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold mb-4">Menjalin Kebersamaan Dengan Cara Liburan</h3>
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                        <img src="../images/arp3.png" alt="Leonard" className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">Leonard Firdiova</p>
-                        <p className="text-xs text-gray-600">27 Apr 2023 • 5 Min Read</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Article Card 4 */}
-              <div className="flex-none w-full md:w-1/3">
-                <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                  <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                    <img 
-                      src="../images/arp4.png" 
-                      alt="Pantai Liburan" 
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold mb-4">Keindahan Pantai Kuta yang Tak Lekang oleh Waktu</h3>
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                        <img src="../images/arp.png" alt="Hana" className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium">Hana Ananda</p>
-                        <p className="text-xs text-gray-600">20 Apr 2023 • 4 Min Read</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <button 
-              className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors"
-              onClick={() => scrollCarousel('right')}
-            >
-              <ChevronRight size={24} />
-            </button>
-          </div>
-          
-          {/* Destinasi Section */}
-          <div className="mt-16">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold flex items-center">
-                Artikel Destinasi
-                <button 
-                  className="ml-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
-                  onClick={() => handleTabChange('destinasi')}
-                >
-                  <ChevronRight size={20} className="text-black" />
-                </button>
-              </h2>
-            </div>
-                
-            <p className="text-gray-600 mb-6">Berkelana dan jelajahi destinasi di bawah ini, sekarang!</p>
-                
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Destinasi Card 1 */}
-              <div 
-                className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-                onClick={navigateToArticleDetail}
-              >
-                <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                  <img 
-                    src="../images/arp4.png" 
-                    alt="Surabaya" 
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-bold mb-4">Mengenal Sejarah Kota Surabaya</h3>
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                      <img src="../images/arp.png" alt="Yogi" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Yogi Safwan</p>
-                      <p className="text-xs text-gray-600">26 Apr 2023 • 3 Min Read</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Destinasi Card 2 */}
-              <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                  <img 
-                    src="../images/arp5.png" 
-                    alt="Yogyakarta" 
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-bold mb-4">Di Balik Keindahan Yogyakarta</h3>
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                      <img src="../images/arp.png" alt="Stefanie" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Stefanie Tirza</p>
-                      <p className="text-xs text-gray-600">24 Apr 2023 • 4 Min Read</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Destinasi Card 3 */}
-              <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                  <img 
-                    src="../images/arp6.png" 
-                    alt="Semarang" 
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-bold mb-4">Sebenarnya Semarang terdapat apa saja?</h3>
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                      <img src="../images/arp.png" alt="Naraissa" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Naraissa Putri</p>
-                      <p className="text-xs text-gray-600">23 Apr 2023 • 6 Min Read</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Inspirasi Section */}
-          <div className="mt-16">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold flex items-center">
-                Artikel Inspirasi
-                <button 
-                  className="ml-2 p-1 rounded-full hover:bg-gray-100 transition-colors"
-                  onClick={() => handleTabChange('inspirasi')}
-                >
-                  <ChevronRight size={20} className="text-black" />
-                </button>
-              </h2>
-            </div>
-                
-            <p className="text-gray-600 mb-6">Perkaya rencana perjalanan Anda dengan membaca artikel inspirasi berikut.</p>
-                
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Inspirasi Card 1 */}
-              <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                  <img 
-                    src="../images/arp7.png" 
-                    alt="Tips Liburan" 
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-bold mb-4">9 Tips Liburan Akhir Tahun agar Dompet Tidak Menipis</h3>
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                      <img src="../images/arp.png" alt="Abdul" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Abdul Rahman</p>
-                      <p className="text-xs text-gray-600">25 Apr 2023 • 3 Min Read</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Inspirasi Card 2 */}
-              <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                  <img 
-                    src="../images/arp8.png" 
-                    alt="Pantai Liburan" 
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-bold mb-4">Inilah Cara Memaksimalkan Waktu Liburan Anda yang Singkat!</h3>
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                      <img src="../images/arp.png" alt="Hana" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Hana Ananda</p>
-                      <p className="text-xs text-gray-600">22 Apr 2023 • 5 Min Read</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Inspirasi Card 3 */}
-              <div className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-48 overflow-hidden border-4 border-purple-400 rounded-t-lg">
-                  <img 
-                    src="../images/arp9.png" 
-                    alt="Remote Work" 
-                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-bold mb-4">Liburan Kok Rebahan? Berikut Tips Mengisi Waktu Liburan</h3>
-                  <div className="flex items-center">
-                    <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                      <img src="../images/arp.png" alt="Naraissa" className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Naraissa Putri</p>
-                      <p className="text-xs text-gray-600">21 Apr 2023 • 3 Min Read</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
 
-      {/* Banner Section with Purple Background above Footer */}
-      <div className="w-full bg-purple-500 py-12">
+      {/* Banner Section dengan Purple Background above Footer */}
+      <div className="w-full bg-purple1 py-12">
         <div className="container mx-auto px-4 md:px-6 flex flex-col md:flex-row items-center justify-between">
           <div className="mb-6 md:mb-0 md:w-1/2 text-left">
             <h2 className="text-3xl md:text-4xl font-bold text-black mb-2">
@@ -670,118 +611,117 @@ const Artikel = () => {
               <h2 className="text-2xl font-bold mb-4">Kirim Pengalaman kalian pada kami!</h2>
               
               <p className="mb-2">kirim via email ke:</p>
-              <p className="font-bold mb-6">maribekelana@gmail.com</p>
+              <p className="font-bold mb-6">berkelanaindonesia@gmail.com</p>
             </div>
           </div>
         </div>
       )}
 
       <footer className="bg-white font-[League_Spartan] text-base">
-  <div className="max-w-full mx-auto py-8 px-0">
-    <div className="flex flex-col md:flex-row justify-between items-start max-w-7xl mx-auto">
-      {/* Section 1 - Logo - First position (left) */}
-      <div className="mb-8 md:mb-0 md:mr-8">
-        <div className="mb-6">
-          <img
-            src="../images/berkelana-logo.png"
-            alt="Berkelana Logo"
-            className="h-25"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = "/api/placeholder/160/60";
-            }}
-          />
-        </div>
-      </div>
+        <div className="max-w-full mx-auto py-8 px-0">
+          <div className="flex flex-col md:flex-row justify-between items-start max-w-7xl mx-auto">
+            {/* Section 1 - Logo - First position (left) */}
+            <div className="mb-8 md:mb-0 md:mr-8">
+              <div className="mb-6">
+                <img
+                  src="../images/berkelana-logo.png"
+                  alt="Berkelana Logo"
+                  className="h-25"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/api/placeholder/160/60";
+                  }}
+                />
+              </div>
+            </div>
 
-      {/* Section 2 - Kontak (Nomor dan Email) */}
-      <div className="mb-8 md:mb-0 md:mr-8">
-        <h3 className="font-medium mb-4">Hubungi Kami</h3>
-        <div className="space-y-2">
-          <div className="flex items-center">
-            <i className="fa-solid fa-phone-alt mr-2 text-gray-700"></i>
-            <a href="tel:08124494015" className="text-gray-700 hover:text-emerald-400">
-              08124494015
-            </a>
+            {/* Section 2 - Kontak (Nomor dan Email) */}
+            <div className="mb-8 md:mb-0 md:mr-8">
+              <h3 className="font-medium mb-4">Hubungi Kami</h3>
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <i className="fa-solid fa-phone-alt mr-2 text-gray-700"></i>
+                  <a href="tel:08124494015" className="text-gray-700 hover:text-emerald-400">
+                    08124494015
+                  </a>
+                </div>
+                <div className="flex items-center">
+                  <i className="fas fa-envelope mr-2 text-gray-700"></i>
+                  <a href="mailto:berkelanaindonesia@gmail.com" className="text-gray-700 hover:text-emerald-400">
+                    berkelanaindonesia@gmail.com
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3 - Cari Tiket dan Promo */}
+            <div className="mb-8 md:mb-0 md:mr-8">
+              <h3 className="font-medium mb-4">Layanan</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/cari-tiket" className="text-gray-700 hover:text-emerald-400">
+                    Cari tiket
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/promo" className="text-gray-700 hover:text-emerald-400">
+                    Promo
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 4 - Artikel, Tiket Saya, Syarat, Privacy */}
+            <div className="mb-8 md:mb-0 md:mr-8">
+              <h3 className="font-medium mb-4">Lainnya</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link to="/artikel" className="text-gray-700 hover:text-emerald-400">
+                    Artikel
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/tiket-saya" className="text-gray-700 hover:text-emerald-400">
+                    Tiket Saya
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/tentang-kami" className="text-gray-700 hover:text-emerald-400">
+                    Tentang Kami
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/syarat-ketentuan" className="text-gray-700 hover:text-emerald-400">
+                    Kebijakan kami
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Section 5 - Social Media */}
+            <div className="mb-8 md:mb-0">
+              <h3 className="font-medium mb-4">Temukan Kami di</h3>
+              <div className="flex space-x-4">
+                <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400">
+                  <i className="fab fa-facebook-f text-gray-700 hover:text-emerald-400"></i>
+                </a>
+                <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400">
+                  <i className="fab fa-instagram text-gray-700 hover:text-emerald-400"></i>
+                </a>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center">
-            <i className="fas fa-envelope mr-2 text-gray-700"></i>
-            <a href="mailto:berkelanaindonesia@gmail.com" className="text-gray-700 hover:text-emerald-400">
-              berkelanaindonesia@gmail.com
-            </a>
+        </div>
+
+        {/* Copyright Section */}
+        <div className="bg-emerald1 py-3">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p className="text-center text-black">
+              Copyright © 2025 BERKELANA®, All rights reserved.
+            </p>
           </div>
         </div>
-      </div>
-
-      {/* Section 3 - Cari Tiket dan Promo */}
-      <div className="mb-8 md:mb-0 md:mr-8">
-        <h3 className="font-medium mb-4">Layanan</h3>
-        <ul className="space-y-2">
-          <li>
-            <Link to="/cari-tiket" className="text-gray-700 hover:text-emerald-400">
-              Cari tiket
-            </Link>
-          </li>
-          <li>
-            <Link to="/promo" className="text-gray-700 hover:text-emerald-400">
-              Promo
-            </Link>
-          </li>
-        </ul>
-      </div>
-
-      {/* Section 4 - Artikel, Tiket Saya, Syarat, Privacy */}
-      <div className="mb-8 md:mb-0 md:mr-8">
-        <h3 className="font-medium mb-4">Lainnya</h3>
-        <ul className="space-y-2">
-          <li>
-            <Link to="/artikel" className="text-gray-700 hover:text-emerald-400">
-              Artikel
-            </Link>
-          </li>
-          <li>
-            <Link to="/tiket-saya" className="text-gray-700 hover:text-emerald-400">
-              Tiket Saya
-            </Link>
-          </li>
-          <li>
-            <Link to="/syarat-ketentuan" className="text-gray-700 hover:text-emerald-400">
-              Syarat & Ketentuan
-            </Link>
-          </li>
-          <li>
-            <Link to="/privacy-policy" className="text-gray-700 hover:text-emerald-400">
-              Privacy Policy
-            </Link>
-          </li>
-        </ul>
-      </div>
-
-      {/* Section 5 - Social Media */}
-      <div className="mb-8 md:mb-0">
-        <h3 className="font-medium mb-4">Temukan Kami di</h3>
-        <div className="flex space-x-4">
-          <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400">
-            <i className="fab fa-facebook-f text-gray-700 hover:text-emerald-400"></i>
-          </a>
-          <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400">
-            <i className="fab fa-instagram text-gray-700 hover:text-emerald-400"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  {/* Copyright Section */}
-  <div className="bg-emerald1 py-3">
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <p className="text-center text-black">
-        Copyright © 2025 BERKELANA®, All rights reserved.
-      </p>
-    </div>
-  </div>
-</footer>
-
+      </footer>
     </>
   );
 };

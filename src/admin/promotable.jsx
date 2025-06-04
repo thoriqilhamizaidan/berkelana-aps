@@ -38,6 +38,10 @@ const PromoTable = () => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedPromo, setSelectedPromo] = useState(null);
   const [editingPromo, setEditingPromo] = useState(null);
+  
+  // Add states for delete confirmation modal
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [promoToDelete, setPromoToDelete] = useState(null);
 
   // Unified API handler
   const apiCall = async (url, options = {}, successMsg = "") => {
@@ -61,20 +65,35 @@ const PromoTable = () => {
     }
   };
 
+  // Perbaikan loadPromoData untuk menghindari multiple calls
   const loadPromoData = async () => {
+    // Hindari multiple simultaneous calls
+    if (loading) return;
+    
     try {
-      const data = await apiCall(API_URL);
+      setLoading(true);
+      
+      const response = await fetch(API_URL);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      
+      const data = await response.json();
       const promoArray = Array.isArray(data) ? data : (data.data || []);
       
       const processedPromos = promoArray.map(promo => ({
         ...promo,
-        image: promo.image ? (promo.image.startsWith('http') ? promo.image : `http://localhost:3000${promo.image}`) : null,
+        image: promo.image ? 
+          (promo.image.startsWith('http') ? promo.image : `http://localhost:3000${promo.image}`) 
+          : null,
       }));
       
       setPromos(processedPromos);
       setError(null);
+      
     } catch (err) {
+      console.error('Load promo error:', err);
       setError(err.message || 'Failed to load promos');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,16 +101,75 @@ const PromoTable = () => {
     loadPromoData();
   }, []);
 
-  const handleCreatePromo = async (formData) => {
+  // Di bagian handleCreatePromo dalam PromoTable component, ganti dengan ini:
+
+const handleCreatePromo = async (formData) => {
+  // Pencegahan double submission yang lebih ketat
+  if (loading) {
+    console.log('Already processing request, ignoring...');
+    return;
+  }
+
+  try {
+    setLoading(true);
+    console.log('Creating promo with data:', formData);
+    
     const form = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === 'image' && value) form.append("gambar", value);
-      else if (key !== 'imagePreview') form.append(key === 'id_admin' ? key : key, value || (key === 'id_admin' ? "1" : ""));
+    
+    // Pastikan data yang dikirim bersih dan valid
+    const cleanFormData = {
+      title: formData.title?.trim() || '',
+      details: formData.details?.trim() || '', 
+      code: formData.code?.trim().toUpperCase() || '',
+      potongan: formData.potongan || '0',
+      berlakuHingga: formData.berlakuHingga || '',
+      id_admin: '1'
+    };
+
+    // Append data ke FormData
+    Object.entries(cleanFormData).forEach(([key, value]) => {
+      form.append(key, value);
     });
 
-    await apiCall(API_URL, { method: "POST", body: form }, "Promo berhasil ditambahkan!");
-    setCurrentPage("list");
-  };
+    // Handle image upload
+    if (formData.image && formData.image instanceof File) {
+      form.append("gambar", formData.image);
+    }
+
+    console.log('Sending create request to API...');
+    
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: form
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    console.log('API Response:', result);
+    
+    if (result.success !== false) {
+      // Tampilkan pesan sukses
+      alert("Promo berhasil ditambahkan!");
+      
+      // Reload data untuk memastikan sinkronisasi
+      await loadPromoData();
+      
+      // Kembali ke halaman list
+      setCurrentPage("list");
+    } else {
+      throw new Error(result.message || 'Gagal membuat promo');
+    }
+    
+  } catch (error) {
+    console.error('Error creating promo:', error);
+    alert(error.message || "Terjadi kesalahan saat menambah promo");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleEditPromo = async (formData) => {
     const form = new FormData();
@@ -147,9 +225,24 @@ const PromoTable = () => {
     }
   };
 
-  const handleDelete = async (promo) => {
-    if (!window.confirm(`Yakin ingin menghapus promo "${promo.title}"?`)) return;
-    await apiCall(`${API_URL}/${promo.id}`, { method: "DELETE" }, "Promo berhasil dihapus!");
+  // Updated delete handler to show confirmation modal
+  const handleDeleteClick = (promo) => {
+    setPromoToDelete(promo);
+    setShowConfirmModal(true);
+  };
+
+  // Confirm delete handler
+  const handleConfirmDelete = async () => {
+    if (promoToDelete) {
+      try {
+        await apiCall(`${API_URL}/${promoToDelete.id}`, { method: "DELETE" }, "Promo berhasil dihapus!");
+        setShowConfirmModal(false);
+        setPromoToDelete(null);
+      } catch (err) {
+        setShowConfirmModal(false);
+        setPromoToDelete(null);
+      }
+    }
   };
 
   const handleEditClick = (promo) => {
@@ -179,6 +272,39 @@ const PromoTable = () => {
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
+      {/* Delete Confirmation Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 flex items-center justify-center  bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-6 w-96 relative">
+            <button 
+              onClick={() => setShowConfirmModal(false)} 
+              className="absolute top-3 right-3 text-black text-xl font-bold hover:text-gray-600"
+            >
+              ×
+            </button>
+            <h2 className="text-lg font-bold text-center mb-4">Apakah anda yakin?</h2>
+            <p className="text-sm text-gray-600 text-center mb-6">
+              Promo "{promoToDelete?.title}" akan dihapus secara permanen.
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setShowConfirmModal(false)}
+                className="bg-green-400 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-semibold"
+              >
+                Tidak
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold"
+                disabled={loading}
+              >
+                {loading ? 'Menghapus...' : 'Hapus'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -297,7 +423,11 @@ const PromoTable = () => {
                           >
                             Edit
                           </button>
-                          <button className="text-red-600 hover:text-red-900" onClick={() => handleDelete(promo)} disabled={loading}>
+                          <button 
+                            className="text-red-600 hover:text-red-900" 
+                            onClick={() => handleDeleteClick(promo)} 
+                            disabled={loading}
+                          >
                             Hapus
                           </button>
                         </div>
