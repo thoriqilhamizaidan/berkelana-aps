@@ -128,42 +128,42 @@ const OTPModal = ({ open, email, onClose, onResend, onSubmit }) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-[3px] bg-black/30 transition-all">
+    <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-[3px] bg-black/30 transition-all p-4">
       <div
-        className={`relative bg-white rounded-2xl py-12 px-4 sm:px-12 w-full max-w-2xl mx-auto shadow-2xl
+        className={`relative bg-white rounded-xl sm:rounded-2xl py-6 sm:py-8 md:py-10 lg:py-12 px-4 sm:px-6 md:px-8 lg:px-12 w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-2xl mx-auto shadow-2xl
         transition-transform duration-300 ${animate ? "scale-100 opacity-100" : "scale-95 opacity-0"}`}
         style={{ willChange: "transform, opacity" }}
       >
         {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 text-3xl text-black hover:text-purple-400 focus:outline-none"
+          className="absolute top-4 sm:top-5 md:top-6 right-4 sm:right-5 md:right-6 text-2xl sm:text-3xl text-black hover:text-purple-400 focus:outline-none transition-colors"
           aria-label="Tutup"
         >
           &times;
         </button>
         
         {/* Title */}
-        <h1 className="text-5xl font-bold text-center mb-6 text-black">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4 sm:mb-5 md:mb-6 text-black leading-tight">
           Masukkan kode OTP
         </h1>
         
-        <p className="text-center text-xl mb-1 text-black">
+        <p className="text-center text-sm sm:text-base md:text-lg lg:text-xl mb-1 text-black px-2">
           Masukkan kode yang dikirim via email ke:
         </p>
-        <p className="text-center font-bold text-2xl mb-10 text-black break-all">
+        <p className="text-center font-bold text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 md:mb-10 text-black break-all px-2">
           {email}
         </p>
 
         {/* Error message */}
         {error && (
-          <div className="mb-6 p-3 bg-red-100 text-red-700 rounded-lg text-center">
+          <div className="mb-4 sm:mb-6 p-3 bg-red-100 text-red-700 rounded-lg text-center text-sm sm:text-base">
             {error}
           </div>
         )}
 
         {/* OTP Inputs */}
-        <div className="flex justify-center mb-8 gap-4">
+        <div className="flex justify-center mb-6 sm:mb-8 gap-2 sm:gap-3 md:gap-4">
           {otp.map((digit, index) => (
             <input
               key={index}
@@ -179,7 +179,7 @@ const OTPModal = ({ open, email, onClose, onResend, onSubmit }) => {
                   handleSubmit(e);
                 }
               }}
-              className="w-16 h-16 text-center text-3xl border-2 border-purple-300 rounded-xl shadow-[0_4px_8px_0_rgba(128,90,213,0.12)] focus:outline-none focus:border-purple-500 transition"
+              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 text-center text-lg sm:text-xl md:text-2xl lg:text-3xl border-2 border-purple-300 rounded-lg sm:rounded-xl shadow-[0_4px_8px_0_rgba(128,90,213,0.12)] focus:outline-none focus:border-purple-500 transition"
               disabled={loading}
               autoFocus={index === 0}
               inputMode="numeric"
@@ -189,11 +189,11 @@ const OTPModal = ({ open, email, onClose, onResend, onSubmit }) => {
         </div>
 
         {/* Verify button - visible for manual submit */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4 sm:mb-6">
           <button
             onClick={handleSubmit}
             disabled={loading || otp.join('').length !== 6}
-            className={`px-8 py-3 rounded-xl font-bold transition
+            className={`w-full sm:w-auto px-6 sm:px-8 py-3 rounded-lg sm:rounded-xl font-bold transition text-sm sm:text-base
               ${loading || otp.join('').length !== 6
                 ? 'bg-purple-200 text-white cursor-not-allowed' 
                 : 'bg-purple-400 hover:bg-purple-500 text-white'
@@ -206,12 +206,11 @@ const OTPModal = ({ open, email, onClose, onResend, onSubmit }) => {
         {/* Resend */}
         <div className="text-center">
           <p
-            className={`cursor-pointer transition ${
+            className={`cursor-pointer transition text-xs sm:text-sm md:text-base ${
               countdown > 0 
                 ? 'text-gray-400 cursor-not-allowed' 
                 : 'text-black hover:text-purple-500'
             }`}
-            style={{ fontSize: "15px" }}
             onClick={countdown > 0 ? undefined : handleResend}
           >
             {resendLoading 

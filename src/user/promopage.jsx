@@ -10,56 +10,50 @@ const TermsModal = ({ show, promo, onClose }) => {
   if (!show || !promo) return null;
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-        {/* Modal Header */}
-        <div className="bg-purple1 text-white p-6 flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-bold">Syarat & Ketentuan</h2>
-            <p className="text-purplelight text-sm mt-1">{promo.title || promo.judul}</p>
+    <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden mx-2 sm:mx-0">
+        <div className="bg-purple1 text-white p-3 sm:p-4 md:p-6 flex justify-between items-start sm:items-center">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold leading-tight">Syarat & Ketentuan</h2>
+            <p className="text-purplelight text-xs sm:text-sm mt-1 truncate">{promo.title || promo.judul}</p>
           </div>
           <button 
             onClick={onClose}
-            className="text-white hover:text-purplelight transition-colors p-1"
+            className="text-white hover:text-purplelight transition-colors p-1 ml-2 flex-shrink-0"
+            aria-label="Close modal"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
-        
-        {/* Modal Body */}
-        <div className="p-6 overflow-y-auto max-h-96">
-          <div className="mb-4 p-4 bg-purple-50 rounded-lg border-l-4 border-purple1">
-            <div className="flex items-center mb-2">
-              <div className="bg-purple1 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold mr-3">
+        <div className="p-3 sm:p-4 md:p-6 overflow-y-auto max-h-[calc(95vh-120px)] sm:max-h-[calc(90vh-140px)]">
+          <div className="mb-4 p-3 sm:p-4 bg-purple-50 rounded-lg border-l-4 border-purple1">
+            <div className="flex flex-col sm:flex-row sm:items-center mb-2">
+              <div className="bg-purple1 text-white rounded-full w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center text-sm sm:text-base font-bold mb-2 sm:mb-0 sm:mr-3 self-start">
                 {promo.potongan >= 1000 ? `${Math.floor(promo.potongan / 1000)}RB` : 
-                 promo.potongan >= 100 ? `${promo.potongan}` : `${promo.potongan}%`}
+                promo.potongan >= 100 ? `${promo.potongan}` : `${promo.potongan}%`}
               </div>
-              <div>
-                <h3 className="font-semibold text-purple1">Kode: {promo.code || promo.kode_promo}</h3>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-semibold text-purple1 text-sm sm:text-base md:text-lg break-words">
+                  Kode: {promo.code || promo.kode_promo}
+                </h3>
                 {promo.berlakuHingga && (
-                  <p className="text-sm text-purple1">
+                  <p className="text-xs sm:text-sm text-purple1 mt-1">
                     Berlaku hingga: {new Date(promo.berlakuHingga).toLocaleDateString('id-ID')}
                   </p>
                 )}
               </div>
             </div>
           </div>
-          
-          <div className="prose prose-sm max-w-none">
-            <h4 className="text-lg font-semibold text-black1 mb-3">Detail Promo:</h4>
-            <div className="text-black1 whitespace-pre-line leading-relaxed">
-              {promo.details || promo.detail || 'Tidak ada detail tersedia untuk promo ini.'}
-            </div>
+          <div className="text-black1 whitespace-pre-line leading-relaxed text-xs sm:text-sm md:text-base">
+            {promo.details || promo.detail || 'Tidak ada detail tersedia untuk promo ini.'}
           </div>
         </div>
-        
-        {/* Modal Footer */}
-        <div className="bg-gray-50 px-6 py-4 flex justify-end">
+        <div className="bg-gray-50 px-3 py-3 sm:px-4 sm:py-3 md:px-6 md:py-4 flex justify-end border-t">
           <button 
             onClick={onClose}
-            className="bg-purple1 hover:bg-purple1 text-white px-6 py-2 rounded-lg transition-colors"
+            className="bg-purple1 hover:bg-purple-700 text-white px-4 py-2 sm:px-6 sm:py-2 rounded-lg transition-colors text-xs sm:text-sm md:text-base font-medium"
           >
             Tutup
           </button>
@@ -193,7 +187,7 @@ const PromoCard = ({ promo, onCopyCode, onShowTerms }) => {
   };
 
   return (
-    <div className={`bg-gray-100 rounded-lg shadow overflow-hidden transition-transform duration-300 hover:shadow-lg hover:scale-105 cursor-pointer ${expired ? 'opacity-60' : ''}`}>
+    <div className={`bg-white1 rounded-lg shadow overflow-hidden transition-transform duration-300 hover:shadow-lg hover:scale-105 cursor-pointer ${expired ? 'opacity-60' : ''}`}>
       <div className="relative h-48">
         {/* Image container */}
         {imageUrl && !imageError ? (
@@ -209,7 +203,7 @@ const PromoCard = ({ promo, onCopyCode, onShowTerms }) => {
         
         {/* Loading state for image */}
         {imageUrl && !imageError && !imageLoaded && (
-          <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center">
+          <div className="w-full h-full bg-white1animate-pulse flex items-center justify-center">
             <svg className="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
             </svg>
@@ -357,14 +351,28 @@ const PromoPage = () => {
   // Render content based on state
   const renderPromoContent = () => {
     if (loading) {
-      return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  return (
+    <>
+      {/* Mobile: Horizontal scroll skeleton */}
+      <div className="block sm:hidden">
+        <div className="flex gap-4 overflow-x-auto pb-4 px-4 -mx-4">
           {[1, 2, 3, 4, 5, 6].map(i => (
-            <PromoCardSkeleton key={i} />
+            <div key={i} className="flex-shrink-0 w-80">
+              <PromoCardSkeleton />
+            </div>
           ))}
         </div>
-      );
-    }
+      </div>
+
+      {/* Tablet and Desktop: Grid skeleton */}
+      <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[1, 2, 3, 4, 5, 6].map(i => (
+          <PromoCardSkeleton key={i} />
+        ))}
+      </div>
+    </>
+  );
+}
 
     if (error) {
       return (
@@ -406,19 +414,41 @@ const PromoPage = () => {
       promoChunks.push(promos.slice(i, i + 3));
     }
 
-    return promoChunks.map((chunk, chunkIndex) => (
-      <div key={chunkIndex} className={`grid grid-cols-1 md:grid-cols-3 gap-6 ${chunkIndex > 0 ? 'mt-12' : ''}`}>
-        {chunk.map((promo) => (
-          <PromoCard 
-            key={promo.id || promo.id_promo} 
-            promo={promo} 
-            onCopyCode={handleCopyCode}
-            onShowTerms={handleShowTerms}
-          />
+    return (
+  <div className="space-y-8">
+    {/* Mobile: Horizontal scroll */}
+    <div className="block sm:hidden">
+      <div className="flex gap-4 overflow-x-auto pb-4 px-4 -mx-4">
+        {promos.map((promo) => (
+          <div key={promo.id || promo.id_promo} className="flex-shrink-0 w-80">
+            <PromoCard 
+              promo={promo} 
+              onCopyCode={handleCopyCode}
+              onShowTerms={handleShowTerms}
+            />
+          </div>
         ))}
       </div>
-    ));
-  };
+    </div>
+
+    {/* Tablet and Desktop: Grid layout */}
+    <div className="hidden sm:block">
+      {promoChunks.map((chunk, chunkIndex) => (
+        <div key={chunkIndex} className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 ${chunkIndex > 0 ? 'mt-12' : ''}`}>
+          {chunk.map((promo) => (
+            <PromoCard 
+              key={promo.id || promo.id_promo} 
+              promo={promo} 
+              onCopyCode={handleCopyCode}
+              onShowTerms={handleShowTerms}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+);
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -440,20 +470,22 @@ const PromoPage = () => {
         onClose={handleCloseTerms} 
       />
 
-      {/* Hero Section */}
-      <section className="relative h-[320px] md:h-[370px] bg-cover bg-center">
-        <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-purple-950/40 z-0"></div>
-        <img
-          src="/images/Rectangle 65.png"
-          alt="Bus Background"
-          className="absolute inset-0 w-full h-full object-cover z-0"
-        />
-        <div className="relative z-10 h-full flex flex-col justify-center items-center text-white text-center px-4">
-          <h1 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-0 mt-12 md:mt-0">
-            Dapatkan promo khusus hari ini <br /> hanya pada <span className="text-green-400">#Berkelana</span>
-          </h1>
-        </div>
-      </section>
+     {/* Hero Section */}
+<section className="relative h-[280px] sm:h-[320px] md:h-[370px] lg:h-[420px] bg-cover bg-center">
+  <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-purple-950/40 z-0"></div>
+  <img
+    src="/images/Rectangle 65.png"
+    alt="Bus Background"
+    className="absolute inset-0 w-full h-full object-cover z-0"
+  />
+  <div className="relative z-10 h-full flex flex-col justify-center items-center text-white text-center px-4 sm:px-6 md:px-8">
+    <h1 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-bold leading-tight sm:leading-normal">
+      Dapatkan promo khusus hari ini <br className="hidden sm:block" />
+      <span className="sm:hidden"> </span>
+      hanya pada <span className="text-green-400">#Berkelana</span>
+    </h1>
+  </div>
+</section>
 
       {/* Promo Cards Section */}
       <section className="py-12 px-4">

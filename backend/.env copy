@@ -18,3 +18,8 @@ JWT_EXPIRES_IN=7d
 
 # Other Configuration
 CORS_ORIGIN=http://localhost:3000
+
+
+EMAIL_USER=berkelanaapps@gmail.com 
+EMAIL_PASS=zohdrfbykdrzeeus
+JWT_SECRET=your-secret-key

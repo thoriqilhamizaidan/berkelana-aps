@@ -312,7 +312,7 @@ exports.forgotPassword = async (req, res) => {
     };
 
     await transporter.sendMail(mailOptions);
-
+console.log(`✅ OTP berhasil dikirim ke ${email}`);
     return res.json({
       success: true,
       message: 'OTP telah dikirim ke email Anda'

@@ -64,7 +64,7 @@ const ForgotPassword = () => {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center"
+      className="min-h-screen flex items-center justify-center p-4"
       style={{
         backgroundImage:
           "url('images/directly-shot-christmas-background.png')",
@@ -73,43 +73,47 @@ const ForgotPassword = () => {
         backgroundRepeat: "no-repeat",
       }}
     >
-      <div className="bg-white py-20 px-6 sm:px-12 rounded-3xl shadow-lg w-full max-w-2xl mx-auto relative">
+      <div className="bg-white py-8 sm:py-12 md:py-16 lg:py-20 px-4 sm:px-6 md:px-8 lg:px-12 rounded-2xl sm:rounded-3xl shadow-lg w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl mx-auto relative">
         {/* Back button */}
         <Link
           to="/daftar-masuk"
-          className="absolute top-5 left-5 text-2xl text-gray-700 hover:text-purple-500"
+          className="absolute top-3 sm:top-4 md:top-5 left-3 sm:left-4 md:left-5 text-xl sm:text-2xl text-gray-700 hover:text-purple-500 transition-colors"
         >
           <span aria-label="Back" role="img">
             &larr;
           </span>
         </Link>
+        
         {/* Logo */}
-        <div className="mb-10 flex justify-center">
+        <div className="mb-6 sm:mb-8 md:mb-10 flex justify-center">
           <img
             src="images/berkelana-logo.png"
             alt="Logo"
-            className="h-12 w-auto"
+            className="h-8 sm:h-10 md:h-12 w-auto"
           />
         </div>
+        
         {/* Title */}
-        <div className="mb-3">
-          <h1 className="text-5xl font-bold mb-4 text-black">Lupa kata sandi</h1>
-          <p className="text-gray-700 text-lg mb-12 max-w-2xl">
+        <div className="mb-6 sm:mb-8 text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-black leading-tight">
+            Lupa kata sandi
+          </h1>
+          <p className="text-gray-700 text-sm sm:text-base md:text-lg mb-6 sm:mb-8 md:mb-12 px-2">
             Jangan khawatir. Tuliskan email untuk membuat kata sandi baru.
           </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm sm:text-base">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
-          <div className="mb-12">
+          <div className="mb-8 sm:mb-10 md:mb-12">
             <label
               htmlFor="email"
-              className="block text-left font-semibold mb-2 text-black text-lg"
+              className="block text-left font-semibold mb-2 text-black text-sm sm:text-base md:text-lg"
             >
               Email
             </label>
@@ -119,15 +123,16 @@ const ForgotPassword = () => {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="Masukkan email"
-              className="w-full p-4 border-2 border-purple-300 rounded-xl focus:outline-none focus:border-purple-500 transition text-lg placeholder:text-gray-400"
+              className="w-full p-3 sm:p-4 border-2 border-purple-300 rounded-lg sm:rounded-xl focus:outline-none focus:border-purple-500 transition text-sm sm:text-base md:text-lg placeholder:text-gray-400"
               required
             />
           </div>
+          
           <button
             type="submit"
             disabled={loading}
-            className={`block mx-auto ${loading ? 'bg-purple-200' : 'bg-purple-300 hover:bg-purple-400'} 
-              text-white font-bold py-3 px-16 rounded-xl text-lg transition`}
+            className={`block mx-auto w-full sm:w-auto ${loading ? 'bg-purple-200' : 'bg-purple-300 hover:bg-purple-400'} 
+              text-white font-bold py-3 sm:py-3 px-8 sm:px-12 md:px-16 rounded-lg sm:rounded-xl text-sm sm:text-base md:text-lg transition`}
           >
             {loading ? 'Mengirim...' : 'Kirim'}
           </button>

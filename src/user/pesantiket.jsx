@@ -26,6 +26,7 @@ const PesanTiket = () => {
   const [debugInfo, setDebugInfo] = useState('');
 
   const navigate = useNavigate();
+  
 
   //mapping city
   // Fungsi untuk mendapatkan singkatan kota
