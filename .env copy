@@ -14,7 +14,9 @@ NODE_ENV=development
 # JWT Configuration
 JWT_SECRET=your_super_secret_jwt_key_here
 JWT_EXPIRES_IN=7d
-
+EMAIL_USER=berkelanaapps@gmail.com 
+EMAIL_PASS=zohdrfbykdrzeeus
+JWT_SECRET=your-secret-key
 
 # Other Configuration
 CORS_ORIGIN=http://localhost:3000
