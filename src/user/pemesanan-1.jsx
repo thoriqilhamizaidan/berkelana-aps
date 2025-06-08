@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Footer from './footer';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, User, Info } from 'lucide-react';
 import { Icon } from '@iconify/react'; 
 import { transaksiService } from '../services/api';
+import { useAuth } from './context/AuthContext'; // ✅ Import useAuth
 
 const Pemesanan1 = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, isLoggedIn } = useAuth(); // ✅ Get user data from context
   const ticket = location.state?.ticket || {};
   
   const [formData, setFormData] = useState({
@@ -22,9 +24,55 @@ const Pemesanan1 = () => {
     jenisKelamin3: 'Laki-laki'
   });
   
-  const [rememberPesanan, setRememberPesanan] = useState(false);
   const [addSecondPassenger, setAddSecondPassenger] = useState(false);
   const [addThirdPassenger, setAddThirdPassenger] = useState(false);
+
+  // State untuk checkbox "Pemesan adalah penumpang"
+  const [isPesananPenumpang, setIsPesananPenumpang] = useState(false);
+
+  // ✅ NEW: Auto-fill user data when component mounts
+  useEffect(() => {
+    if (isLoggedIn && user) {
+      console.log('Auto-filling user data:', user);
+      
+      // Map user data to form fields - coba berbagai kemungkinan field name
+      const userData = {
+        namaPesanan: user.nama_user || user.nama_admin || user.nama || '',
+        noHandphone: user.no_hp_user || user.no_hp_admin || user.no_hp || user.phone || '',
+        email: user.email_user || user.email_admin || user.email || '',
+      };
+
+      console.log('Mapped user data:', userData);
+
+      // Update form data with user info
+      setFormData(prev => ({
+        ...prev,
+        ...userData
+      }));
+    }
+  }, [isLoggedIn, user]);
+
+  // Fungsi untuk handle checkbox "Pemesan adalah penumpang"
+  const handlePesananPenumpangChange = (e) => {
+    const checked = e.target.checked;
+    setIsPesananPenumpang(checked);
+
+    if (checked) {
+      // Jika checkbox dicentang, copy data pemesan ke penumpang 1
+      setFormData(prev => ({
+        ...prev,
+        namaPenumpang1: prev.namaPesanan,
+        jenisKelamin1: user?.gender_user || 'Laki-laki' // ✅ Use user's gender if available
+      }));
+    } else {
+      // Jika checkbox tidak dicentang, kosongkan data penumpang 1
+      setFormData(prev => ({
+        ...prev,
+        namaPenumpang1: '',
+        jenisKelamin1: 'Laki-laki'
+      }));
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -32,7 +80,26 @@ const Pemesanan1 = () => {
       ...prev,
       [name]: value
     }));
+
+    // Jika checkbox aktif dan user mengubah data pemesan (nama), 
+    // otomatis update nama penumpang 1 juga
+    if (isPesananPenumpang && name === 'namaPesanan') {
+      setFormData(prev => ({
+        ...prev,
+        namaPenumpang1: value
+      }));
+    }
   };
+
+  // Effect untuk sinkronisasi real-time saat checkbox aktif
+  useEffect(() => {
+    if (isPesananPenumpang) {
+      setFormData(prev => ({
+        ...prev,
+        namaPenumpang1: prev.namaPesanan
+      }));
+    }
+  }, [formData.namaPesanan, isPesananPenumpang]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -213,6 +280,28 @@ const Pemesanan1 = () => {
         
         <p className="text-gray-600 mb-6">Isi data Anda dan review pesanan Anda.</p>
         
+        {/* Login Reminder for non-logged users only */}
+        {!isLoggedIn && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center">
+              <Info className="w-5 h-5 text-yellow-600 mr-2" />
+              <div>
+                <div className="font-medium text-yellow-800">
+                  Belum masuk akun?
+                </div>
+                <div className="text-sm text-yellow-600">
+                  <button 
+                    onClick={() => navigate('/daftar-masuk')}
+                    className="underline hover:text-yellow-700"
+                  >
+                    Masuk ke akun Anda
+                  </button> untuk mengisi data secara otomatis
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Side - Form */}
           <div className="lg:col-span-2">
@@ -234,6 +323,11 @@ const Pemesanan1 = () => {
                       className="w-full p-2 border border-purple1 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
                       required
                     />
+                    {isLoggedIn && formData.namaPesanan && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        ✓ Data dari akun Anda (dapat diedit jika perlu)
+                      </p>
+                    )}
                   </div>
                   
                   <div>
@@ -248,6 +342,11 @@ const Pemesanan1 = () => {
                       className="w-full p-2 border border-purple1 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
                       required
                     />
+                    {isLoggedIn && formData.noHandphone && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        ✓ Data dari akun Anda (dapat diedit jika perlu)
+                      </p>
+                    )}
                   </div>
                   
                   <div>
@@ -262,20 +361,29 @@ const Pemesanan1 = () => {
                       className="w-full p-2 border border-purple1 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
                       required
                     />
+                    {isLoggedIn && formData.email && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        ✓ Data dari akun Anda (dapat diedit jika perlu)
+                      </p>
+                    )}
                   </div>
                   
+                  {/* Checkbox: Pemesan adalah penumpang */}
                   <div className="flex items-center">
                     <input
                       type="checkbox"
-                      id="rememberPesanan"
-                      checked={rememberPesanan}
-                      onChange={(e) => setRememberPesanan(e.target.checked)}
+                      id="isPesananPenumpang"
+                      checked={isPesananPenumpang}
+                      onChange={handlePesananPenumpangChange}
                       className="w-4 h-4 text-purple-600 border-purple1 rounded focus:ring-purple-500 bg-white"
                     />
-                    <label htmlFor="rememberPesanan" className="ml-2 text-sm text-gray-700">
-                      Pemesan adalah penumpang
+                    <label htmlFor="isPesananPenumpang" className="ml-2 text-sm text-gray-700">
+                      <span className="font-semibold">Pemesan adalah penumpang</span>
                     </label>
                   </div>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Centang jika Anda (pemesan) adalah penumpang pertama yang akan bepergian
+                  </p>      
                 </div>
               </div>
               
@@ -296,9 +404,20 @@ const Pemesanan1 = () => {
                       name="namaPenumpang1"
                       value={formData.namaPenumpang1}
                       onChange={handleInputChange}
-                      className="w-full p-2 border border-purple1 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
+                      disabled={isPesananPenumpang}
+                      className={`w-full p-2 border border-purple1 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        isPesananPenumpang 
+                          ? 'bg-gray-100 cursor-not-allowed text-gray-600' 
+                          : 'bg-white'
+                      }`}
+                      placeholder={isPesananPenumpang ? "Akan terisi otomatis dari data pemesan" : ""}
                       required
                     />
+                    {isPesananPenumpang && (
+                      <p className="text-xs text-blue-600 mt-1">
+                        ✓ Data terisi otomatis dari nama pemesan
+                      </p>
+                    )}
                   </div>
                   
                   <div>
@@ -475,7 +594,7 @@ const Pemesanan1 = () => {
                       {formatTime(ticket?.waktu_keberangkatan)}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      Terminal {ticket?.kota_awal || 'N/A'}
+                      Terminal {ticket?.kota_asal || 'N/A'}
                     </div>
                   </div>
                   <div className="text-right">

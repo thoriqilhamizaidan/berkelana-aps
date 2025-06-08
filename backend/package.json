@@ -17,21 +17,27 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^1.9.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
+    "crypto-js": "^4.2.0",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
+    "midtrans-client": "^1.4.3",
     "multer": "^1.4.5-lts.1",
     "mysql2": "^3.14.1",
     "nodemailer": "^6.10.1",
     "path-to-regexp": "^6.3.0",
-    "sequelize": "^6.37.7"
+    "sequelize": "^6.37.7",
+    "uuid": "^11.1.0",
+    "xendit-node": "^7.0.0"
   },
   "devDependencies": {
+    "ngrok": "^5.0.0-beta.2",
     "nodemon": "^3.1.10",
     "sequelize-cli": "^6.6.3"
   }

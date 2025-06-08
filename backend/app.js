@@ -12,9 +12,9 @@ const jadwalRoutes = require('./routes/jadwal');
 const adminRoutes = require('./routes/adminRoutes');
 const artikelRoutes = require('./routes/artikelRoutes');
 const authRoutes = require('./routes/auth');
-const promoRoutes = require('./routes/promoRoutes'); // Merged from main branch
+const promoRoutes = require('./routes/promoRoutes');
 const transaksiRoutes = require('./routes/transaksiRoutes');
-const notificationRoutes = require('./routes/notificationRoutes'); // New route
+const notificationRoutes = require('./routes/notificationRoutes');
 
 // Middleware
 app.use(cors({
@@ -23,7 +23,6 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/api', transaksiRoutes);
 
 // Serve static files (images)
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
@@ -46,8 +45,9 @@ app.get('/', (req, res) => {
       jadwal: '/api/jadwal',
       admin: '/api/admin',
       artikel: '/api/artikel',
-      promo: '/api/promos',
-      notifications: '/api/notifications', // New endpoint
+      promo: '/api/promo, /api/promos',
+      notifications: '/api/notifications',
+      transaksi: '/api/headtransaksi, /api/detailtransaksi, /api/payment',
       uploads: '/uploads'
     },
     timestamp: new Date().toISOString()
@@ -60,8 +60,13 @@ app.use('/api/kendaraan', kendaraanRoutes);
 app.use('/api/jadwal', jadwalRoutes);
 app.use('/api', adminRoutes);
 app.use('/api', artikelRoutes);
-app.use('/api/promos', promoRoutes);
-app.use('/api/notifications', notificationRoutes); // New route
+
+// ✅ PROMO ROUTES - Support both endpoints
+app.use('/api/promo', promoRoutes);   // For payment validation (/api/promo/validate)
+app.use('/api/promos', promoRoutes);  // For admin management (/api/promos)
+
+app.use('/api', transaksiRoutes);     // Payment & transaction routes
+app.use('/api/notifications', notificationRoutes);
 
 // Database connection test
 const db = require('./models');
@@ -90,8 +95,9 @@ app.use('*', (req, res) => {
       jadwal: '/api/jadwal',
       admin: '/api/admin',
       artikel: '/api/artikel',
-      promo: '/api/promos',
-      notifications: '/api/notifications' // New endpoint
+      promo: '/api/promo, /api/promos',
+      notifications: '/api/notifications',
+      transaksi: '/api/headtransaksi, /api/detailtransaksi, /api/payment'
     }
   });
 });

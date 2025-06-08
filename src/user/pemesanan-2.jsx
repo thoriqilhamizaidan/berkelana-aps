@@ -13,6 +13,9 @@ const Pemesanan2 = () => {
   const [passengerSeats, setPassengerSeats] = useState({});
   const [passengerGenders, setPassengerGenders] = useState({});
   const [activePassenger, setActivePassenger] = useState(null);
+  const [bookedSeats, setBookedSeats] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
   
   // Count how many passengers we have
   const passengerCount = [
@@ -21,21 +24,9 @@ const Pemesanan2 = () => {
     formData?.namaPenumpang3
   ].filter(Boolean).length;
   
-  // Setup dummy seat data with pre-assigned gender for reserved seats
   const [seatData, setSeatData] = useState({
     rows: 7,
     cols: 4,
-    reservedSeats: {
-      '1B': 'Laki-laki',
-      '2A': 'Perempuan',
-      '3D': 'Laki-laki',
-      '4C': 'Perempuan',
-      '5A': 'Laki-laki',
-      '5B': 'Perempuan',
-      '6C': 'Laki-laki',
-      '6D': 'Perempuan',
-      '7A': 'Laki-laki'
-    },
     seatMap: {
       'A': 0,
       'B': 1,
@@ -44,6 +35,82 @@ const Pemesanan2 = () => {
     }
   });
   
+  useEffect(() => {
+    const fetchBookedSeats = async () => {
+      try {
+        setLoading(true);
+        
+        // Ambil data user yang login
+        const userData = await getCurrentUser();
+        setCurrentUser(userData);
+        
+        // Ambil data kursi yang sudah DIBAYAR (status = 'paid') untuk jadwal ini
+        const jadwalId = ticket?.id_jadwal || ticket?.id || ticket?.jadwal?.id_jadwal;
+        if (jadwalId) {
+          console.log('🔍 Fetching PAID booked seats for jadwal:', jadwalId);
+          
+          const response = await transaksiService.getBookedSeatsByJadwal(jadwalId);
+          
+          if (response?.success && response?.data) {
+            const bookedSeatsData = response.data;
+            
+            // Format data menjadi object dengan seat ID sebagai key dan gender sebagai value
+            const bookedSeatsMap = {};
+            bookedSeatsData.forEach(seat => {
+              if (seat.nomor_kursi) {
+                bookedSeatsMap[seat.nomor_kursi] = seat.gender;
+              }
+            });
+            
+            setBookedSeats(bookedSeatsMap);
+            console.log('✅ Booked seats (PAID ONLY) from database:', bookedSeatsMap);
+          } else {
+            console.log('ℹ️ No paid booked seats found');
+            setBookedSeats({});
+          }
+        }
+      } catch (error) {
+        console.error('❌ Error fetching booked seats:', error);
+        setBookedSeats({});
+        
+        // Tampilkan pesan error yang lebih user-friendly
+        if (error.message?.includes('fetch') || error.message?.includes('network')) {
+          console.warn('⚠️ Tidak dapat terhubung ke server. Menggunakan mode offline.');
+        } else {
+          console.warn('⚠️ Gagal memuat data kursi yang sudah dibayar.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    fetchBookedSeats();
+  }, [ticket]);
+
+  const getCurrentUser = async () => {
+    try {
+      // Coba ambil dari localStorage terlebih dahulu
+      const userFromStorage = localStorage.getItem('currentUser');
+      if (userFromStorage) {
+        return JSON.parse(userFromStorage);
+      }
+      
+      // Coba ambil dari session storage
+      const userFromSession = sessionStorage.getItem('user');
+      if (userFromSession) {
+        return JSON.parse(userFromSession);
+      }
+      
+      // Default user jika tidak ada data
+      return {
+        gender: 'Laki-laki' // default
+      };
+    } catch (error) {
+      console.error('❌ Error getting current user:', error);
+      return { gender: 'Laki-laki' }; // default
+    }
+  };
+
   useEffect(() => {
     // Initialize passenger seats mapping and gender mapping
     if (passengerCount > 0) {
@@ -74,19 +141,22 @@ const Pemesanan2 = () => {
   }, [formData, passengerCount]);
 
   const handleSeatClick = (seatId) => {
-    // If seat is already reserved, do nothing
-    if (Object.keys(seatData.reservedSeats).includes(seatId)) {
+    // If seat is already booked (PAID) from database, do nothing
+    if (bookedSeats[seatId]) {
+      console.log(`❌ Seat ${seatId} is already booked and PAID`);
       return;
     }
     
     // If no active passenger, do nothing
     if (!activePassenger) {
+      console.log('⚠️ No active passenger selected');
       return;
     }
     
-    // Check if the seat is already assigned to another passenger
+    // Check if the seat is already assigned to another passenger in current session
     const passengerWithThisSeat = getPassengerForSeat(seatId);
     if (passengerWithThisSeat && passengerWithThisSeat !== activePassenger) {
+      console.log(`❌ Seat ${seatId} is already assigned to ${passengerWithThisSeat}`);
       return; // Can't take someone else's seat
     }
     
@@ -114,10 +184,13 @@ const Pemesanan2 = () => {
     if (!selectedSeats.includes(seatId)) {
       setSelectedSeats(prev => [...prev, seatId]);
     }
+    
+    console.log(`✅ Seat ${seatId} assigned to ${activePassenger}`);
   };
   
   const handleSelectPassenger = (passenger) => {
     setActivePassenger(passenger);
+    console.log(`Active passenger changed to: ${passenger}`);
   };
   
   const handleSubmit = async () => {
@@ -135,7 +208,7 @@ const Pemesanan2 = () => {
       return;
     }
   
-    // TAMBAHAN: Validasi ticket
+    // Validasi ticket
     if (!ticket?.id_jadwal && !ticket?.id) {
       alert('Data jadwal tidak valid. Silakan pilih tiket ulang.');
       navigate('/pesan-tiket');
@@ -147,16 +220,17 @@ const Pemesanan2 = () => {
 
       // Siapkan data detail transaksi untuk setiap penumpang
       const detailTransaksiData = [];
+      const getJadwalId = () => {
+        const jadwalId = ticket?.id_jadwal || ticket?.id || ticket?.jadwal?.id_jadwal;
+        console.log('Using jadwal ID:', jadwalId, 'from ticket:', ticket);
+        return jadwalId;
+      };
       
       // Penumpang 1
       if (formData?.namaPenumpang1 && passengerSeats[formData.namaPenumpang1]) {
         detailTransaksiData.push({
           id_headtransaksi: id_headtransaksi,
-          id_jadwal: (() => {
-          const jadwalId = ticket?.id_jadwal || ticket?.id || ticket?.jadwal?.id_jadwal;
-          console.log('Using jadwal ID:', jadwalId, 'from ticket:', ticket);
-          return jadwalId;
-        })(),
+          id_jadwal: getJadwalId(),
           nama_penumpang: formData.namaPenumpang1,
           gender: formData.jenisKelamin1,
           harga_kursi: ticket?.harga || 150000,
@@ -168,11 +242,7 @@ const Pemesanan2 = () => {
       if (formData?.namaPenumpang2 && passengerSeats[formData.namaPenumpang2]) {
         detailTransaksiData.push({
           id_headtransaksi: id_headtransaksi,
-          id_jadwal: (() => {
-          const jadwalId = ticket?.id_jadwal || ticket?.id || ticket?.jadwal?.id_jadwal;
-          console.log('Using jadwal ID:', jadwalId, 'from ticket:', ticket);
-          return jadwalId;
-        })(),
+          id_jadwal: getJadwalId(),
           nama_penumpang: formData.namaPenumpang2,
           gender: formData.jenisKelamin2,
           harga_kursi: ticket?.harga || 150000,
@@ -184,11 +254,7 @@ const Pemesanan2 = () => {
       if (formData?.namaPenumpang3 && passengerSeats[formData.namaPenumpang3]) {
         detailTransaksiData.push({
           id_headtransaksi: id_headtransaksi,
-          id_jadwal: (() => {
-          const jadwalId = ticket?.id_jadwal || ticket?.id || ticket?.jadwal?.id_jadwal;
-          console.log('Using jadwal ID:', jadwalId, 'from ticket:', ticket);
-          return jadwalId;
-        })(),
+          id_jadwal: getJadwalId(),
           nama_penumpang: formData.namaPenumpang3,
           gender: formData.jenisKelamin3,
           harga_kursi: ticket?.harga || 150000,
@@ -198,10 +264,35 @@ const Pemesanan2 = () => {
 
       console.log('Detail transaksi data:', detailTransaksiData);
 
+      // Cek apakah ada kursi yang dipilih sudah dibooking orang lain di saat yang bersamaan
+      const selectedSeatIds = detailTransaksiData.map(detail => detail.nomor_kursi);
+      
+      // Re-fetch booked seats untuk memastikan data terbaru (hanya yang PAID)
+      const jadwalId = getJadwalId();
+      const recentBookedSeats = await transaksiService.getBookedSeatsByJadwal(jadwalId);
+      
+      if (recentBookedSeats?.success && recentBookedSeats?.data) {
+        const recentBookedSeatIds = recentBookedSeats.data.map(seat => seat.nomor_kursi);
+        const conflictSeats = selectedSeatIds.filter(seatId => recentBookedSeatIds.includes(seatId));
+        
+        if (conflictSeats.length > 0) {
+          alert(`❌ Kursi ${conflictSeats.join(', ')} baru saja DIBAYAR oleh penumpang lain. Silakan pilih kursi yang lain.`);
+          // Refresh booked seats
+          const bookedSeatsMap = {};
+          recentBookedSeats.data.forEach(seat => {
+            if (seat.nomor_kursi) {
+              bookedSeatsMap[seat.nomor_kursi] = seat.gender;
+            }
+          });
+          setBookedSeats(bookedSeatsMap);
+          return;
+        }
+      }
+
       // Simpan semua detail transaksi
       const detailResponse = await transaksiService.createMultipleDetailTransaksi(detailTransaksiData);
       
-      console.log('Detail transaksi created:', detailResponse);
+      console.log('✅ Detail transaksi created:', detailResponse);
 
       // Update total di head transaksi
       const finalTotal = calculateTotal();
@@ -209,7 +300,7 @@ const Pemesanan2 = () => {
         total: finalTotal
       });
 
-      console.log('Head transaksi updated with total:', finalTotal);
+      console.log('✅ Head transaksi updated with total:', finalTotal);
 
       // Navigate to payment page
       navigate('/pembayaran', { 
@@ -224,7 +315,7 @@ const Pemesanan2 = () => {
       });
 
     } catch (error) {
-      console.error('Error processing seat selection:', error);
+      console.error('❌ Error processing seat selection:', error);
       alert('Gagal menyimpan pilihan kursi. Silakan coba lagi.');
     }
   };
@@ -247,14 +338,14 @@ const Pemesanan2 = () => {
   const getSeatColor = (rowIndex, colIndex) => {
     const seatId = getSeatId(rowIndex, colIndex);
     
-    // If the seat is a system-reserved seat (already booked)
-    if (Object.keys(seatData.reservedSeats).includes(seatId)) {
-      const reservedGender = seatData.reservedSeats[seatId];
-      const genderColor = reservedGender === 'Perempuan' ? 'bg-pink-400' : 'bg-blue-400';
-      return `${genderColor} text-white opacity-70 cursor-not-allowed`; // Reserved seat with gender color
+    // If the seat is booked from database
+    if (bookedSeats[seatId]) {
+      const bookedGender = bookedSeats[seatId];
+      const genderColor = bookedGender === 'Perempuan' ? 'bg-pink-400' : 'bg-blue-400';
+      return `${genderColor} text-white opacity-70 cursor-not-allowed`; // Booked seat with gender color
     }
     
-    // Get the passenger who has this seat (if any)
+    // Get the passenger who has this seat in current session (if any)
     const seatOwner = getPassengerForSeat(seatId);
     
     if (selectedSeats.includes(seatId) && seatOwner) {
@@ -277,7 +368,7 @@ const Pemesanan2 = () => {
   };
   
   const calculateTotal = () => {
-    const ticketPrice = 150000; // Per ticket price
+    const ticketPrice = ticket?.harga || 150000; // Ambil harga dari database
     const baseTotal = ticketPrice * passengerCount;
     const adminFee = 10000;
     return baseTotal + adminFee;
@@ -301,9 +392,14 @@ const Pemesanan2 = () => {
 
   // Get information about reserved seat occupants (for tooltip or display)
   const getReservedSeatInfo = (seatId) => {
-    if (Object.keys(seatData.reservedSeats).includes(seatId)) {
-      const gender = seatData.reservedSeats[seatId];
-      return `Kursi telah dipesan (${gender})`;
+    if (bookedSeats[seatId]) {
+      const gender = bookedSeats[seatId];
+      // Tampilkan info gender hanya untuk user perempuan
+      if (currentUser?.gender === 'Perempuan') {
+        return `Kursi telah dipesan (${gender})`;
+      } else {
+        return 'Kursi telah dipesan';
+      }
     }
     return '';
   };
@@ -311,7 +407,14 @@ const Pemesanan2 = () => {
   return (
     <>
       
-      
+      {loading ? (
+      <div className="max-w-6xl mx-auto py-6 px-4">
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          <span className="ml-3 text-lg">Memuat data kursi...</span>
+        </div>
+      </div>
+    ) : (
       <div className="max-w-6xl mx-auto py-6 px-4">
         {/* Back button and title */}
         <div className="flex items-center mb-4">
@@ -429,20 +532,32 @@ const Pemesanan2 = () => {
             <div className="bg-white rounded-lg shadow-lg p-5">
               <h2 className="text-xl font-bold mb-4">Pilih Kursi</h2>
               
-              {/* Seat selection legend */}
+              {/* Seat selection legend - tampilkan berdasarkan gender user */}
               <div className="flex flex-wrap gap-4 mb-4">
                 <div className="flex items-center">
                   <div className="w-4 h-4 bg-gray-200 mr-2"></div>
                   <span>Tersedia</span>
                 </div>
-                <div className="flex items-center">
-                  <div className="w-4 h-4 bg-blue-400 opacity-70 mr-2"></div>
-                  <span>Sudah dipesan (Laki-laki)</span>
-                </div>
-                <div className="flex items-center">
-                  <div className="w-4 h-4 bg-pink-400 opacity-70 mr-2"></div>
-                  <span>Sudah dipesan (Perempuan)</span>
-                </div>
+                
+                {currentUser?.gender === 'Perempuan' ? (
+                  // Tampilkan legend gender hanya untuk user perempuan
+                  <>
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-blue-400 opacity-70 mr-2"></div>
+                      <span>Sudah dipesan (Laki-laki)</span>
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-4 h-4 bg-pink-400 opacity-70 mr-2"></div>
+                      <span>Sudah dipesan (Perempuan)</span>
+                    </div>
+                  </>
+                ) : (
+                  // Untuk user laki-laki, hanya tampilkan "sudah dipesan" tanpa detail gender
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-gray-400 opacity-70 mr-2"></div>
+                    <span>Sudah dipesan</span>
+                  </div>
+                )}
               </div>
               
               {/* Bus layout */}
@@ -462,7 +577,7 @@ const Pemesanan2 = () => {
                       const marginClass = isLeftSide ? 'mr-4' : 'ml-4';
                       
                       // Only completely disable reserved seats
-                      const isDisabled = Object.keys(seatData.reservedSeats).includes(seatId);
+                      const isDisabled = bookedSeats[seatId]; // kursi yang sudah dipesan dari database
                       const reservedInfo = getReservedSeatInfo(seatId);
                       
                       return (
@@ -493,71 +608,147 @@ const Pemesanan2 = () => {
           </div>
           
           {/* Right Side - Payment Details */}
-          <div className="lg:col-span-1">
-            <div className="bg-purple-100 rounded-lg p-4 sticky top-4">
-              <h3 className="font-bold text-lg mb-3">Selasa, 29 April 2025</h3>
-              
-              <div className="space-y-3">
-                {/* Journey details */}
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-bold text-black">GROGOL</div>
-                    <div className="text-sm text-gray-600">04:20</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      JI Plaza Mayjen<br />
-                      Raya No.111
+            <div className="lg:col-span-1">
+              <div className="bg-purple-100 rounded-lg p-4 sticky top-4">
+                {/* Dynamic Date from ticket */}
+                <h3 className="font-bold text-lg mb-3">
+                  {ticket?.waktu_keberangkatan ? 
+                    new Date(ticket.waktu_keberangkatan).toLocaleDateString('id-ID', {
+                      weekday: 'long',
+                      day: 'numeric', 
+                      month: 'long',
+                      year: 'numeric'
+                    }) : 
+                    'Tanggal tidak tersedia'
+                  }
+                </h3>
+                
+                <div className="space-y-3">
+                  {/* Journey details from database */}
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="font-bold text-black">
+                        {ticket?.kota_awal?.toUpperCase() || 'KOTA ASAL'}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {ticket?.waktu_keberangkatan ? 
+                          new Date(ticket.waktu_keberangkatan).toLocaleTimeString('id-ID', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                          }) : 
+                          'N/A'
+                        }
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Terminal {ticket?.kota_asal || 'N/A'}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-black">
+                        {ticket?.kota_tujuan?.toUpperCase() || 'KOTA TUJUAN'}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {ticket?.waktu_sampai ? 
+                          new Date(ticket.waktu_sampai).toLocaleTimeString('id-ID', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                          }) : 
+                          'N/A'
+                        }
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        Terminal {ticket?.kota_tujuan || 'N/A'}
+                      </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="font-bold text-black">CIAMPELAS</div>
-                    <div className="text-sm text-gray-600">09:50</div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      Jl. Ciampelas No GHI
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="text-sm text-gray-700 mt-3">
-                  Estimasi waktu: 5 jam perjalanan
-                </div>
-                
-                {/* Payment details */}
-                <div className="pt-3 border-t">
-                  <h4 className="font-bold mb-2">Rincian Pembayaran</h4>
                   
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>Bus Bekerlana Grogol - Ciampelas ({passengerCount}x)</span>
-                      <span>Rp {(150000 * passengerCount).toLocaleString()}</span>
+                  {/* Duration calculation */}
+                  <div className="text-sm text-gray-700 mt-3">
+                    Estimasi waktu: {(() => {
+                      if (ticket?.waktu_keberangkatan && ticket?.waktu_sampai) {
+                        const start = new Date(ticket.waktu_keberangkatan);
+                        const end = new Date(ticket.waktu_sampai);
+                        const diffMs = end - start;
+                        const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                        
+                        if (hours === 0) {
+                          return `${minutes} menit`;
+                        } else if (minutes === 0) {
+                          return `${hours} jam`;
+                        } else {
+                          return `${hours} jam ${minutes} menit`;
+                        }
+                      } else if (ticket?.durasi) {
+                        return `${ticket.durasi} jam`;
+                      }
+                      return 'N/A';
+                    })()}
+                  </div>
+                  
+                  {/* Bus details from database */}
+                  <div className="pt-3 border-t">
+                    <div className="font-bold mb-1">
+                      Tipe Bus: {ticket?.kendaraan?.tipe_armada || ticket?.busType || 'N/A'}
                     </div>
+                    {ticket?.kendaraan?.kapasitas_kursi && (
+                      <div className="text-sm text-gray-700">
+                        Kapasitas: {ticket.kendaraan.kapasitas_kursi} kursi
+                      </div>
+                    )}
+                    {ticket?.kendaraan?.format_kursi && (
+                      <div className="text-sm text-gray-700">
+                        Format: {ticket.kendaraan.format_kursi}
+                      </div>
+                    )}
+                    {ticket?.kendaraan?.nomor_armada && (
+                      <div className="text-sm text-gray-700">
+                        No. Armada: {ticket.kendaraan.nomor_armada}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Payment details */}
+                  <div className="pt-3 border-t">
+                    <h4 className="font-bold mb-2">Rincian Pembayaran</h4>
                     
-                    <div className="flex justify-between">
-                      <span>Biaya layanan</span>
-                      <span>Rp 10.000</span>
-                    </div>
-                    
-                    <div className="flex justify-between font-bold pt-2 border-t">
-                      <span>TOTAL PEMBAYARAN</span>
-                      <span>Rp {calculateTotal().toLocaleString()}</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>
+                          Bus {ticket?.kendaraan?.tipe_armada || 'Berkelana'} {ticket?.kota_awal || ''} - {ticket?.kota_tujuan || ''} ({passengerCount}x)
+                        </span>
+                        <span>Rp {((ticket?.harga || 150000) * passengerCount).toLocaleString()}</span>
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <span>Biaya layanan</span>
+                        <span>Rp 10.000</span>
+                      </div>
+                      
+                      <div className="flex justify-between font-bold pt-2 border-t">
+                        <span>TOTAL PEMBAYARAN</span>
+                        <span>Rp {calculateTotal().toLocaleString()}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                {/* Continue button */}
-                <div className="pt-4">
-                  <button
-                    onClick={handleSubmit}
-                    className="w-full bg-emerald-400 hover:bg-emerald-500 text-black font-bold py-2 px-6 rounded-lg transition-colors duration-200"
-                  >
-                    Lanjutkan
-                  </button>
+                  
+                  {/* Continue button */}
+                  <div className="pt-4">
+                    <button
+                      onClick={handleSubmit}
+                      className="w-full bg-emerald-400 hover:bg-emerald-500 text-black font-bold py-2 px-6 rounded-lg transition-colors duration-200"
+                    >
+                      Lanjutkan
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
         </div>
       </div>
-      
+    )}
       <Footer />
     </>
   );

@@ -274,3 +274,89 @@ exports.deletePromo = async (req, res) => {
     });
   }
 };
+// ADD THIS TO promoController.js
+
+// Validate promo code for payment
+
+// Validate promo code for payment  
+exports.validatePromoCode = async (req, res) => {
+  try {
+    const { kode_promo, total_amount } = req.body;  // ✅ Match frontend
+    
+    console.log(`Validating promo code: ${kode_promo} for amount: ${total_amount}`);
+    
+    if (!kode_promo || !total_amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Kode promo dan total amount harus diisi'
+      });
+    }
+    
+    // Find active promo by code
+    const promo = await Promo.findOne({
+      where: { 
+        kode_promo: kode_promo.toUpperCase().trim(),
+        deletedAt: null // Only active promos
+      }
+    });
+
+    if (!promo) {
+      return res.status(404).json({
+        success: false,
+        message: 'Kode promo tidak valid atau tidak ditemukan'
+      });
+    }
+
+    // Check if promo is still valid (not expired)
+    if (promo.berlakuhingga && new Date() > new Date(promo.berlakuhingga)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Kode promo sudah kedaluwarsa'
+      });
+    }
+
+    // Calculate discount based on jenis_promo
+    let discountAmount = 0;
+let jenis_promo = 'nominal';
+
+// If potongan <= 100, assume it's percentage
+if (promo.potongan <= 100) {
+  jenis_promo = 'persen';
+  discountAmount = Math.floor((total_amount * promo.potongan) / 100);
+} else {
+  // If potongan > 100, assume it's nominal
+  jenis_promo = 'nominal';
+  discountAmount = promo.potongan;
+}
+    
+    // Ensure discount doesn't exceed total
+    discountAmount = Math.min(discountAmount, total_amount);
+    const finalAmount = Math.max(total_amount - discountAmount, 0);
+
+    console.log(`Promo valid! Discount: ${discountAmount}, Final: ${finalAmount}`);
+
+    res.json({
+      success: true,
+      message: 'Kode promo berhasil diterapkan!',
+      data: {
+        id_promo: promo.id_promo,
+        kode_promo: promo.kode_promo,
+        nama_promo: promo.judul,        // ✅ Match frontend expectation
+        jenis_promo: jenis_promo, // ✅ Add this for calculation
+        potongan: promo.potongan,       // ✅ Add this for calculation
+        original_amount: total_amount,
+        discount_amount: discountAmount,
+        final_amount: finalAmount,
+        berlakuhingga: promo.berlakuhingga
+      }
+    });
+
+  } catch (error) {
+    console.error('Error validating promo code:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Terjadi kesalahan saat memvalidasi kode promo',
+      error: error.message
+    });
+  }
+};

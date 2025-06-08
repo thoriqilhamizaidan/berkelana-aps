@@ -24,6 +24,9 @@ import ResetPassword from './user/resetpassword'
 import ChangePassword from './user/changepassword'
 import UserAccount from './user/useraccount'
 import NotificationsPage from './user/notificationspage'
+// TAMBAH import di bagian atas setelah NotificationsPage:
+import PaymentClose from './user/PaymentClose';
+import PaymentFailed from './user/PaymentFailed';
 
 // Import halaman admin
 import AdminDashboard from './admin/Dashboard';
@@ -279,6 +282,11 @@ function AppRoutes() {
         <Route path="/pemesanan-1" element={<Pemesanan1 />} />
         <Route path="/pemesanan-2" element={<Pemesanan2 />} />
         <Route path="/pembayaran" element={<Pembayaran />} />
+        {/* NEW: Payment redirect routes */}
+        <Route path="/payment-close" element={<PaymentClose />} />
+        <Route path="/payment-failed" element={<PaymentFailed />} />
+
+        <Route path="/ubah-sandi" element={<ChangePassword />} />
         <Route path="/ubah-sandi" element={<ChangePassword />} />
         <Route path="/notifikasi" element={<NotificationsPage />} />
 

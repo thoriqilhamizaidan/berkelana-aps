@@ -18,8 +18,11 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
+router.post('/validate', promoController.validatePromoCode);
 // Get all promos
 router.get('/', promoController.getPromos);
+
+
 
 // Get promo by ID
 router.get('/:id', promoController.getPromoById);
