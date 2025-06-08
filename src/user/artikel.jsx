@@ -249,19 +249,35 @@ const navigateToArticleDetail = async (articleId) => {
     return (
       <div className="min-h-screen bg-white">
         {/* Hero Section with Background */}
-        <section className="relative h-125 bg-cover bg-center pt-16">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
-          <div className="absolute inset-0 z-0">
-            <img src="../images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
-          </div>
-          <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center">
-            <div className="max-w-3xl">
-              <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">
-                Berkelana ke <span className="text-black">Newsroom</span>
-              </h1>
-            </div>
-          </div>
-        </section>
+        <section className="relative h-80 sm:h-96 md:h-125 bg-cover bg-center pt-16">
+  <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
+  <div className="absolute inset-0 z-0">
+    <img src="../images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
+  </div>
+  <div className="relative z-10 container mx-auto px-4 sm:px-6 h-full flex flex-col justify-center">
+    <div className="max-w-3xl">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 text-white text-center sm:text-left">
+        Berkelana ke <span className="text-black">Newsroom</span>
+      </h1>
+      
+      <form onSubmit={handleSearchSubmit} className="relative mt-4 w-full sm:w-80 mx-auto sm:mx-0">
+        <input
+          type="text"
+          className="w-full py-2 sm:py-1 px-4 sm:px-2 pr-12 sm:pr-5 rounded-full border bg-white border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm sm:text-base"
+          placeholder="Cari artikel"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <button 
+          type="submit"
+          className="absolute right-0 top-0 bottom-0 px-4 bg-emerald1 hover:bg-green-500 rounded-r-full flex items-center justify-center"
+        >
+          <Search size={16} className="text-white" />
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
         
         <div className="container mx-auto py-10 px-6">
           <div className="flex justify-center items-center h-64">
@@ -340,38 +356,38 @@ const navigateToArticleDetail = async (articleId) => {
         </div>
       </section>
 
-      <div className="container mx-auto py-10 px-6">
-        {/* Tab Navigation */}
-        <h2 className="text-2xl font-bold text-center mb-6">Artikel</h2>
-        
-        <div className="flex justify-center mb-8">
-          <div className="bg-gray-100 rounded-full p-1 flex space-x-1">
-            <button 
-              className={`px-6 py-2 rounded-full transition-all ${activeTab === 'populer' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
-              onClick={() => handleTabChange('populer')}
-            >
-              Populer
-            </button>
-            <button 
-              className={`px-6 py-2 rounded-full transition-all ${activeTab === 'terbaru' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
-              onClick={() => handleTabChange('terbaru')}
-            >
-              Terbaru
-            </button>
-            <button 
-              className={`px-6 py-2 rounded-full transition-all ${activeTab === 'destinasi' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
-              onClick={() => handleTabChange('destinasi')}
-            >
-              Destinasi
-            </button>
-            <button 
-              className={`px-6 py-2 rounded-full transition-all ${activeTab === 'inspirasi' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
-              onClick={() => handleTabChange('inspirasi')}
-            >
-              Inspirasi
-            </button>
-          </div>
-        </div>
+      <div className="container mx-auto py-6 sm:py-8 md:py-10 px-4 sm:px-6">
+  {/* Tab Navigation */}
+  <h2 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6">Artikel</h2>
+  
+  <div className="flex justify-center mb-6 sm:mb-8">
+    <div className="bg-gray-100 rounded-full p-1 flex flex-wrap sm:flex-nowrap space-x-1 w-full sm:w-auto justify-center">
+      <button 
+        className={`px-3 sm:px-6 py-2 rounded-full transition-all text-sm sm:text-base whitespace-nowrap ${activeTab === 'populer' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
+        onClick={() => handleTabChange('populer')}
+      >
+        Populer
+      </button>
+      <button 
+        className={`px-3 sm:px-6 py-2 rounded-full transition-all text-sm sm:text-base whitespace-nowrap ${activeTab === 'terbaru' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
+        onClick={() => handleTabChange('terbaru')}
+      >
+        Terbaru
+      </button>
+      <button 
+        className={`px-3 sm:px-6 py-2 rounded-full transition-all text-sm sm:text-base whitespace-nowrap ${activeTab === 'destinasi' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
+        onClick={() => handleTabChange('destinasi')}
+      >
+        Destinasi
+      </button>
+      <button 
+        className={`px-3 sm:px-6 py-2 rounded-full transition-all text-sm sm:text-base whitespace-nowrap ${activeTab === 'inspirasi' ? 'text-purple-500 font-medium' : 'text-gray-700 hover:bg-gray-200'}`}
+        onClick={() => handleTabChange('inspirasi')}
+      >
+        Inspirasi
+      </button>
+    </div>
+  </div>
         
         {/* Search Results Info */}
         {searchQuery.trim() && (
@@ -483,65 +499,138 @@ const navigateToArticleDetail = async (articleId) => {
                   })()}
                 </div>
               ) : (
-                /* Jika tidak ada artikel yang diperluas, tampilkan grid semua artikel */
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {filteredArticles.map((article) => (
-                    <div 
-                      key={article.id_artikel} 
-                      className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
-                      onClick={() => navigateToArticleDetail(article.id_artikel)} // Navigasi ke detail artikel
-                    >
-                      <div className={`h-48 overflow-hidden ${activeTab === 'destinasi' ? 'border-4 border-purple-400' : 'border-2 border-gray-300'} rounded-t-lg`}>
-                        {article.gambarUrl ? (
-                          <img 
-                            src={article.gambarUrl} 
-                            alt={article.judul} 
-                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                            <span className="text-gray-500">Tidak ada gambar</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-4">
-                        <div className="flex justify-between items-start mb-4">
-                          <h3 className="font-bold flex-1">{article.judul}</h3>
-                          <ChevronDown size={20} className="text-gray-500 ml-2 flex-shrink-0" />
-                        </div>
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
-                            {article.authorPhotoUrl ? (
-                              <img src={article.authorPhotoUrl} alt={article.penulis} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full bg-gray-400 flex items-center justify-center">
-                                <User size={16} className="text-white" />
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{article.penulis}</p>
-                            <p className="text-xs text-gray-600">{article.tanggal}</p>
-                          </div>
-                        </div>
-                        <div className="mt-2 flex items-center justify-between">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' :
-                            article.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' :
-                            article.kategori === 'Popular' ? 'bg-red-100 text-red-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {article.kategori || 'Umum'}
-                          </span>
-                          <div className="flex items-center text-xs text-gray-600">
-                            <Eye size={12} className="mr-1" />
-                            <span>{article.jumlah_pembaca || 0}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+               <div>
+  {/* Desktop Grid - 3 columns */}
+  <div className="hidden md:grid md:grid-cols-3 gap-6">
+    {filteredArticles.map((article) => (
+      <div 
+        key={article.id_artikel} 
+        className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+        onClick={() => navigateToArticleDetail(article.id_artikel)}
+      >
+        <div className={`h-48 overflow-hidden ${activeTab === 'destinasi' ? 'border-4 border-purple-400' : 'border-2 border-gray-300'} rounded-t-lg`}>
+          {article.gambarUrl ? (
+            <img 
+              src={article.gambarUrl} 
+              alt={article.judul} 
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+              <span className="text-gray-500">Tidak ada gambar</span>
+            </div>
+          )}
+        </div>
+        <div className="p-4">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="font-bold flex-1">{article.judul}</h3>
+            <ChevronDown size={20} className="text-gray-500 ml-2 flex-shrink-0" />
+          </div>
+          <div className="flex items-center">
+            <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
+              {article.authorPhotoUrl ? (
+                <img src={article.authorPhotoUrl} alt={article.penulis} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gray-400 flex items-center justify-center">
+                  <User size={16} className="text-white" />
                 </div>
+              )}
+            </div>
+            <div>
+              <p className="text-sm font-medium">{article.penulis}</p>
+              <p className="text-xs text-gray-600">{article.tanggal}</p>
+            </div>
+          </div>
+          <div className="mt-2 flex items-center justify-between">
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+              article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' :
+              article.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' :
+              article.kategori === 'Popular' ? 'bg-red-100 text-red-800' :
+              'bg-gray-100 text-gray-800'
+            }`}>
+              {article.kategori || 'Umum'}
+            </span>
+            <div className="flex items-center text-xs text-gray-600">
+              <Eye size={12} className="mr-1" />
+              <span>{article.jumlah_pembaca || 0}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {/* Mobile Horizontal Scroll */}
+  <div className="md:hidden">
+    <div className="flex overflow-x-auto space-x-4 pb-6 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+      {filteredArticles.map((article) => (
+        <div 
+          key={article.id_artikel} 
+          className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 flex-shrink-0 w-72"
+          onClick={() => navigateToArticleDetail(article.id_artikel)}
+        >
+          <div className={`h-40 overflow-hidden ${activeTab === 'destinasi' ? 'border-4 border-purple-400' : 'border-2 border-gray-300'} rounded-t-lg`}>
+            {article.gambarUrl ? (
+              <img 
+                src={article.gambarUrl} 
+                alt={article.judul} 
+                className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                <span className="text-gray-500 text-sm">Tidak ada gambar</span>
+              </div>
+            )}
+          </div>
+          <div className="p-4">
+            <div className="flex justify-between items-start mb-3">
+              <h3 className="font-bold text-sm flex-1 line-clamp-2">{article.judul}</h3>
+              <ChevronDown size={18} className="text-gray-500 ml-2 flex-shrink-0" />
+            </div>
+            <div className="flex items-center mb-3">
+              <div className="w-6 h-6 rounded-full overflow-hidden mr-2">
+                {article.authorPhotoUrl ? (
+                  <img src={article.authorPhotoUrl} alt={article.penulis} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gray-400 flex items-center justify-center">
+                    <User size={12} className="text-white" />
+                  </div>
+                )}
+              </div>
+              <div>
+                <p className="text-xs font-medium">{article.penulis}</p>
+                <p className="text-xs text-gray-600">{article.tanggal}</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' :
+                article.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' :
+                article.kategori === 'Popular' ? 'bg-red-100 text-red-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {article.kategori || 'Umum'}
+              </span>
+              <div className="flex items-center text-xs text-gray-600">
+                <Eye size={10} className="mr-1" />
+                <span>{article.jumlah_pembaca || 0}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+    
+    {/* Scroll indicator dots (optional) */}
+    <div className="flex justify-center mt-4 space-x-2">
+      {Array.from({ length: Math.ceil(filteredArticles.length / 3) }).map((_, index) => (
+        <div key={index} className="w-2 h-2 bg-gray-300 rounded-full"></div>
+      ))}
+    </div>
+  </div>
+</div>
+                    
+                
               )}
             </div>
           )}
@@ -617,111 +706,207 @@ const navigateToArticleDetail = async (articleId) => {
         </div>
       )}
 
-      <footer className="bg-white font-[League_Spartan] text-base">
-        <div className="max-w-full mx-auto py-8 px-0">
-          <div className="flex flex-col md:flex-row justify-between items-start max-w-7xl mx-auto">
-            {/* Section 1 - Logo - First position (left) */}
-            <div className="mb-8 md:mb-0 md:mr-8">
-              <div className="mb-6">
-                <img
-                  src="../images/berkelana-logo.png"
-                  alt="Berkelana Logo"
-                  className="h-25"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = "/api/placeholder/160/60";
-                  }}
-                />
-              </div>
-            </div>
-
-            {/* Section 2 - Kontak (Nomor dan Email) */}
-            <div className="mb-8 md:mb-0 md:mr-8">
-              <h3 className="font-medium mb-4">Hubungi Kami</h3>
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <i className="fa-solid fa-phone-alt mr-2 text-gray-700"></i>
-                  <a href="tel:08124494015" className="text-gray-700 hover:text-emerald-400">
-                    08124494015
-                  </a>
-                </div>
-                <div className="flex items-center">
-                  <i className="fas fa-envelope mr-2 text-gray-700"></i>
-                  <a href="mailto:berkelanaindonesia@gmail.com" className="text-gray-700 hover:text-emerald-400">
-                    berkelanaindonesia@gmail.com
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {/* Section 3 - Cari Tiket dan Promo */}
-            <div className="mb-8 md:mb-0 md:mr-8">
-              <h3 className="font-medium mb-4">Layanan</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link to="/cari-tiket" className="text-gray-700 hover:text-emerald-400">
-                    Cari tiket
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/promo" className="text-gray-700 hover:text-emerald-400">
-                    Promo
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 4 - Artikel, Tiket Saya, Syarat, Privacy */}
-            <div className="mb-8 md:mb-0 md:mr-8">
-              <h3 className="font-medium mb-4">Lainnya</h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link to="/artikel" className="text-gray-700 hover:text-emerald-400">
-                    Artikel
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/tiket-saya" className="text-gray-700 hover:text-emerald-400">
-                    Tiket Saya
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/tentang-kami" className="text-gray-700 hover:text-emerald-400">
-                    Tentang Kami
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/syarat-ketentuan" className="text-gray-700 hover:text-emerald-400">
-                    Kebijakan kami
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Section 5 - Social Media */}
-            <div className="mb-8 md:mb-0">
-              <h3 className="font-medium mb-4">Temukan Kami di</h3>
-              <div className="flex space-x-4">
-                <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400">
-                  <i className="fab fa-facebook-f text-gray-700 hover:text-emerald-400"></i>
-                </a>
-                <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400">
-                  <i className="fab fa-instagram text-gray-700 hover:text-emerald-400"></i>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Copyright Section */}
-        <div className="bg-emerald1 py-3">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-black">
-              Copyright © 2025 BERKELANA®, All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+        <footer className="bg-white font-[League_Spartan] text-base">
+       <div className="max-w-full mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+               <div className="max-w-7xl mx-auto">
+                 {/* Mobile Layout - Stack vertically */}
+                 <div className="block md:hidden space-y-6">
+                   {/* Logo Section */}
+                   <div className="text-center">
+                     <img
+                       src="../images/berkelana-logo.png"
+                       alt="Berkelana Logo"
+                       className="h-16 sm:h-20 mx-auto"
+                       onError={(e) => {
+                         e.target.onerror = null;
+                         e.target.src = "/api/placeholder/160/60";
+                       }}
+                     />
+                   </div>
+                   
+                   {/* Contact Section */}
+                   <div className="text-center">
+                     <h3 className="font-medium mb-3 text-gray-900">Hubungi Kami</h3>
+                     <div className="space-y-2">
+                       <div className="flex items-center justify-center">
+                         <i className="fa-solid fa-phone-alt mr-2 text-gray-700"></i>
+                         <a href="tel:08124494015" className="text-gray-700 hover:text-emerald-400 transition-colors">
+                           08124494015
+                         </a>
+                       </div>
+                       <div className="flex items-center justify-center">
+                         <i className="fas fa-envelope mr-2 text-gray-700"></i>
+                         <a href="mailto:berkelanaapps@gmail.com" className="text-gray-700 hover:text-emerald-400 transition-colors break-all">
+                           berkelanaapps@gmail.com
+                         </a>
+                       </div>
+                     </div>
+                   </div>
+                   
+                   {/* Services and Others in 2 columns */}
+                   <div className="grid grid-cols-2 gap-6">
+                     {/* Services Section */}
+                     <div className="text-center">
+                       <h3 className="font-medium mb-3 text-gray-900">Layanan</h3>
+                       <ul className="space-y-2">
+                         <li>
+                           <Link to="/cari-tiket" className="text-gray-700 hover:text-emerald-400 transition-colors text-sm">
+                             Cari tiket
+                           </Link>
+                         </li>
+                         <li>
+                           <Link to="/promo" className="text-gray-700 hover:text-emerald-400 transition-colors text-sm">
+                             Promo
+                           </Link>
+                         </li>
+                       </ul>
+                     </div>
+                     
+                     {/* Others Section */}
+                     <div className="text-center">
+                       <h3 className="font-medium mb-3 text-gray-900">Lainnya</h3>
+                       <ul className="space-y-2">
+                         <li>
+                           <Link to="/artikel" className="text-gray-700 hover:text-emerald-400 transition-colors text-sm">
+                             Artikel
+                           </Link>
+                         </li>
+                         <li>
+                           <Link to="/tiket-saya" className="text-gray-700 hover:text-emerald-400 transition-colors text-sm">
+                             Tiket Saya
+                           </Link>
+                         </li>
+                         <li>
+                           <Link to="/tentang-kami" className="text-gray-700 hover:text-emerald-400 transition-colors text-sm">
+                             Tentang kami
+                           </Link>
+                         </li>
+                         <li>
+                           <Link to="/syarat-ketentuan" className="text-gray-700 hover:text-emerald-400 transition-colors text-sm">
+                             Kebijakan Kami
+                           </Link>
+                         </li>
+                       </ul>
+                     </div>
+                   </div>
+                   
+                   {/* Social Media Section */}
+                   <div className="text-center">
+                     <h3 className="font-medium mb-3 text-gray-900">Temukan Kami di</h3>
+                     <div className="flex justify-center space-x-4">
+                       <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400 transition-colors">
+                         <i className="fab fa-facebook-f text-gray-700 hover:text-emerald-400"></i>
+                       </a>
+                       <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400 transition-colors">
+                         <i className="fab fa-instagram text-gray-700 hover:text-emerald-400"></i>
+                       </a>
+                     </div>
+                   </div>
+                 </div>
+       
+                 {/* Desktop/Tablet Layout - Horizontal */}
+                 <div className="hidden md:flex flex-wrap justify-between items-start gap-6 lg:gap-8">
+                   {/* Logo Section */}
+                   <div className="flex-shrink-0">
+                     <img
+                       src="../images/berkelana-logo.png"
+                       alt="Berkelana Logo"
+                       className="h-20 lg:h-25"
+                       onError={(e) => {
+                         e.target.onerror = null;
+                         e.target.src = "/api/placeholder/160/60";
+                       }}
+                     />
+                   </div>
+                   
+                   {/* Contact Section */}
+                   <div className="min-w-0 flex-1 max-w-xs">
+                     <h3 className="font-medium mb-4 text-gray-900">Hubungi Kami</h3>
+                     <div className="space-y-2">
+                       <div className="flex items-center">
+                         <i className="fa-solid fa-phone-alt mr-2 text-gray-700 flex-shrink-0"></i>
+                         <a href="tel:08124494015" className="text-gray-700 hover:text-emerald-400 transition-colors">
+                           08124494015
+                         </a>
+                       </div>
+                       <div className="flex items-center">
+                         <i className="fas fa-envelope mr-2 text-gray-700 flex-shrink-0"></i>
+                         <a href="mailto:berkelanaapps@gmail.com" className="text-gray-700 hover:text-emerald-400 transition-colors break-words">
+                           berkelanaapps@gmail.com
+                         </a>
+                       </div>
+                     </div>
+                   </div>
+                   
+                   {/* Services Section */}
+                   <div className="min-w-0 flex-1 max-w-xs">
+                     <h3 className="font-medium mb-4 text-gray-900">Layanan</h3>
+                     <ul className="space-y-2">
+                       <li>
+                         <Link to="/cari-tiket" className="text-gray-700 hover:text-emerald-400 transition-colors">
+                           Cari tiket
+                         </Link>
+                       </li>
+                       <li>
+                         <Link to="/promo" className="text-gray-700 hover:text-emerald-400 transition-colors">
+                           Promo
+                         </Link>
+                       </li>
+                     </ul>
+                   </div>
+                   
+                   {/* Others Section */}
+                   <div className="min-w-0 flex-1 max-w-xs">
+                     <h3 className="font-medium mb-4 text-gray-900">Lainnya</h3>
+                     <ul className="space-y-2">
+                       <li>
+                         <Link to="/artikel" className="text-gray-700 hover:text-emerald-400 transition-colors">
+                           Artikel
+                         </Link>
+                       </li>
+                       <li>
+                         <Link to="/tiket-saya" className="text-gray-700 hover:text-emerald-400 transition-colors">
+                           Tiket Saya
+                         </Link>
+                       </li>
+                       <li>
+                         <Link to="/tentang-kami" className="text-gray-700 hover:text-emerald-400 transition-colors">
+                           Tentang kami
+                         </Link>
+                       </li>
+                       <li>
+                         <Link to="/syarat-ketentuan" className="text-gray-700 hover:text-emerald-400 transition-colors">
+                           Kebijakan Kami
+                         </Link>
+                       </li>
+                     </ul>
+                   </div>
+                   
+                   {/* Social Media Section */}
+                   <div className="flex-shrink-0">
+                     <h3 className="font-medium mb-4 text-gray-900">Temukan Kami di</h3>
+                     <div className="flex space-x-4">
+                       <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400 transition-colors">
+                         <i className="fab fa-facebook-f text-gray-700 hover:text-emerald-400"></i>
+                       </a>
+                       <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400 transition-colors">
+                         <i className="fab fa-instagram text-gray-700 hover:text-emerald-400"></i>
+                       </a>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+             </div>
+             
+             {/* Copyright Section */}
+             <div className="bg-emerald1 py-3">
+               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                 <p className="text-center text-black text-sm sm:text-base">
+                   Copyright © 2025 BERKELANA®, All rights reserved.
+                 </p>
+               </div>
+             </div>
+           </footer>
     </>
   );
 };
