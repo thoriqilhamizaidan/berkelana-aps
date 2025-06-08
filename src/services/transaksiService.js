@@ -1,102 +1,424 @@
-// src/services/transaksiService.js
+// src/services/transaksiService.js - UPDATED WITH XENDIT SUPPORT
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
-const transaksiService = {
-  // Simpan head transaksi
+// Helper function untuk handle fetch response
+const handleResponse = async (response) => {
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: 'Network error' }));
+    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  }
+  return await response.json();
+};
+
+// Helper function untuk fetch request
+const apiRequest = async (url, options = {}) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    },
+    ...options,
+  };
+
+  console.log(`🔄 API Request: ${config.method || 'GET'} ${url}`);
+  
+  try {
+    const response = await fetch(url, config);
+    const data = await handleResponse(response);
+    console.log(`✅ API Response: ${response.status} ${url}`);
+    return data;
+  } catch (error) {
+    console.error(`❌ API Error: ${url}`, error);
+    throw error;
+  }
+};
+
+export const transaksiService = {
+  // ✅ NEW: Enhanced Direct Xendit Status Check
+  checkDirectXenditStatus: async (invoiceId) => {
+    try {
+      console.log('🔍 Checking direct Xendit status for:', invoiceId);
+      const response = await apiRequest(`${API_BASE_URL}/payment/xendit/check-direct/${invoiceId}`, {
+        method: 'GET',
+      });
+      console.log('✅ Direct Xendit check response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error checking direct Xendit status:', error);
+      throw error;
+    }
+  },
+  
+  // Head Transaksi
   createHeadTransaksi: async (data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/headtransaksi`, {
+      return await apiRequest(`${API_BASE_URL}/headtransaksi`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(data),
       });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
     } catch (error) {
       console.error('Error creating head transaksi:', error);
       throw error;
     }
   },
 
-  // Update head transaksi
   updateHeadTransaksi: async (id, data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/headtransaksi/${id}`, {
+      return await apiRequest(`${API_BASE_URL}/headtransaksi/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(data),
       });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
     } catch (error) {
       console.error('Error updating head transaksi:', error);
       throw error;
     }
   },
 
-  // Simpan detail transaksi
-  createDetailTransaksi: async (data) => {
+  updateHeadTransaksiStatus: async (id_headtransaksi, status) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/detailtransaksi`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
+      console.log('🔄 Updating head transaksi status:', { id_headtransaksi, status });
+      const response = await apiRequest(`${API_BASE_URL}/transaksi/update-status/${id_headtransaksi}`, {
+        method: 'PUT',
+        body: JSON.stringify({ 
+          status: status, 
+          payment_status: status 
+        }),
+      });
+      console.log('✅ Head transaksi status updated:', response);
+      return response;
+    } catch (error) {
+      console.error('Error updating head transaksi status:', error);
+      return { success: false, message: error.message };
+    }
+  },
+
+  updateHeadTransaksiWithPromo: async (id_headtransaksi, promoData) => {
+    try {
+      console.log('🎁 Updating head transaksi with promo:', { id_headtransaksi, promoData });
+      
+      const response = await apiRequest(`${API_BASE_URL}/headtransaksi/${id_headtransaksi}/promo`, {
+        method: 'PUT',
+        body: JSON.stringify(promoData),
       });
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
+      console.log('✅ Head transaksi updated with promo response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error updating head transaksi with promo:', error);
+      throw error;
+    }
+  },
+
+  getHeadTransaksiById: async (id) => {
+    try {
+      return await apiRequest(`${API_BASE_URL}/headtransaksi/${id}`, {
+        method: 'GET',
+      });
+    } catch (error) {
+      console.error('Error getting head transaksi:', error);
+      throw error;
+    }
+  },
+
+  // Detail Transaksi
+  createDetailTransaksi: async (data) => {
+    try {
+      return await apiRequest(`${API_BASE_URL}/detailtransaksi`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
     } catch (error) {
       console.error('Error creating detail transaksi:', error);
       throw error;
     }
   },
 
-  // Simpan multiple detail transaksi
-  createMultipleDetailTransaksi: async (dataArray) => {
+  createMultipleDetailTransaksi: async (data) => {
     try {
-      console.log('Creating multiple detail transaksi:', dataArray);
-      
-      const promises = dataArray.map((data, index) => 
-        fetch(`${API_BASE_URL}/detailtransaksi`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-        }).then(response => {
-          if (!response.ok) {
-            throw new Error(`Failed to create detail transaksi for passenger ${index + 1}: ${response.status}`);
-          }
-          return response.json();
-        })
-      );
-      
-      const results = await Promise.all(promises);
-      console.log('All detail transaksi created successfully:', results);
-      return results;
+      console.log('📦 Creating multiple detail transaksi:', data);
+      return await apiRequest(`${API_BASE_URL}/detailtransaksi/multiple`, {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
     } catch (error) {
       console.error('Error creating multiple detail transaksi:', error);
       throw error;
     }
+  },
+
+  getBookedSeatsByJadwal: async (jadwalId) => {
+    try {
+      return await apiRequest(`${API_BASE_URL}/detail-transaksi/jadwal/${jadwalId}/seats`, {
+        method: 'GET',
+      });
+    } catch (error) {
+      console.error('Error getting booked seats:', error);
+      throw error;
+    }
+  },
+
+  // UNIVERSAL PAYMENT - Auto-routes to configured gateway (Xendit/DOKU/Midtrans)
+  createPaymentToken: async (id_headtransaksi) => {
+    try {
+      console.log('🔄 Creating payment token for head transaksi:', id_headtransaksi);
+      const response = await apiRequest(`${API_BASE_URL}/payment/create-token/${id_headtransaksi}`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
+      console.log('✅ Payment token response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error creating payment token:', error);
+      throw error;
+    }
+  },
+
+  checkPaymentStatus: async (order_id) => {
+    try {
+      console.log('🔄 Checking payment status for order:', order_id);
+      const response = await apiRequest(`${API_BASE_URL}/payment/status/${order_id}`, {
+        method: 'GET',
+      });
+      console.log('✅ Payment status response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error checking payment status:', error);
+      throw error;
+    }
+  },
+  checkPaymentStatusByHeadTransaksi: async (id_headtransaksi) => {
+    try {
+      console.log('🔍 Checking payment status by head transaksi ID:', id_headtransaksi);
+      const response = await apiRequest(`${API_BASE_URL}/payments/status-by-head/${id_headtransaksi}`, {
+        method: 'GET',
+      });
+      console.log('✅ Payment status by head transaksi response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error checking payment status by head transaksi:', error);
+      return { success: false, message: error.message };
+    }
+  },
+  getExistingPayment: async (id_headtransaksi) => {
+    try {
+      console.log('🔍 Getting existing payment for head transaksi:', id_headtransaksi);
+      const response = await apiRequest(`${API_BASE_URL}/payments/by-head-transaksi/${id_headtransaksi}`, {
+        method: 'GET',
+      });
+      console.log('✅ Existing payment response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error getting existing payment:', error);
+      return { success: false, message: error.message };
+    }
+  },
+  
+
+  // XENDIT SPECIFIC METHODS - NEW
+  createXenditPayment: async (id_headtransaksi) => {
+    try {
+      console.log('🟦 Creating Xendit payment for head transaksi:', id_headtransaksi);
+      const response = await apiRequest(`${API_BASE_URL}/payment/xendit/create-payment/${id_headtransaksi}`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
+      console.log('✅ Xendit payment response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error creating Xendit payment:', error);
+      throw error;
+    }
+  },
+
+  checkXenditPaymentStatus: async (invoice_id) => {
+    try {
+      console.log('🟦 Checking Xendit payment status for invoice:', invoice_id);
+      const response = await apiRequest(`${API_BASE_URL}/payment/xendit/status/${invoice_id}`, {
+        method: 'GET',
+      });
+      console.log('✅ Xendit status response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error checking Xendit payment status:', error);
+      throw error;
+    }
+  },
+
+  // DOKU SPECIFIC METHODS - Keep as backup
+  createDokuPayment: async (id_headtransaksi) => {
+    try {
+      console.log('🟨 Creating DOKU payment for head transaksi:', id_headtransaksi);
+      const response = await apiRequest(`${API_BASE_URL}/payment/doku/create-payment/${id_headtransaksi}`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
+      console.log('✅ DOKU payment response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error creating DOKU payment:', error);
+      throw error;
+    }
+  },
+
+  checkDokuPaymentStatus: async (order_id) => {
+    try {
+      const response = await apiRequest(`${API_BASE_URL}/payment/doku/status/${order_id}`, {
+        method: 'GET',
+      });
+      return response;
+    } catch (error) {
+      console.error('Error checking DOKU payment status:', error);
+      throw error;
+    }
+  },
+
+  // MIDTRANS SPECIFIC METHODS - Keep as backup
+  createMidtransToken: async (id_headtransaksi) => {
+    try {
+      console.log('🟩 Creating Midtrans token for head transaksi:', id_headtransaksi);
+      const response = await apiRequest(`${API_BASE_URL}/payment/midtrans/create-token/${id_headtransaksi}`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error creating Midtrans token:', error);
+      throw error;
+    }
+  },
+
+  checkMidtransPaymentStatus: async (order_id) => {
+    try {
+      const response = await apiRequest(`${API_BASE_URL}/payment/midtrans/status/${order_id}`, {
+        method: 'GET',
+      });
+      return response;
+    } catch (error) {
+      console.error('Error checking Midtrans payment status:', error);
+      throw error;
+    }
+  },
+
+  // HELPER METHODS - NEW
+  getPaymentGateway: () => {
+    // Detect current gateway from environment
+    return import.meta.env.VITE_PAYMENT_GATEWAY || 'xendit';
+  },
+
+  // Complete transaction flow helper
+  createCompleteTransaction: async (headTransaksiData, detailTransaksiArray) => {
+    try {
+      console.log('🔄 Creating complete transaction...');
+      
+      // Step 1: Create head transaksi
+      const headResponse = await transaksiService.createHeadTransaksi(headTransaksiData);
+      
+      if (!headResponse.success) {
+        throw new Error(headResponse.message || 'Failed to create head transaksi');
+      }
+
+      const headTransaksiId = headResponse.data.id_headtransaksi;
+      console.log('✅ Head transaksi created with ID:', headTransaksiId);
+
+      // Step 2: Create multiple detail transaksi
+      const detailsWithHeadId = detailTransaksiArray.map(detail => ({
+        ...detail,
+        id_headtransaksi: headTransaksiId
+      }));
+
+      const detailResponse = await transaksiService.createMultipleDetailTransaksi(detailsWithHeadId);
+      
+      if (!detailResponse.success) {
+        throw new Error(detailResponse.message || 'Failed to create detail transaksi');
+      }
+
+      console.log('✅ Detail transaksi created:', detailResponse.data.length, 'records');
+
+      // Step 3: Create payment token (auto-routes to configured gateway)
+      const paymentResponse = await transaksiService.createPaymentToken(headTransaksiId);
+      
+      if (!paymentResponse.success) {
+        throw new Error(paymentResponse.message || 'Failed to create payment token');
+      }
+
+      console.log('✅ Payment token created successfully');
+
+      return {
+        success: true,
+        data: {
+          headTransaksi: headResponse.data,
+          detailTransaksi: detailResponse.data,
+          payment: paymentResponse.data,
+          id_headtransaksi: headTransaksiId
+        }
+      };
+
+    } catch (error) {
+      console.error('❌ Complete transaction error:', error);
+      throw new Error(error.message || 'Gagal membuat transaksi lengkap');
+    }
+  },
+
+  // Payment status poller helper
+  pollPaymentStatus: async (orderId, onStatusChange, maxAttempts = 60, intervalMs = 5000) => {
+    let attempts = 0;
+    
+    const poll = async () => {
+      try {
+        attempts++;
+        console.log(`🔄 Polling payment status (${attempts}/${maxAttempts}):`, orderId);
+        
+        const statusResponse = await transaksiService.checkPaymentStatus(orderId);
+        
+        if (statusResponse.success) {
+          const status = statusResponse.data.booking_status || statusResponse.data.transaction_status;
+          
+          // Call the callback with status update
+          if (onStatusChange) {
+            onStatusChange(status, statusResponse.data);
+          }
+          
+          // Stop polling if payment is complete or failed
+          if (status === 'paid' || status === 'settlement' || status === 'expired' || status === 'failed') {
+            console.log('✅ Payment polling completed with status:', status);
+            return { status, data: statusResponse.data };
+          }
+        }
+        
+        // Continue polling if max attempts not reached
+        if (attempts < maxAttempts) {
+          setTimeout(poll, intervalMs);
+        } else {
+          console.log('⏰ Payment polling timeout reached');
+          return { status: 'timeout', data: null };
+        }
+        
+      } catch (error) {
+        console.error('❌ Error polling payment status:', error);
+        
+        // Continue polling on error (network issues etc)
+        if (attempts < maxAttempts) {
+          setTimeout(poll, intervalMs);
+        } else {
+          throw error;
+        }
+      }
+    };
+    
+    // Start polling
+    return poll();
   }
 };
 
-// UBAH INI: Dari named export ke default export
-export default transaksiService;
+// Add environment info helper
+transaksiService.getEnvironmentInfo = () => {
+  return {
+    apiBaseUrl: API_BASE_URL,
+    paymentGateway: transaksiService.getPaymentGateway(),
+    isDevelopment: import.meta.env.DEV,
+    isProduction: import.meta.env.PROD
+  };
+};
+
+// Log environment info on import
+console.log('🔧 TransaksiService Environment:', transaksiService.getEnvironmentInfo());
