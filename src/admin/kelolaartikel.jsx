@@ -165,12 +165,12 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
       </span>
     );
 
-    return <div className="flex items-center gap-0 mt-6">{pageNumbers}</div>;
+    return <div className="flex items-center gap-0 mt-6 justify-center sm:justify-start">{pageNumbers}</div>;
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white p-6 pt-18">
+      <div className="min-h-screen bg-white p-4 sm:p-6 pt-18">
         <div className="max-w-7xl mx-auto">
           <div className="flex justify-center items-center h-64">
             <div className="text-gray-600">Memuat artikel...</div>
@@ -182,13 +182,13 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
 
   if (error) {
     return (
-      <div className="min-h-screen bg-white p-6 pt-18">
+      <div className="min-h-screen bg-white p-4 sm:p-6 pt-18">
         <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Kelola Artikel</h1>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Kelola Artikel</h1>
             <button
               onClick={onTambahClick}
-              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
+              className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium w-full sm:w-auto"
             >
               Tambah Data +
             </button>
@@ -198,7 +198,7 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
           </div>
           <button 
             onClick={() => window.location.reload()} 
-            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded w-full sm:w-auto"
           >
             Coba Lagi
           </button>
@@ -208,10 +208,10 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
   }
 
   return (
-    <div className="min-h-screen bg-white p-6 pt-18">
+    <div className="min-h-screen bg-white p-4 sm:p-6 pt-18">
      {showConfirmModal && (
-        <div className="fixed inset-0 flex items-center justify-center  bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-6 w-96 relative">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-sm sm:w-96 relative">
             <button 
               onClick={() => setShowConfirmModal(false)} 
               className="absolute top-3 right-3 text-black text-xl font-bold"
@@ -219,16 +219,16 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
               ×
             </button>
             <h2 className="text-lg font-bold text-center mb-6">Apakah anda yakin?</h2>
-            <div className="flex justify-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="bg-green-400 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-semibold"
+                className="bg-green-400 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-semibold order-2 sm:order-1"
               >
                 Tidak
               </button>
               <button
                 onClick={handleConfirmDelete}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold"
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold order-1 sm:order-2"
               >
                 Hapus
               </button>
@@ -238,17 +238,18 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
       )}
 
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Kelola Artikel</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Kelola Artikel</h1>
           <button
             onClick={onTambahClick}
-            className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
+            className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium w-full sm:w-auto"
           >
             Tambah Data +
           </button>
         </div>
 
-        <div className="bg-gray-100 rounded-lg shadow-sm overflow-hidden">
+        {/* Desktop Table View */}
+        <div className="hidden lg:block bg-gray-100 rounded-lg shadow-sm overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-100">
               <tr className="border-b border-gray-300">
@@ -349,6 +350,107 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile/Tablet Card View */}
+        <div className="lg:hidden space-y-4">
+          {paginatedData.map((article) => {
+            const articleId = article.id_artikel || article.id;
+            const isExpanded = expandedArticles.has(articleId);
+            const shouldTruncate = article.isi && article.isi.length > 150;
+            const displayText = isExpanded || !shouldTruncate
+              ? article.isi
+              : article.isi?.substring(0, 150) + '...';
+
+            return (
+              <div key={articleId} className="bg-gray-100 rounded-lg shadow-sm p-4 sm:p-6">
+                <div className="space-y-4">
+                  {/* Header */}
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 text-sm sm:text-base">{article.artikel}</h3>
+                      <p className="text-xs sm:text-sm text-gray-600 mt-1">{article.tanggal}</p>
+                    </div>
+                    <div className="flex gap-2 sm:ml-4">
+                      <button
+                        onClick={() => onEditArticle(article)}
+                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs font-medium"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(articleId)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs font-medium"
+                      >
+                        Hapus
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Image */}
+                  {article.gambarUrl && (
+                    <div className="w-full">
+                      <img
+                        src={article.gambarUrl}
+                        alt="Artikel"
+                        className="w-full h-32 sm:h-40 object-cover rounded border border-gray-200"
+                      />
+                    </div>
+                  )}
+
+                  {/* Content */}
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-xs font-medium text-gray-700 block mb-1">Isi Artikel:</label>
+                      <div className="text-sm text-gray-600 whitespace-pre-wrap">{displayText}</div>
+                      {shouldTruncate && (
+                        <button
+                          onClick={() => toggleExpand(articleId)}
+                          className="text-xs text-blue-500 hover:text-blue-700 mt-2 cursor-pointer font-medium"
+                        >
+                          {isExpanded ? 'Sembunyikan' : 'Selengkapnya'}
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="flex-1">
+                        <label className="text-xs font-medium text-gray-700 block mb-1">Kategori:</label>
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                          article.kategori === 'Popular' ? 'bg-red-100 text-red-800' :
+                          article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' :
+                          article.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {article.kategori || 'Tidak ada'}
+                        </span>
+                      </div>
+
+                      <div className="flex-1">
+                        <label className="text-xs font-medium text-gray-700 block mb-1">Penulis:</label>
+                        <div className="flex items-center gap-2">
+                          {article.authorPhotoUrl ? (
+                            <img
+                              src={article.authorPhotoUrl}
+                              alt="Author"
+                              className="w-6 h-6 object-cover rounded-full border border-gray-200"
+                            />
+                          ) : (
+                            <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
+                              <svg className="w-3 h-3 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          )}
+                          <span className="text-sm text-gray-600">{article.penulis}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {renderPagination()}

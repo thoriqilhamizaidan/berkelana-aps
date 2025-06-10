@@ -3,11 +3,18 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000
 
 // Helper function untuk handle fetch response
 const handleResponse = async (response) => {
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Network error' }));
-    throw new Error(errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+  const text = await response.text();
+  try {
+    const json = JSON.parse(text);
+    if (!response.ok) {
+      console.error('🧨 Error Response Body:', json);
+      throw new Error(json.message || `HTTP ${response.status}`);
+    }
+    return json;
+  } catch (err) {
+    console.error('🧨 Invalid JSON response:', text);
+    throw new Error(`HTTP ${response.status}`);
   }
-  return await response.json();
 };
 
 // Helper function untuk fetch request

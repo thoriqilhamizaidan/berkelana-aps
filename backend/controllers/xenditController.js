@@ -138,10 +138,10 @@ const xenditController = {
           calculated: calculatedTotal,
           difference: Math.abs(finalAmount - calculatedTotal)
         });
-        return res.status(400).json({
-          success: false,
-          message: 'Error in amount calculation'
-        });
+        res.status(200).json({
+  success: false,
+  message: 'Perhitungan jumlah total tidak valid. Silakan periksa kembali data promo atau jumlah kursi.'
+});
       }
 
       // Create invoice with Xendit API
