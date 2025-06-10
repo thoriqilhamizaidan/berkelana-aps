@@ -4,16 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { transaksiService } from '../services/transaksiService';
 import Footer from './footer';
-import { 
-  Clock, 
-  CreditCard, 
-  Users, 
-  AlertCircle, 
-  CheckCircle, 
-  XCircle,
-  Trash2,
-  RefreshCw
-} from 'lucide-react';
+import { Clock, CreditCard, MapPin, Users, Calendar, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
 
 const TiketSaya = () => {
   const navigate = useNavigate();
@@ -24,108 +15,6 @@ const TiketSaya = () => {
   const [error, setError] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [paymentLoading, setPaymentLoading] = useState({});
-  
-  const getStatusInfo = (ticket) => {
-    // ✅ PRIORITIZE MAIN STATUS FIRST
-    const mainStatus = ticket.status?.toLowerCase();
-    const paymentStatus = ticket.payment_status?.toLowerCase();
-    
-    // ✅ PAID TRANSACTIONS: Always show as completed (HIGHEST PRIORITY)
-    if (mainStatus === 'paid') {
-      return {
-        text: 'Selesai',
-        className: 'bg-green-100 text-green-600',
-        icon: <CheckCircle className="w-4 h-4" />,
-        showContinue: false,
-        showDelete: false // ✅ NEVER allow delete for paid transactions
-      };
-    }
-    
-    // For non-paid transactions, check payment status and auto-expiry
-    const status = ticket.payment_transaction_status || paymentStatus || mainStatus;
-    
-    const isAutoExpired = () => {
-      if (status === 'pending' && ticket.createdAt) {
-        const createdAt = new Date(ticket.createdAt);
-        const now = new Date();
-        const minutesSinceCreated = Math.floor((now - createdAt) / (1000 * 60));
-        return minutesSinceCreated >= 15;
-      }
-      return false;
-    };
-    
-    const autoExpired = isAutoExpired();
-    
-    switch (status) {
-      case 'settlement':
-      case 'capture':
-      case 'settled':
-        // Additional paid statuses
-        return {
-          text: 'Selesai',
-          className: 'bg-green-100 text-green-600',
-          icon: <CheckCircle className="w-4 h-4" />,
-          showContinue: false,
-          showDelete: false
-        };
-        
-      case 'pending':
-        if (autoExpired) {
-          return {
-            text: 'Kedaluwarsa',
-            className: 'bg-orange-100 text-orange-600',
-            icon: <XCircle className="w-4 h-4" />,
-            showContinue: false,
-            showDelete: true, // ✅ Allow delete for expired pending
-            autoExpired: true
-          };
-        }
-        return {
-          text: 'Dalam proses',
-          className: 'bg-yellow-100 text-yellow-600',
-          icon: <Clock className="w-4 h-4" />,
-          showContinue: true,
-          showDelete: false
-        };
-        
-      case 'failed':
-        return {
-          text: 'Pembayaran Gagal',
-          className: 'bg-red-100 text-red-600',
-          icon: <XCircle className="w-4 h-4" />,
-          showContinue: false,
-          showDelete: true
-        };
-        
-      case 'expired':
-        return {
-          text: 'Kedaluwarsa',
-          className: 'bg-orange-100 text-orange-600',
-          icon: <XCircle className="w-4 h-4" />,
-          showContinue: false,
-          showDelete: true
-        };
-        
-      case 'cancelled':
-      case 'cancel':
-        return {
-          text: 'Dibatalkan',
-          className: 'bg-gray-100 text-gray-600',
-          icon: <XCircle className="w-4 h-4" />,
-          showContinue: false,
-          showDelete: true
-        };
-        
-      default:
-        return {
-          text: status || 'Tidak diketahui',
-          className: 'bg-gray-100 text-gray-600',
-          icon: <AlertCircle className="w-4 h-4" />,
-          showContinue: false,
-          showDelete: false
-        };
-    }
-  };
 
   // ✅ DEBUG: Log auth state only when it changes significantly
   useEffect(() => {
@@ -143,7 +32,7 @@ const TiketSaya = () => {
       setLoading(true);
       setError(null);
       
-      // ✅ GET USER ID
+      // ✅ FIXED: Try user.id first, then user.id_user as fallback
       let userId = user?.id || user?.id_user;
       
       if (!userId) {
@@ -151,27 +40,40 @@ const TiketSaya = () => {
           const userDataString = localStorage.getItem('user');
           if (userDataString) {
             const userData = JSON.parse(userDataString);
-            userId = userData.id || userData.id_user;
+            userId = userData.id || userData.id_user; // ✅ Same priority: id first
             console.log('📦 Got user ID from localStorage:', userId);
           }
         } catch (err) {
           console.error('Error parsing localStorage user data:', err);
         }
       }
-  
+
+      // ✅ ADDITIONAL FALLBACK: Check if still no userId
+      if (!userId) {
+        // Try to get from token or other sources
+        const token = localStorage.getItem('token');
+        if (token) {
+          try {
+            // If you have user info in token, decode it here
+            console.log('🔍 Token exists, but no user ID found');
+          } catch (err) {
+            console.error('Error decoding token:', err);
+          }
+        }
+      }
+
       if (!userId) {
         throw new Error('User ID tidak ditemukan. Silakan login ulang.');
       }
       
       console.log('🎫 Fetching tickets for user ID:', userId);
       
-      // ✅ FETCH FROM API
       const response = await transaksiService.getTransaksiByUser(userId);
       
       if (response.success) {
         console.log('✅ Tickets fetched successfully:', response.data.length);
         
-        // ✅ REMOVE DUPLICATES
+        // ✅ FIX DUPLICATE KEYS: Remove duplicates based on id_headtransaksi
         const uniqueTickets = response.data.filter((ticket, index, self) => 
           index === self.findIndex(t => t.id_headtransaksi === ticket.id_headtransaksi)
         );
@@ -227,7 +129,7 @@ const TiketSaya = () => {
       console.log('🔍 Skipping fetch:', { userId, ticketsLength: tickets.length, loading, refreshing });
     }
   }, [authLoading, isLoggedIn, user?.id, navigate, tickets.length, refreshing]); // ✅ Only depend on user.id specifically
-  
+
   const handleRefresh = async () => {
     const userId = user?.id || user?.id_user; // ✅ Use correct field
     if (!userId) {
@@ -247,30 +149,37 @@ const TiketSaya = () => {
       
       console.log('💳 Continue payment for:', ticket.booking_code);
       
-      // ✅ NAVIGATE TO PAYMENT PAGE
-      navigate(`/lanjutkan-pembayaran/${ticket.id_headtransaksi}`, {
-        state: {
-          ticket: {
-            kota_awal: ticket.kota_awal,
-            kota_tujuan: ticket.kota_tujuan,
-            waktu_keberangkatan: ticket.waktu_keberangkatan,
-            waktu_sampai: ticket.waktu_sampai,
-            harga: ticket.harga_tiket,
-            total: ticket.total,
-            kendaraan: {
-              tipe_armada: ticket.tipe_armada,
-              nomor_armada: ticket.nomor_armada,
-              kapasitas_kursi: 28,
-              format_kursi: '2-2'
-            }
-          },
-          formData: {
-            namaPesanan: ticket.nama_pemesan,
-            email: ticket.email_pemesan,
-            noHandphone: ticket.no_hp_pemesan
+      const response = await transaksiService.continuePayment(ticket.id_headtransaksi);
+      
+      if (response.success) {
+        navigate('/pembayaran', {
+          state: {
+            id_headtransaksi: ticket.id_headtransaksi,
+            paymentData: response.data,
+            ticket: {
+              kota_awal: ticket.kota_awal,
+              kota_tujuan: ticket.kota_tujuan,
+              waktu_keberangkatan: ticket.waktu_keberangkatan,
+              waktu_sampai: ticket.waktu_sampai,
+              harga: ticket.harga_tiket,
+              kendaraan: {
+                tipe_armada: ticket.tipe_armada,
+                nomor_armada: ticket.nomor_armada,
+                kapasitas_kursi: 28,
+                format_kursi: '2-2'
+              }
+            },
+            formData: {
+              namaPesanan: ticket.nama_pemesan,
+              email: ticket.email_pemesan,
+              noHandphone: ticket.no_hp_pemesan
+            },
+            totalPrice: ticket.total
           }
-        }
-      });
+        });
+      } else {
+        throw new Error(response.message || 'Gagal melanjutkan pembayaran');
+      }
     } catch (error) {
       console.error('❌ Error continuing payment:', error);
       alert(`Gagal melanjutkan pembayaran: ${error.message}`);
@@ -279,57 +188,54 @@ const TiketSaya = () => {
     }
   };
 
-  const [deleteLoading, setDeleteLoading] = useState({});
-
-// ✅ TAMBAH: Delete ticket function
-const handleDeleteTicket = async (ticket) => {
-  const statusInfo = getStatusInfo(ticket);
-  
-  // ✅ PROTECTION: Check if ticket can be deleted
-  if (!statusInfo.showDelete) {
-    alert('Tiket ini tidak dapat dihapus');
-    return;
-  }
-  
-  // ✅ CONFIRM BEFORE DELETE
-  const confirmMessage = statusInfo.autoExpired 
-    ? `Hapus tiket yang kedaluwarsa?\n\nKode Booking: ${ticket.booking_code || 'N/A'}\nRute: ${ticket.kota_awal} → ${ticket.kota_tujuan}`
-    : `Hapus tiket yang ${statusInfo.text.toLowerCase()}?\n\nKode Booking: ${ticket.booking_code || 'N/A'}\nRute: ${ticket.kota_awal} → ${ticket.kota_tujuan}\n\nTindakan ini tidak dapat dibatalkan.`;
-  
-  if (!confirm(confirmMessage)) {
-    return;
-  }
-  
-  try {
-    setDeleteLoading(prev => ({ ...prev, [ticket.id_headtransaksi]: true }));
-    
-    console.log('🗑️ Deleting ticket:', ticket.booking_code);
-    
-    const response = await transaksiService.deleteTransaction(ticket.id_headtransaksi);
-    
-    if (response.success) {
-      console.log('✅ Ticket deleted successfully');
-      
-      // ✅ REMOVE FROM UI
-      setTickets(prev => prev.filter(t => t.id_headtransaksi !== ticket.id_headtransaksi));
-      
-      alert('Tiket berhasil dihapus');
-    } else {
-      throw new Error(response.message || 'Gagal menghapus tiket');
-    }
-  } catch (error) {
-    console.error('❌ Error deleting ticket:', error);
-    alert(`Gagal menghapus tiket: ${error.message}`);
-  } finally {
-    setDeleteLoading(prev => ({ ...prev, [ticket.id_headtransaksi]: false }));
-  }
-};
-
   const handleETicketClick = (bookingCode) => {
     navigate(`/e-ticket/${bookingCode}`);
   };
 
-  
+  const getStatusInfo = (ticket) => {
+    const status = ticket.payment_transaction_status || ticket.payment_status || ticket.status;
+    
+    switch (status?.toLowerCase()) {
+      case 'paid':
+      case 'settlement':
+      case 'capture':
+      case 'settled':
+        return {
+          text: 'Selesai',
+          className: 'bg-green-100 text-green-600',
+          icon: <CheckCircle className="w-4 h-4" />,
+          showContinue: false
+        };
+      case 'pending':
+        return {
+          text: 'Dalam proses',
+          className: 'bg-yellow-100 text-yellow-600',
+          icon: <Clock className="w-4 h-4" />,
+          showContinue: true
+        };
+      case 'failed':
+        return {
+          text: 'Gagal',
+          className: 'bg-red-100 text-red-600',
+          icon: <XCircle className="w-4 h-4" />,
+          showContinue: true
+        };
+      case 'expired':
+        return {
+          text: 'Kedaluwarsa',
+          className: 'bg-gray-100 text-gray-600',
+          icon: <XCircle className="w-4 h-4" />,
+          showContinue: true
+        };
+      default:
+        return {
+          text: status || 'Tidak diketahui',
+          className: 'bg-gray-100 text-gray-600',
+          icon: <AlertCircle className="w-4 h-4" />,
+          showContinue: false
+        };
+    }
+  };
 
   const formatDuration = (start, end) => {
     if (!start || !end) return '5 jam perjalanan';
@@ -635,61 +541,29 @@ const handleDeleteTicket = async (ticket) => {
                         </div>
                         
                         {/* Continue Payment Button */}
-                        {/* Action Buttons */}
-                        <div className="space-y-2">
-                          {/* Continue Payment Button */}
-                          {statusInfo.showContinue && (
-                            <button
-                              onClick={() => handleContinuePayment(ticket)}
-                              disabled={paymentLoading[ticket.id_headtransaksi]}
-                              className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center ${
-                                paymentLoading[ticket.id_headtransaksi]
-                                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                  : 'bg-orange-500 hover:bg-orange-600 text-white shadow-md hover:shadow-lg'
-                              }`}
-                            >
-                              {paymentLoading[ticket.id_headtransaksi] ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                  Loading...
-                                </>
-                              ) : (
-                                <>
-                                  <CreditCard className="w-4 h-4 mr-2" />
-                                  Lanjutkan Bayar
-                                </>
-                              )}
-                            </button>
-                          )}
-                          
-                          {/* Delete Button */}
-                          {statusInfo.showDelete && (
-                            <button
-                              onClick={() => handleDeleteTicket(ticket)}
-                              disabled={deleteLoading[ticket.id_headtransaksi]}
-                              className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center ${
-                                deleteLoading[ticket.id_headtransaksi]
-                                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                  : statusInfo.autoExpired
-                                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-md hover:shadow-lg'
-                                    : 'bg-red-500 hover:bg-red-600 text-white shadow-md hover:shadow-lg'
-                              }`}
-                              title={statusInfo.autoExpired ? 'Hapus tiket kedaluwarsa' : 'Hapus tiket gagal'}
-                            >
-                              {deleteLoading[ticket.id_headtransaksi] ? (
-                                <>
-                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                  Menghapus...
-                                </>
-                              ) : (
-                                <>
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  {statusInfo.autoExpired ? 'Hapus Kedaluwarsa' : 'Hapus Tiket'}
-                                </>
-                              )}
-                            </button>
-                          )}
-                        </div>
+                        {statusInfo.showContinue && (
+                          <button
+                            onClick={() => handleContinuePayment(ticket)}
+                            disabled={paymentLoading[ticket.id_headtransaksi]}
+                            className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center ${
+                              paymentLoading[ticket.id_headtransaksi]
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                : 'bg-orange-500 hover:bg-orange-600 text-white shadow-md hover:shadow-lg'
+                            }`}
+                          >
+                            {paymentLoading[ticket.id_headtransaksi] ? (
+                              <>
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                Loading...
+                              </>
+                            ) : (
+                              <>
+                                <CreditCard className="w-4 h-4 mr-2" />
+                                Lanjutkan Bayar
+                              </>
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

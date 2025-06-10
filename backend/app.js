@@ -23,6 +23,18 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use((req, res, next) => {
+  // Set ngrok-skip-browser-warning header
+  res.header('ngrok-skip-browser-warning', 'true');
+  next();
+});
+
+// Khusus untuk webhook Xendit
+app.use('/api/payment/xendit/webhook', (req, res, next) => {
+  console.log('🔔 Xendit webhook hit:', req.method, req.url);
+  console.log('📋 Headers:', req.headers);
+  next();
+});
 
 // Serve static files (images)
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
@@ -71,6 +83,7 @@ app.use('/api/notifications', notificationRoutes);
 // Database connection test
 const db = require('./models');
 
+
 // Test koneksi database saat startup
 db.sequelize
   .authenticate()
@@ -82,6 +95,31 @@ db.sequelize
   .catch(err => {
     console.error('❌ Unable to connect to the database:', err);
   });
+  if (process.env.NODE_ENV !== 'test') {
+    try {
+      const paymentCleanupService = require('./services/paymentCleanupService');
+      
+      // Start cleanup service
+      paymentCleanupService.start();
+      console.log('Payment cleanup service started successfully');
+      
+      // Graceful shutdown
+      process.on('SIGINT', () => {
+        console.log('Shutting down gracefully...');
+        paymentCleanupService.stop();
+        process.exit(0);
+      });
+      
+      process.on('SIGTERM', () => {
+        console.log('SIGTERM received, shutting down...');
+        paymentCleanupService.stop();
+        process.exit(0);
+      });
+      
+    } catch (error) {
+      console.error('Failed to start payment cleanup service:', error.message);
+    }
+  }
 
 // 404 handler untuk route yang tidak ditemukan
 app.use('*', (req, res) => {

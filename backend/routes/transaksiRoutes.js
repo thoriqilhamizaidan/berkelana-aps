@@ -155,7 +155,7 @@ router.get('/payments/status-by-head/:id', async (req, res) => {
     
     console.log('🔍 Checking payment status for head_transaksi:', id);
     
-    // ✅ FIX: Query yang include promo info
+    // ✅ FIX: Ganti 'promos' dengan 'tabel_promo'
     const query = `
       SELECT 
         h.id_headtransaksi,
@@ -174,56 +174,59 @@ router.get('/payments/status-by-head/:id', async (req, res) => {
         COALESCE(p.transaction_status, h.payment_status, h.status) as final_status
       FROM tabel_headtransaksi h
       LEFT JOIN tabel_payments p ON h.id_headtransaksi = p.id_headtransaksi
-      LEFT JOIN promos pr ON h.id_promo = pr.id_promo
+      LEFT JOIN tabel_promo pr ON h.id_promo = pr.id_promo
       WHERE h.id_headtransaksi = ?
       ORDER BY p.createdAt DESC
       LIMIT 1
     `;
     
-    const [results] = await db.sequelize.query(query, {
+    const results = await db.sequelize.query(query, {
       replacements: [id],
       type: db.Sequelize.QueryTypes.SELECT
     });
     
-    if (!results) {
+    // ✅ FIX: Handle empty results properly
+    if (!results || results.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Transaction not found'
       });
     }
     
-    const transaction_status = results.transaction_status || results.head_payment_status || results.head_status;
+    const result = results[0]; // Get first result
+    const transaction_status = result.transaction_status || result.head_payment_status || result.head_status;
     
     res.json({
       success: true,
       data: {
-        id_headtransaksi: results.id_headtransaksi,
+        id_headtransaksi: result.id_headtransaksi,
         transaction_status,
-        booking_status: results.head_status,
-        head_status: results.head_status,
-        head_payment_status: results.head_payment_status,
-        booking_code: results.booking_code,
-        gross_amount: results.gross_amount || results.payment_amount,
-        invoice_id: results.invoice_id,
-        expires_at: results.expires_at,
+        booking_status: result.head_status,
+        head_status: result.head_status,
+        head_payment_status: result.head_payment_status,
+        booking_code: result.booking_code,
+        gross_amount: result.gross_amount || result.payment_amount,
+        invoice_id: result.invoice_id,
+        expires_at: result.expires_at,
         // ✅ FIX: Include promo info for frontend restoration
-        promo_code: results.promo_code,
-        promo_discount: results.promo_discount,
-        promo_name: results.promo_name,
+        promo_code: result.promo_code,
+        promo_discount: result.promo_discount,
+        promo_name: result.promo_name,
         debug_statuses: {
-          head_status: results.head_status,
-          head_payment_status: results.head_payment_status,
-          payment_transaction_status: results.transaction_status,
+          head_status: result.head_status,
+          head_payment_status: result.head_payment_status,
+          payment_transaction_status: result.transaction_status,
           final_status: transaction_status
         }
       }
     });
     
   } catch (error) {
-    console.error('Error getting combined payment status:', error);
+    console.error('❌ Error getting combined payment status:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: 'Server error',
+      error: error.message
     });
   }
 });
@@ -454,4 +457,231 @@ router.put('/payments/update-amount/:headTransaksiId', async (req, res) => {
   }
 });
 
+// ================================
+// TAMBAH INI KE backend/routes/transaksiRoutes.js
+// Letakkan di bagian paling bawah sebelum module.exports = router;
+// ================================
+
+// GANTI router.get('/transaksi/user/:id_user') DENGAN KODE INI:
+
+router.get('/transaksi/user/:id_user', async (req, res) => {
+  try {
+    const { id_user } = req.params;
+    
+    console.log('🔍 Getting transaksi for user:', id_user);
+    
+    // ✅ ENHANCED: Better user validation and debugging
+    const user = await db.User.findOne({
+      where: { id_user: id_user },
+      attributes: ['email_user']
+    });
+    
+    if (!user) {
+      console.log('❌ User not found in database for ID:', id_user);
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    console.log('📧 User email:', user.email_user);
+    
+    // ✅ SINGLE CLEAN QUERY: Fix untuk hanya user yang bersangkutan
+    const query = `
+      SELECT 
+        ht.id_headtransaksi,
+        ht.booking_code,
+        ht.nama_pemesan,
+        ht.email_pemesan,
+        ht.no_hp_pemesan,
+        ht.total,
+        ht.potongan,
+        ht.status,
+        ht.payment_status,
+        ht.payment_method,
+        ht.paid_at,
+        ht.createdAt,
+        ht.updatedAt,
+        ht.id_user as head_id_user,
+        
+        -- Jadwal & Kendaraan Info (ambil dari detail transaksi pertama)
+        (SELECT j.kota_awal FROM tabel_detailtransaksi dt 
+         LEFT JOIN tabel_jadwal j ON dt.id_jadwal = j.id_jadwal 
+         WHERE dt.id_headtransaksi = ht.id_headtransaksi AND dt.deletedAt IS NULL LIMIT 1) as kota_awal,
+        (SELECT j.kota_tujuan FROM tabel_detailtransaksi dt 
+         LEFT JOIN tabel_jadwal j ON dt.id_jadwal = j.id_jadwal 
+         WHERE dt.id_headtransaksi = ht.id_headtransaksi AND dt.deletedAt IS NULL LIMIT 1) as kota_tujuan,
+        (SELECT j.waktu_keberangkatan FROM tabel_detailtransaksi dt 
+         LEFT JOIN tabel_jadwal j ON dt.id_jadwal = j.id_jadwal 
+         WHERE dt.id_headtransaksi = ht.id_headtransaksi AND dt.deletedAt IS NULL LIMIT 1) as waktu_keberangkatan,
+        (SELECT j.waktu_sampai FROM tabel_detailtransaksi dt 
+         LEFT JOIN tabel_jadwal j ON dt.id_jadwal = j.id_jadwal 
+         WHERE dt.id_headtransaksi = ht.id_headtransaksi AND dt.deletedAt IS NULL LIMIT 1) as waktu_sampai,
+        (SELECT j.harga FROM tabel_detailtransaksi dt 
+         LEFT JOIN tabel_jadwal j ON dt.id_jadwal = j.id_jadwal 
+         WHERE dt.id_headtransaksi = ht.id_headtransaksi AND dt.deletedAt IS NULL LIMIT 1) as harga_tiket,
+        (SELECT k.tipe_armada FROM tabel_detailtransaksi dt 
+         LEFT JOIN tabel_jadwal j ON dt.id_jadwal = j.id_jadwal 
+         LEFT JOIN tabel_kendaraan k ON j.id_kendaraan = k.id_kendaraan
+         WHERE dt.id_headtransaksi = ht.id_headtransaksi AND dt.deletedAt IS NULL LIMIT 1) as tipe_armada,
+        (SELECT k.nomor_armada FROM tabel_detailtransaksi dt 
+         LEFT JOIN tabel_jadwal j ON dt.id_jadwal = j.id_jadwal 
+         LEFT JOIN tabel_kendaraan k ON j.id_kendaraan = k.id_kendaraan
+         WHERE dt.id_headtransaksi = ht.id_headtransaksi AND dt.deletedAt IS NULL LIMIT 1) as nomor_armada,
+        (SELECT k.nomor_kendaraan FROM tabel_detailtransaksi dt 
+         LEFT JOIN tabel_jadwal j ON dt.id_jadwal = j.id_jadwal 
+         LEFT JOIN tabel_kendaraan k ON j.id_kendaraan = k.id_kendaraan
+         WHERE dt.id_headtransaksi = ht.id_headtransaksi AND dt.deletedAt IS NULL LIMIT 1) as nomor_kendaraan,
+        (SELECT k.nama_kondektur FROM tabel_detailtransaksi dt 
+         LEFT JOIN tabel_jadwal j ON dt.id_jadwal = j.id_jadwal 
+         LEFT JOIN tabel_kendaraan k ON j.id_kendaraan = k.id_kendaraan
+         WHERE dt.id_headtransaksi = ht.id_headtransaksi AND dt.deletedAt IS NULL LIMIT 1) as nama_kondektur,
+        (SELECT k.nomor_kondektur FROM tabel_detailtransaksi dt 
+         LEFT JOIN tabel_jadwal j ON dt.id_jadwal = j.id_jadwal 
+         LEFT JOIN tabel_kendaraan k ON j.id_kendaraan = k.id_kendaraan
+         WHERE dt.id_headtransaksi = ht.id_headtransaksi AND dt.deletedAt IS NULL LIMIT 1) as nomor_kondektur,
+        (SELECT k.gambar FROM tabel_detailtransaksi dt 
+         LEFT JOIN tabel_jadwal j ON dt.id_jadwal = j.id_jadwal 
+         LEFT JOIN tabel_kendaraan k ON j.id_kendaraan = k.id_kendaraan
+         WHERE dt.id_headtransaksi = ht.id_headtransaksi AND dt.deletedAt IS NULL LIMIT 1) as bus_image,
+        
+        -- Payment Info (ambil payment terbaru)
+        (SELECT p.order_id FROM tabel_payments p 
+         WHERE p.id_headtransaksi = ht.id_headtransaksi AND p.deletedAt IS NULL 
+         ORDER BY p.createdAt DESC LIMIT 1) as invoice_id,
+        (SELECT p.transaction_status FROM tabel_payments p 
+         WHERE p.id_headtransaksi = ht.id_headtransaksi AND p.deletedAt IS NULL 
+         ORDER BY p.createdAt DESC LIMIT 1) as payment_transaction_status,
+        (SELECT p.snap_redirect_url FROM tabel_payments p 
+         WHERE p.id_headtransaksi = ht.id_headtransaksi AND p.deletedAt IS NULL 
+         ORDER BY p.createdAt DESC LIMIT 1) as payment_url,
+        (SELECT p.expiry_time FROM tabel_payments p 
+         WHERE p.id_headtransaksi = ht.id_headtransaksi AND p.deletedAt IS NULL 
+         ORDER BY p.createdAt DESC LIMIT 1) as expiry_time,
+        
+        -- Promo Info
+        pr.kode_promo,
+        pr.judul as promo_name,
+        
+        -- Count penumpang
+        (SELECT COUNT(*) FROM tabel_detailtransaksi dt2 
+         WHERE dt2.id_headtransaksi = ht.id_headtransaksi AND dt2.deletedAt IS NULL) as jumlah_penumpang
+        
+      FROM tabel_headtransaksi ht
+      LEFT JOIN tabel_promo pr ON ht.id_promo = pr.id_promo
+      
+      WHERE ht.id_user = ? 
+      AND ht.deletedAt IS NULL
+      ORDER BY ht.createdAt DESC
+    `;
+    
+    console.log('🔍 Executing query for user_id:', id_user);
+    
+    const transaksi = await db.sequelize.query(query, {
+      replacements: [id_user], // ✅ HANYA user_id untuk mencegah data user lain muncul
+      type: db.Sequelize.QueryTypes.SELECT
+    });
+    
+    console.log('✅ Found transaksi:', transaksi.length);
+    console.log('🔍 First record debug:', transaksi[0] ? {
+      id_headtransaksi: transaksi[0].id_headtransaksi,
+      head_id_user: transaksi[0].head_id_user,
+      nama_pemesan: transaksi[0].nama_pemesan,
+      email_pemesan: transaksi[0].email_pemesan
+    } : 'No records');
+    
+    res.json({
+      success: true,
+      data: transaksi,
+      count: transaksi.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Error getting user transaksi:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error getting user transactions',
+      error: error.message
+    });
+  }
+});
+
+// ✅ ADD: Delete transaction & cleanup routes - TAMBAH SEBELUM module.exports
+router.delete('/transaksi/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const headTransaksi = await db.tabel_headtransaksi.findByPk(id);
+    
+    if (!headTransaksi) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaksi tidak ditemukan'
+      });
+    }
+    
+    const allowedStatuses = ['expired', 'failed', 'cancelled', 'pending'];
+    if (!allowedStatuses.includes(headTransaksi.status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Transaksi yang sudah dibayar tidak dapat dihapus'
+      });
+    }
+    
+    const transaction = await db.sequelize.transaction();
+    
+    try {
+      await db.tabel_detailtransaksi.destroy({
+        where: { id_headtransaksi: id },
+        transaction
+      });
+      
+      await db.tabel_payments.destroy({
+        where: { id_headtransaksi: id },
+        transaction
+      });
+      
+      await headTransaksi.destroy({ transaction });
+      
+      await transaction.commit();
+      
+      res.json({
+        success: true,
+        message: 'Transaksi berhasil dihapus'
+      });
+      
+    } catch (deleteError) {
+      await transaction.rollback();
+      throw deleteError;
+    }
+    
+  } catch (error) {
+    console.error('Error deleting transaction:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal menghapus transaksi',
+      error: error.message
+    });
+  }
+});
+
+// Manual cleanup trigger
+router.post('/transaksi/cleanup/manual', async (req, res) => {
+  try {
+    const paymentCleanupService = require('../services/paymentCleanupService');
+    await paymentCleanupService.manualCleanup();
+    
+    res.json({
+      success: true,
+      message: 'Manual cleanup completed successfully'
+    });
+  } catch (error) {
+    console.error('Manual cleanup error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Manual cleanup failed',
+      error: error.message
+    });
+  }
+});
 module.exports = router;

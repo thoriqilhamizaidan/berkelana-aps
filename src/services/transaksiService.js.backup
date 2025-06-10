@@ -41,91 +41,8 @@ const apiRequest = async (url, options = {}) => {
 };
 
 
-
-
 export const transaksiService = {
 
-
-  // ✅ ADD: Delete & validation methods - TAMBAH SEBELUM };
-
-// Delete transaction
-deleteTransaction: async (id_headtransaksi) => {
-  try {
-    console.log('🗑️ Deleting transaction:', id_headtransaksi);
-    const response = await apiRequest(`${API_BASE_URL}/transaksi/${id_headtransaksi}`, {
-      method: 'DELETE',
-    });
-    console.log('✅ Transaction deleted successfully');
-    return response;
-  } catch (error) {
-    console.error('Error deleting transaction:', error);
-    throw error;
-  }
-},
-
-// Validate transaction before payment
-validateTransactionForPayment: async (transaksiId) => {
-  try {
-    const response = await transaksiService.checkPaymentStatusByHeadTransaksi(transaksiId);
-    
-    if (!response.success) {
-      return { valid: false, reason: 'Transaksi tidak ditemukan' };
-    }
-    
-    const { transaction_status, createdAt } = response.data;
-    
-    // Check if already paid
-    if (['paid', 'settlement', 'capture'].includes(transaction_status)) {
-      return { valid: false, reason: 'Pembayaran sudah selesai' };
-    }
-    
-    // Check if expired/failed
-    if (['expired', 'failed', 'cancelled'].includes(transaction_status)) {
-      return { valid: false, reason: 'Pembayaran tidak dapat dilanjutkan' };
-    }
-    
-    // Check if auto-expired (15+ minutes old)
-    if (createdAt && transaction_status === 'pending') {
-      const created = new Date(createdAt);
-      const now = new Date();
-      const minutesSinceCreated = Math.floor((now - created) / (1000 * 60));
-      
-      if (minutesSinceCreated >= 15) {
-        return { valid: false, reason: 'Transaksi telah kedaluwarsa' };
-      }
-      
-      const remainingMinutes = 15 - minutesSinceCreated;
-      return { 
-        valid: true, 
-        remainingMinutes,
-        message: `Sisa waktu: ${remainingMinutes} menit`
-      };
-    }
-    
-    return { valid: true };
-    
-  } catch (error) {
-    console.error('Error validating transaction:', error);
-    return { valid: false, reason: 'Error validating transaction' };
-  }
-},
-
-// Check if transaction can be deleted
-canDeleteTransaction: (ticket) => {
-  const status = ticket.payment_transaction_status || ticket.payment_status || ticket.status;
-  const allowedStatuses = ['expired', 'failed', 'cancelled', 'pending'];
-  
-  // Also check if payment is auto-expired (15+ minutes old and pending)
-  if (status === 'pending') {
-    const createdAt = new Date(ticket.createdAt);
-    const now = new Date();
-    const minutesSinceCreated = Math.floor((now - createdAt) / (1000 * 60));
-    
-    return minutesSinceCreated >= 15; // Can delete if 15+ minutes old
-  }
-  
-  return allowedStatuses.includes(status?.toLowerCase());
-},
   // ✅ NEW: Get transaksi by user ID
 // ✅ TAMBAH: Method untuk get transaksi by user (yang sudah ada di artifact sebelumnya)
 getTransaksiByUser: async (userId) => {
@@ -606,4 +523,3 @@ transaksiService.getEnvironmentInfo = () => {
 
 // Log environment info on import
 console.log('🔧 TransaksiService Environment:', transaksiService.getEnvironmentInfo());
-

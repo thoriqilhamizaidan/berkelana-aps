@@ -1,4 +1,4 @@
-// src/user/navbar.jsx (Responsive Version)
+// src/user/navbar.jsx (Fixed untuk semua ukuran layar termasuk 27 inch)
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation, NavLink } from 'react-router-dom';
 import { BellIcon } from 'lucide-react';
@@ -16,7 +16,7 @@ const Navbar = () => {
   // Tutup menu dropdown ketika rute berubah
   useEffect(() => {
     setShowProfileMenu(false);
-    setMobileMenuOpen(false); // Also close mobile menu on route change
+    setMobileMenuOpen(false);
   }, [location.pathname]);
   
   // Effect untuk menutup dropdown saat klik di luar
@@ -150,20 +150,55 @@ const Navbar = () => {
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
-    setShowProfileMenu(false); // Close profile menu when opening mobile menu
+    setShowProfileMenu(false);
   };
   
   return (
     <nav className="bg-white shadow-sm w-full font-['League_Spartan'] relative z-50">
-      <div className="w-full px-3 sm:px-4 lg:px-6 xl:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16">
+      {/* Tambahkan style inline untuk memastikan navbar tampil di semua ukuran layar */}
+      <style>{`
+        .navbar-desktop {
+          display: none;
+        }
+        
+        .navbar-login {
+          display: none;
+        }
+        
+        @media (min-width: 1024px) {
+          .navbar-desktop {
+            display: flex !important;
+          }
+          .navbar-login {
+            display: flex !important;
+          }
+          .navbar-mobile-button {
+            display: none !important;
+          }
+        }
+        
+        @media (max-width: 1023px) {
+          .navbar-desktop {
+            display: none !important;
+          }
+          .navbar-login {
+            display: none !important;
+          }
+          .navbar-mobile-button {
+            display: block !important;
+          }
+        }
+      `}</style>
+      
+      <div className="w-full px-3 sm:px-4 lg:px-6 xl:px-8 2xl:px-12">
+        <div className="flex items-center justify-between h-14 sm:h-16 lg:h-18">
           {/* Logo - Always visible */}
           <div className="flex-shrink-0 mb-1 sm:mb-2">
             <Link to="/">
               <img
                 src="/images/Logo nocaption.png"
                 alt="Berkelana Logo"
-                className="h-7 sm:h-8 lg:h-9"
+                className="h-7 sm:h-8 lg:h-9 xl:h-10 2xl:h-12"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = "/api/placeholder/120/48";
@@ -172,13 +207,13 @@ const Navbar = () => {
             </Link>
           </div>
           
-          {/* Desktop Navigation Links - Hidden on mobile/tablet */}
-          <div className="hidden xl:flex justify-center flex-1 mx-4">
-            <div className="flex space-x-6 2xl:space-x-8">
+          {/* Desktop Navigation Links - Gunakan class custom dan inline style */}
+          <div className="navbar-desktop justify-center flex-1 mx-4">
+            <div className="flex space-x-4 xl:space-x-6 2xl:space-x-8 3xl:space-x-10">
               <NavLink 
                 to="/cari-tiket" 
                 className={({ isActive }) =>
-                  `font-bold px-2 py-2 text-xs 2xl:text-sm uppercase tracking-wider transition-colors ${
+                  `font-bold px-3 py-2 text-sm xl:text-base 2xl:text-lg uppercase tracking-wider transition-colors whitespace-nowrap ${
                     isActive ? 'text-emerald-400' : 'text-gray-900 hover:text-emerald-400'
                   }`
                 }
@@ -188,7 +223,7 @@ const Navbar = () => {
               <NavLink 
                 to="/promo" 
                 className={({ isActive }) =>
-                  `font-bold px-2 py-2 text-xs 2xl:text-sm uppercase tracking-wider transition-colors ${
+                  `font-bold px-3 py-2 text-sm xl:text-base 2xl:text-lg uppercase tracking-wider transition-colors whitespace-nowrap ${
                     isActive ? 'text-emerald-400' : 'text-gray-900 hover:text-emerald-400'
                   }`
                 }
@@ -198,7 +233,7 @@ const Navbar = () => {
               <NavLink 
                 to="/artikel" 
                 className={({ isActive }) =>
-                  `font-bold px-2 py-2 text-xs 2xl:text-sm uppercase tracking-wider transition-colors ${
+                  `font-bold px-3 py-2 text-sm xl:text-base 2xl:text-lg uppercase tracking-wider transition-colors whitespace-nowrap ${
                     isActive ? 'text-emerald-400' : 'text-gray-900 hover:text-emerald-400'
                   }`
                 }
@@ -208,7 +243,7 @@ const Navbar = () => {
               <NavLink 
                 to="/tiket-saya" 
                 className={({ isActive }) =>
-                  `font-bold px-2 py-2 text-xs 2xl:text-sm uppercase tracking-wider transition-colors ${
+                  `font-bold px-3 py-2 text-sm xl:text-base 2xl:text-lg uppercase tracking-wider transition-colors whitespace-nowrap ${
                     isActive ? 'text-emerald-400' : 'text-gray-900 hover:text-emerald-400'
                   }`
                 }
@@ -218,7 +253,7 @@ const Navbar = () => {
               <NavLink 
                 to="/tentang-kami" 
                 className={({ isActive }) =>
-                  `font-bold px-2 py-2 text-xs 2xl:text-sm uppercase tracking-wider transition-colors ${
+                  `font-bold px-3 py-2 text-sm xl:text-base 2xl:text-lg uppercase tracking-wider transition-colors whitespace-nowrap ${
                     isActive ? 'text-emerald-400' : 'text-gray-900 hover:text-emerald-400'
                   }`
                 }
@@ -229,7 +264,7 @@ const Navbar = () => {
           </div>
 
           {/* Right side - User actions */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
             {isLoggedIn ? (
               <>
                 {/* Notification Bell - Always visible when logged in */}
@@ -238,23 +273,23 @@ const Navbar = () => {
                     className="text-gray-900 hover:text-emerald-400 focus:outline-none p-1 transition-colors"
                     onClick={handleNotificationClick}
                   >
-                    <i className="fas fa-bell text-lg sm:text-xl lg:text-2xl"></i>
+                    <i className="fas fa-bell text-lg sm:text-xl lg:text-2xl xl:text-3xl"></i>
                     {unreadNotificationCount > 0 && (
-                      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-5">
+                      <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-500 rounded-full min-w-[18px] h-[18px] sm:min-w-[20px] sm:h-5 lg:min-w-[22px] lg:h-6">
                         {unreadNotificationCount > 99 ? '99+' : unreadNotificationCount}
                       </span>
                     )}
                   </button>
                 </div>
 
-                {/* User Profile - Hidden on small screens */}
+                {/* User Profile - Visible on desktop */}
                 <div className="hidden sm:block relative" ref={dropdownRef}>
                   <button 
                     onClick={handleProfileClick}
                     className="flex items-center focus:outline-none"
                     type="button"
                   >
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 rounded-full overflow-hidden border-2 border-emerald-400 hover:scale-105 transition-transform">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full overflow-hidden border-2 border-emerald-400 hover:scale-105 transition-transform">
                       {user?.profil_user ? (
                         <img
                           src={user.profil_user.startsWith('http') ? user.profil_user : `http://localhost:3000${user.profil_user}`}
@@ -267,7 +302,7 @@ const Navbar = () => {
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                          <i className="fas fa-user-circle text-xl sm:text-2xl lg:text-3xl text-gray-600"></i>
+                          <i className="fas fa-user-circle text-xl sm:text-2xl lg:text-3xl xl:text-4xl text-gray-600"></i>
                         </div>
                       )}
                     </div>
@@ -275,23 +310,23 @@ const Navbar = () => {
 
                   {/* Profile Dropdown Menu */}
                   {showProfileMenu && (
-                    <div className="absolute right-0 mt-2 w-44 sm:w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200">
+                    <div className="absolute right-0 mt-2 w-48 lg:w-52 xl:w-56 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200">
                       <button 
                         onClick={(e) => handleMenuItemClick(e, '/info-akun')}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150"
+                        className="block w-full text-left px-4 py-3 text-sm lg:text-base text-gray-700 hover:bg-gray-100 transition-colors duration-150"
                       >
                         Profil Saya
                       </button>
                       <button 
                         onClick={(e) => handleMenuItemClick(e, '/tiket-saya')}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150"
+                        className="block w-full text-left px-4 py-3 text-sm lg:text-base text-gray-700 hover:bg-gray-100 transition-colors duration-150"
                       >
                         Tiket Saya
                       </button>
                       <div className="border-t border-gray-100"></div>
                       <button 
                         onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-150"
+                        className="block w-full text-left px-4 py-3 text-sm lg:text-base text-gray-700 hover:bg-gray-100 transition-colors duration-150"
                       >
                         Keluar
                       </button>
@@ -300,20 +335,19 @@ const Navbar = () => {
                 </div>
               </>
             ) : (
-              /* Login Link - Responsive text */
+              /* Login Link - Selalu tampil di desktop */
               <Link
                 to="/daftar-masuk"
-                className="hidden sm:flex font-bold text-gray-900 hover:text-emerald-400 px-2 lg:px-3 py-2 text-xs lg:text-sm items-center transition-colors"
+                className="navbar-login font-bold text-gray-900 hover:text-emerald-400 px-3 lg:px-4 py-2 text-sm lg:text-base xl:text-lg items-center transition-colors"
               >
-                <span className="hidden md:inline">Daftar/Masuk</span>
-                <span className="md:hidden">Login</span>
-                <i className="fas fa-user-circle text-lg lg:text-2xl ml-1 lg:ml-2 bg-gray-900 text-white rounded-full"></i>
+                <span>Daftar/Masuk</span>
+                <i className="fas fa-user-circle text-xl lg:text-2xl xl:text-3xl ml-2 bg-gray-900 text-white rounded-full"></i>
               </Link>
             )}
             
-            {/* Mobile menu button - Always visible on small screens */}
+            {/* Mobile menu button - Gunakan class custom */}
             <button 
-              className="xl:hidden bg-white p-2 rounded-md text-gray-900 hover:text-emerald-400 focus:outline-none transition-colors"
+              className="navbar-mobile-button bg-white p-2 rounded-md text-gray-900 hover:text-emerald-400 focus:outline-none transition-colors"
               onClick={toggleMobileMenu}
               aria-label="Toggle mobile menu"
             >
@@ -323,8 +357,8 @@ const Navbar = () => {
         </div>
       </div>
       
-      {/* Mobile menu - Improved responsive design */}
-      <div className={`xl:hidden transition-all duration-300 ease-in-out ${
+      {/* Mobile menu - Show on tablet and mobile */}
+      <div className={`lg:hidden transition-all duration-300 ease-in-out ${
         mobileMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
       }`}>
         <div className="px-3 sm:px-4 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
