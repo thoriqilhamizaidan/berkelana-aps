@@ -1,0 +1,338 @@
+// backend/services/paymentCleanupService.js - FIXED VERSION
+const { Op } = require('sequelize');
+const db = require('../models');
+
+class PaymentCleanupService {
+  constructor() {
+    this.intervalId = null;
+    this.isRunning = false;
+    this.cleanupInterval = 5 * 60 * 1000; // 5 menit check sekali
+    this.expiryMinutes = 15; // 15 menit expiry
+    this.hardDeleteAfterDays = 90; // Hard delete setelah 90 hari
+  }
+
+  async start() {
+    if (this.isRunning) {
+      console.log('Cleanup service already running');
+      return;
+    }
+
+    console.log('Starting payment cleanup service...');
+    this.isRunning = true;
+
+    // Jalankan cleanup pertama kali
+    await this.runCleanup();
+
+    // Set interval untuk cleanup berkala
+    this.intervalId = setInterval(async () => {
+      await this.runCleanup();
+    }, this.cleanupInterval);
+
+    console.log(`Payment cleanup service started - runs every ${this.cleanupInterval / 1000 / 60} minutes`);
+  }
+
+  async stop() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+    }
+    this.isRunning = false;
+    console.log('Payment cleanup service stopped');
+  }
+
+  async runCleanup() {
+    try {
+      console.log('Running payment cleanup...');
+      
+      // 1. SOFT DELETE: Expired transactions (15 menit)
+      const softDeleteResult = await this.softDeleteExpiredTransactions();
+      
+      // 2. HARD DELETE: Old soft-deleted transactions (90 hari)
+      const hardDeleteResult = await this.hardDeleteOldTransactions();
+
+      console.log(`Cleanup completed - Soft deleted: ${softDeleteResult.deleted}, Hard deleted: ${hardDeleteResult.deleted}`);
+      
+      return {
+        success: true,
+        softDeleted: softDeleteResult.deleted,
+        hardDeleted: hardDeleteResult.deleted,
+        totalRevenueLoss: softDeleteResult.totalRevenueLoss || 0,
+        details: softDeleteResult.details || [],
+        message: 'Cleanup completed successfully'
+      };
+    } catch (error) {
+      console.error('Error during cleanup:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  async softDeleteExpiredTransactions() {
+    try {
+      // Tanggal 15 menit yang lalu
+      const fifteenMinutesAgo = new Date(Date.now() - (this.expiryMinutes * 60 * 1000));
+      
+      console.log(`Soft deleting transactions older than: ${fifteenMinutesAgo.toISOString()}`);
+
+      // FIXED: Cari transaksi tanpa include untuk avoid association conflict
+      const expiredTransactions = await db.tabel_headtransaksi.findAll({
+        where: {
+          [Op.and]: [
+            { 
+              [Op.or]: [
+                { status: 'pending' },
+                { payment_status: 'pending' }
+              ]
+            },
+            { createdAt: { [Op.lt]: fifteenMinutesAgo } },
+            { deletedAt: null }
+          ]
+        },
+        attributes: ['id_headtransaksi', 'booking_code', 'total', 'createdAt', 'nama_pemesan']
+      });
+
+      console.log(`Found ${expiredTransactions.length} expired transactions for soft delete`);
+
+      if (expiredTransactions.length === 0) {
+        return { deleted: 0, details: [], totalRevenueLoss: 0 };
+      }
+
+      let deletedCount = 0;
+      const deletedDetails = [];
+      let totalRevenueLoss = 0;
+
+      // Soft delete setiap transaksi expired
+      for (const transaction of expiredTransactions) {
+        try {
+          await db.sequelize.transaction(async (t) => {
+            const now = new Date();
+            
+            // 1. Soft delete related payments
+            await db.tabel_payments.update(
+              { 
+                deletedAt: now,
+                transaction_status: 'expired_auto'
+              },
+              { 
+                where: { id_headtransaksi: transaction.id_headtransaksi },
+                transaction: t 
+              }
+            );
+
+            // 2. Soft delete detail transaksi
+            await db.tabel_detailtransaksi.update(
+              { deletedAt: now },
+              { 
+                where: { id_headtransaksi: transaction.id_headtransaksi },
+                transaction: t 
+              }
+            );
+
+            // 3. Soft delete head transaksi
+            await db.tabel_headtransaksi.update(
+              { 
+                deletedAt: now,
+                status: 'expired_auto',
+                payment_status: 'expired_auto'
+              },
+              { 
+                where: { id_headtransaksi: transaction.id_headtransaksi },
+                transaction: t 
+              }
+            );
+          });
+
+          deletedCount++;
+          const expiredMinutes = Math.floor((Date.now() - new Date(transaction.createdAt)) / (1000 * 60));
+          const transactionTotal = transaction.total || 0;
+          totalRevenueLoss += transactionTotal;
+          
+          deletedDetails.push({
+            id: transaction.id_headtransaksi,
+            booking_code: transaction.booking_code,
+            created: transaction.createdAt,
+            expired_minutes: expiredMinutes,
+            total_amount: transactionTotal,
+            customer: transaction.nama_pemesan
+          });
+
+          console.log(`Auto-deleted expired transaction: ${transaction.booking_code} (${expiredMinutes}min expired, Rp ${transactionTotal.toLocaleString()})`);
+        } catch (deleteError) {
+          console.error(`Failed to soft delete transaction ${transaction.id_headtransaksi}:`, deleteError);
+        }
+      }
+
+      // LOG BUSINESS METRICS
+      console.log(`BUSINESS IMPACT: ${deletedCount} expired bookings, Total loss: Rp ${totalRevenueLoss.toLocaleString()}`);
+      
+      return { 
+        deleted: deletedCount, 
+        details: deletedDetails,
+        totalRevenueLoss: totalRevenueLoss
+      };
+    } catch (error) {
+      console.error('Error in softDeleteExpiredTransactions:', error);
+      throw error;
+    }
+  }
+
+  async hardDeleteOldTransactions() {
+    try {
+      // Tanggal 90 hari yang lalu
+      const ninetyDaysAgo = new Date(Date.now() - (this.hardDeleteAfterDays * 24 * 60 * 60 * 1000));
+      
+      console.log(`Hard deleting soft-deleted transactions older than: ${ninetyDaysAgo.toISOString()}`);
+
+      // Cari transaksi yang sudah di-soft delete > 90 hari
+      const oldDeletedTransactions = await db.tabel_headtransaksi.findAll({
+        where: {
+          deletedAt: { 
+            [Op.lt]: ninetyDaysAgo,
+            [Op.not]: null 
+          }
+        },
+        paranoid: false, // Include soft-deleted records
+        attributes: ['id_headtransaksi', 'booking_code', 'deletedAt']
+      });
+
+      console.log(`Found ${oldDeletedTransactions.length} old transactions for hard delete`);
+
+      if (oldDeletedTransactions.length === 0) {
+        return { deleted: 0 };
+      }
+
+      let hardDeletedCount = 0;
+
+      // Hard delete old transactions
+      for (const transaction of oldDeletedTransactions) {
+        try {
+          await db.sequelize.transaction(async (t) => {
+            // 1. Hard delete payments
+            await db.tabel_payments.destroy({
+              where: { id_headtransaksi: transaction.id_headtransaksi },
+              force: true, // Hard delete
+              transaction: t
+            });
+
+            // 2. Hard delete detail transaksi
+            await db.tabel_detailtransaksi.destroy({
+              where: { id_headtransaksi: transaction.id_headtransaksi },
+              force: true,
+              transaction: t
+            });
+
+            // 3. Hard delete head transaksi
+            await db.tabel_headtransaksi.destroy({
+              where: { id_headtransaksi: transaction.id_headtransaksi },
+              force: true,
+              transaction: t
+            });
+          });
+
+          hardDeletedCount++;
+          const daysSinceDeleted = Math.floor((Date.now() - new Date(transaction.deletedAt)) / (1000 * 60 * 60 * 24));
+          console.log(`Hard deleted old transaction: ${transaction.booking_code} (deleted ${daysSinceDeleted} days ago)`);
+        } catch (deleteError) {
+          console.error(`Failed to hard delete transaction ${transaction.id_headtransaksi}:`, deleteError);
+        }
+      }
+
+      console.log(`Hard deleted ${hardDeletedCount} old transactions (freed database space)`);
+      
+      return { deleted: hardDeletedCount };
+    } catch (error) {
+      console.error('Error in hardDeleteOldTransactions:', error);
+      throw error;
+    }
+  }
+
+  // FIXED: Analytics without custom columns
+  async getAnalytics(days = 7) {
+    try {
+      const startDate = new Date(Date.now() - (days * 24 * 60 * 60 * 1000));
+      
+      // FIXED: Query based on existing columns only
+      const expiredTransactions = await db.tabel_headtransaksi.findAll({
+        where: {
+          [Op.and]: [
+            { deletedAt: { [Op.gte]: startDate } },
+            { 
+              [Op.or]: [
+                { status: 'expired_auto' },
+                { payment_status: 'expired_auto' }
+              ]
+            }
+          ]
+        },
+        paranoid: false,
+        attributes: ['booking_code', 'total', 'createdAt', 'deletedAt', 'nama_pemesan']
+      });
+
+      const totalLoss = expiredTransactions.reduce((sum, t) => sum + (t.total || 0), 0);
+      const averageLoss = expiredTransactions.length > 0 ? totalLoss / expiredTransactions.length : 0;
+
+      return {
+        period: `${days} days`,
+        expiredCount: expiredTransactions.length,
+        totalRevenueLoss: totalLoss,
+        averageLossPerExpired: Math.round(averageLoss),
+        dailyAverageExpired: Math.round((expiredTransactions.length / days) * 10) / 10,
+        recentExpired: expiredTransactions.slice(0, 5).map(t => ({
+          booking_code: t.booking_code,
+          customer: t.nama_pemesan,
+          amount: t.total,
+          expired_date: t.deletedAt
+        }))
+      };
+    } catch (error) {
+      console.error('Error getting analytics:', error);
+      return {
+        period: `${days} days`,
+        expiredCount: 0,
+        totalRevenueLoss: 0,
+        averageLossPerExpired: 0,
+        dailyAverageExpired: 0,
+        error: error.message
+      };
+    }
+  }
+
+  // Manual cleanup method untuk testing
+  async manualCleanup() {
+    console.log('Running manual cleanup...');
+    return await this.runCleanup();
+  }
+
+  // Method untuk mendapatkan status cleanup
+  getStatus() {
+    return {
+      isRunning: this.isRunning,
+      cleanupInterval: this.cleanupInterval,
+      expiryMinutes: this.expiryMinutes,
+      hardDeleteAfterDays: this.hardDeleteAfterDays,
+      nextCleanup: this.intervalId ? new Date(Date.now() + this.cleanupInterval) : null
+    };
+  }
+
+  // Method untuk mengubah interval cleanup (optional)
+  updateInterval(minutes) {
+    if (minutes < 1) {
+      throw new Error('Interval must be at least 1 minute');
+    }
+    
+    this.cleanupInterval = minutes * 60 * 1000;
+    
+    if (this.isRunning) {
+      this.stop();
+      this.start();
+    }
+    
+    console.log(`Cleanup interval updated to ${minutes} minutes`);
+  }
+}
+
+// Export singleton instance
+const paymentCleanupService = new PaymentCleanupService();
+module.exports = paymentCleanupService;

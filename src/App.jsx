@@ -27,6 +27,7 @@ import NotificationsPage from './user/notificationspage'
 // TAMBAH import di bagian atas setelah NotificationsPage:
 import PaymentClose from './user/PaymentClose';
 import PaymentFailed from './user/PaymentFailed';
+import LanjutkanPembayaran from './user/LanjutkanPembayaran';
 
 // Import halaman admin
 import AdminDashboard from './admin/Dashboard';
@@ -283,6 +284,8 @@ function AppRoutes() {
         <Route path="/pemesanan-2" element={<Pemesanan2 />} />
         <Route path="/pembayaran" element={<Pembayaran />} />
         {/* NEW: Payment redirect routes */}
+        {/* NEW: Payment redirect routes */}
+<Route path="/lanjutkan-pembayaran/:headTransaksiId" element={<LanjutkanPembayaran />} />
         <Route path="/payment-close" element={<PaymentClose />} />
         <Route path="/payment-failed" element={<PaymentFailed />} />
 

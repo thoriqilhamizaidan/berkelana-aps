@@ -262,6 +262,9 @@ app.use('/api/promos', promoRoutes);  // For admin management (/api/promos)
 app.use('/api', transaksiRoutes);     // Payment & transaction routes
 app.use('/api/notifications', notificationRoutes);
 
+// Database connection test
+const db = require('./models');
+
 // Test koneksi database saat startup
 db.sequelize
   .authenticate()
@@ -273,6 +276,31 @@ db.sequelize
   .catch(err => {
     console.error('❌ Unable to connect to the database:', err);
   });
+  if (process.env.NODE_ENV !== 'test') {
+    try {
+      const paymentCleanupService = require('./services/paymentCleanupService');
+      
+      // Start cleanup service
+      paymentCleanupService.start();
+      console.log('Payment cleanup service started successfully');
+      
+      // Graceful shutdown
+      process.on('SIGINT', () => {
+        console.log('Shutting down gracefully...');
+        paymentCleanupService.stop();
+        process.exit(0);
+      });
+      
+      process.on('SIGTERM', () => {
+        console.log('SIGTERM received, shutting down...');
+        paymentCleanupService.stop();
+        process.exit(0);
+      });
+      
+    } catch (error) {
+      console.error('Failed to start payment cleanup service:', error.message);
+    }
+  }
 
 // 404 handler untuk route yang tidak ditemukan
 app.use('*', (req, res) => {
