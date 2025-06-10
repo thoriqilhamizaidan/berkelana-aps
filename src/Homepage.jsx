@@ -466,16 +466,28 @@ const getImageUrl = (image, type = 'artikel') => {
                 <h3 className="font-bold flex-1 text-lg">{article.judul}</h3> {/* Adjusted font size */}
               </div>
               <div className="flex items-center">
-                <div className="w-9 h-9 rounded-full overflow-hidden mr-2"> {/* Increased size */}
-                  <img src="images/arp.png" alt={article.penulis || 'Admin'} className="w-full h-full object-cover" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">{article.penulis || 'Admin'}</p>
-                  <p className="text-xs text-gray-600">
-                    {formatDate(article.tanggal_publikasi || article.createdAt)} • {article.estimasi_baca || '3'} Min Read
-                  </p>
-                </div>
-              </div>
+  <div className="w-9 h-9 rounded-full overflow-hidden mr-2">
+    {article.foto_penulis ? (
+      <img
+        src={`http://localhost:3000/uploads/artikel/${article.foto_penulis}`}
+        alt={article.penulis || 'Admin'}
+        className="w-full h-full object-cover"
+      />
+    ) : (
+      <img
+        src="../images/arp.png"
+        alt="Admin"
+        className="w-full h-full object-cover"
+      />
+    )}
+  </div>
+  <div>
+    <p className="text-sm font-medium">{article.penulis || 'Admin'}</p>
+    <p className="text-xs text-gray-600">
+      {formatDate(article.tanggal_publikasi || article.createdAt)} • {article.estimasi_baca || '3'} Min Read
+    </p>
+  </div>
+</div>
               <div className="mt-2 flex items-center justify-between">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                   article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' :

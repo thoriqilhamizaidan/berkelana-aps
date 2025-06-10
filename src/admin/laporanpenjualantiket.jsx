@@ -1,325 +1,218 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const LaporanPenjualanTiket = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedBus, setSelectedBus] = useState('');
+  const [selectedTipeArmada, setSelectedTipeArmada] = useState('');
   const [selectedTanggal, setSelectedTanggal] = useState('');
   const [selectedBulan, setSelectedBulan] = useState('');
   const [selectedTahun, setSelectedTahun] = useState('');
   
+  // State untuk data dari API
+  const [laporanData, setLaporanData] = useState([]);
+  const [tipeArmadaOptions, setTipeArmadaOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({});
+  const [statistics, setStatistics] = useState({
+    totalTransaksi: 0,
+    totalPenumpang: 0,
+    totalPendapatan: 0
+  });
+  
   const itemsPerPage = 10;
+  
+  // Fix: Handle environment variable safely
+  const API_BASE_URL = (typeof window !== 'undefined' && window.REACT_APP_API_URL) || 
+                       (typeof process !== 'undefined' && process.env?.REACT_APP_API_URL) || 
+                       'http://localhost:3000';
 
-  // Data dummy untuk laporan penjualan tiket dengan variasi Bus dan Shuttle
-  const laporanData = [
-    {
-      id: 1,
-      kodePesanan: '29052025A',
-      pemesan: 'Nasywa Putri Natalisa',
-      emailPemesan: 'natalianasywaputri@gmail.com',
-      tanggalKeberangkatan: 'Selasa, 29 April 2025',
-      ruteKeberangkatan: 'Grogol - Cihampelas',
-      banyakPenumpang: 2,
-      totalPemesanan: 'Rp 310.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Bus',
-      tanggal: 29,
-      bulan: 4,
-      tahun: 2025
-    },
-    {
-      id: 2,
-      kodePesanan: '30052025B',
-      pemesan: 'Ahmad Rizki Pratama',
-      emailPemesan: 'ahmadrizki@gmail.com',
-      tanggalKeberangkatan: 'Rabu, 30 April 2025',
-      ruteKeberangkatan: 'Bandung - Jakarta',
-      banyakPenumpang: 1,
-      totalPemesanan: 'Rp 85.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Shuttle',
-      tanggal: 30,
-      bulan: 4,
-      tahun: 2025
-    },
-    {
-      id: 3,
-      kodePesanan: '01052025C',
-      pemesan: 'Siti Nurhaliza',
-      emailPemesan: 'sitinur@gmail.com',
-      tanggalKeberangkatan: 'Kamis, 1 Mei 2025',
-      ruteKeberangkatan: 'Surabaya - Malang',
-      banyakPenumpang: 3,
-      totalPemesanan: 'Rp 450.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Bus',
-      tanggal: 1,
-      bulan: 5,
-      tahun: 2025
-    },
-    {
-      id: 4,
-      kodePesanan: '02052025D',
-      pemesan: 'Budi Santoso',
-      emailPemesan: 'budisantoso@gmail.com',
-      tanggalKeberangkatan: 'Jumat, 2 Mei 2025',
-      ruteKeberangkatan: 'Jakarta - Bogor',
-      banyakPenumpang: 2,
-      totalPemesanan: 'Rp 120.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Shuttle',
-      tanggal: 2,
-      bulan: 5,
-      tahun: 2025
-    },
-    {
-      id: 5,
-      kodePesanan: '03052025E',
-      pemesan: 'Diana Sari',
-      emailPemesan: 'dianasari@gmail.com',
-      tanggalKeberangkatan: 'Sabtu, 3 Mei 2025',
-      ruteKeberangkatan: 'Yogyakarta - Solo',
-      banyakPenumpang: 1,
-      totalPemesanan: 'Rp 75.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Shuttle',
-      tanggal: 3,
-      bulan: 5,
-      tahun: 2025
-    },
-    {
-      id: 6,
-      kodePesanan: '04052025F',
-      pemesan: 'Eko Prasetyo',
-      emailPemesan: 'ekoprasetyo@gmail.com',
-      tanggalKeberangkatan: 'Minggu, 4 Mei 2025',
-      ruteKeberangkatan: 'Medan - Binjai',
-      banyakPenumpang: 4,
-      totalPemesanan: 'Rp 600.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Bus',
-      tanggal: 4,
-      bulan: 5,
-      tahun: 2025
-    },
-    {
-      id: 7,
-      kodePesanan: '05052025G',
-      pemesan: 'Fatimah Zahra',
-      emailPemesan: 'fatimahzahra@gmail.com',
-      tanggalKeberangkatan: 'Senin, 5 Mei 2025',
-      ruteKeberangkatan: 'Bekasi - Depok',
-      banyakPenumpang: 1,
-      totalPemesanan: 'Rp 65.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Shuttle',
-      tanggal: 5,
-      bulan: 5,
-      tahun: 2025
-    },
-    {
-      id: 8,
-      kodePesanan: '06052025H',
-      pemesan: 'Galih Pangestu',
-      emailPemesan: 'galihpangestu@gmail.com',
-      tanggalKeberangkatan: 'Selasa, 6 Mei 2025',
-      ruteKeberangkatan: 'Semarang - Kudus',
-      banyakPenumpang: 2,
-      totalPemesanan: 'Rp 280.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Bus',
-      tanggal: 6,
-      bulan: 5,
-      tahun: 2025
-    },
-    {
-      id: 9,
-      kodePesanan: '07052025I',
-      pemesan: 'Hana Safitri',
-      emailPemesan: 'hanasafitri@gmail.com',
-      tanggalKeberangkatan: 'Rabu, 7 Mei 2025',
-      ruteKeberangkatan: 'Tangerang - Cengkareng',
-      banyakPenumpang: 1,
-      totalPemesanan: 'Rp 45.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Shuttle',
-      tanggal: 7,
-      bulan: 5,
-      tahun: 2025
-    },
-    {
-      id: 10,
-      kodePesanan: '08052025J',
-      pemesan: 'Indra Gunawan',
-      emailPemesan: 'indragunawan@gmail.com',
-      tanggalKeberangkatan: 'Kamis, 8 Mei 2025',
-      ruteKeberangkatan: 'Palembang - Lampung',
-      banyakPenumpang: 3,
-      totalPemesanan: 'Rp 525.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Bus',
-      tanggal: 8,
-      bulan: 5,
-      tahun: 2025
-    },
-    {
-      id: 11,
-      kodePesanan: '09052025K',
-      pemesan: 'Julia Maharani',
-      emailPemesan: 'juliamaharani@gmail.com',
-      tanggalKeberangkatan: 'Jumat, 9 Mei 2025',
-      ruteKeberangkatan: 'Serpong - BSD',
-      banyakPenumpang: 2,
-      totalPemesanan: 'Rp 90.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Shuttle',
-      tanggal: 9,
-      bulan: 5,
-      tahun: 2025
-    },
-    {
-      id: 12,
-      kodePesanan: '10052025L',
-      pemesan: 'Kevin Pratama',
-      emailPemesan: 'kevinpratama@gmail.com',
-      tanggalKeberangkatan: 'Sabtu, 10 Mei 2025',
-      ruteKeberangkatan: 'Bali - Lombok',
-      banyakPenumpang: 2,
-      totalPemesanan: 'Rp 380.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Bus',
-      tanggal: 10,
-      bulan: 5,
-      tahun: 2025
-    },
-    {
-      id: 13,
-      kodePesanan: '15032025M',
-      pemesan: 'Lisa Andriani',
-      emailPemesan: 'lisaandriani@gmail.com',
-      tanggalKeberangkatan: 'Sabtu, 15 Maret 2025',
-      ruteKeberangkatan: 'Jakarta - Bandung',
-      banyakPenumpang: 1,
-      totalPemesanan: 'Rp 150.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Bus',
-      tanggal: 15,
-      bulan: 3,
-      tahun: 2025
-    },
-    {
-      id: 14,
-      kodePesanan: '20062024N',
-      pemesan: 'Michael Jordan',
-      emailPemesan: 'michaeljordan@gmail.com',
-      tanggalKeberangkatan: 'Kamis, 20 Juni 2024',
-      ruteKeberangkatan: 'Surabaya - Yogyakarta',
-      banyakPenumpang: 3,
-      totalPemesanan: 'Rp 450.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Bus',
-      tanggal: 20,
-      bulan: 6,
-      tahun: 2024
-    },
-    {
-      id: 15,
-      kodePesanan: '05122024O',
-      pemesan: 'Nina Sari',
-      emailPemesan: 'ninasari@gmail.com',
-      tanggalKeberangkatan: 'Kamis, 5 Desember 2024',
-      ruteKeberangkatan: 'Bogor - Depok',
-      banyakPenumpang: 1,
-      totalPemesanan: 'Rp 65.000',
-      status: 'Lunas',
-      jenisKendaraan: 'Shuttle',
-      tanggal: 5,
-      bulan: 12,
-      tahun: 2024
+  // Helper function untuk handle fetch dengan error checking
+  const fetchWithErrorHandling = async (url, options = {}) => {
+    try {
+      console.log('🔄 Fetching:', url);
+      
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers
+        },
+        ...options
+      });
+
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', response.headers.get('content-type'));
+
+      // Check if response is ok
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('❌ Non-JSON response:', text.substring(0, 200));
+        throw new Error('Server returned non-JSON response');
+      }
+
+      const data = await response.json();
+      console.log('✅ JSON response received:', data);
+      return data;
+    } catch (error) {
+      console.error('❌ Fetch error:', error);
+      throw error;
     }
-  ];
+  };
 
-  // Filter data berdasarkan semua filter yang dipilih
-  const filteredData = useMemo(() => {
-    return laporanData.filter(item => {
-      // Filter berdasarkan jenis kendaraan
-      if (selectedBus && selectedBus !== '' && item.jenisKendaraan.toLowerCase() !== selectedBus.toLowerCase()) {
-        return false;
-      }
-      
-      // Filter berdasarkan tanggal
-      if (selectedTanggal && selectedTanggal !== '' && item.tanggal !== parseInt(selectedTanggal)) {
-        return false;
-      }
-      
-      // Filter berdasarkan bulan
-      if (selectedBulan && selectedBulan !== '' && item.bulan !== parseInt(selectedBulan)) {
-        return false;
-      }
-      
-      // Filter berdasarkan tahun
-      if (selectedTahun && selectedTahun !== '' && item.tahun !== parseInt(selectedTahun)) {
-        return false;
-      }
-      
-      return true;
-    });
-  }, [laporanData, selectedBus, selectedTanggal, selectedBulan, selectedTahun]);
+  // Fetch tipe armada untuk dropdown
+  useEffect(() => {
+    const fetchTipeArmada = async () => {
+      try {
+        console.log('🚗 Fetching tipe armada...');
+        
+        // Test connection first
+        const testResult = await fetchWithErrorHandling(`${API_BASE_URL}/api/laporan/test`);
+        console.log('✅ Test connection successful:', testResult);
 
-  const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    return filteredData.slice(startIndex, endIndex);
-  }, [filteredData, currentPage, itemsPerPage]);
+        const result = await fetchWithErrorHandling(`${API_BASE_URL}/api/laporan/tipe-armada`);
+        
+        if (result.success) {
+          setTipeArmadaOptions(result.data);
+          console.log('✅ Tipe armada loaded:', result.data);
+        } else {
+          throw new Error(result.message || 'Failed to fetch tipe armada');
+        }
+      } catch (error) {
+        console.error('❌ Error fetching tipe armada:', error);
+        setError(`Gagal memuat tipe armada: ${error.message}`);
+      }
+    };
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+    fetchTipeArmada();
+  }, [API_BASE_URL]);
+
+  // Fetch data laporan
+  const fetchLaporanData = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      console.log('📊 Fetching laporan data...');
+      
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: itemsPerPage.toString()
+      });
+
+      if (selectedTipeArmada) params.append('tipe_armada', selectedTipeArmada);
+      if (selectedTanggal) params.append('tanggal', selectedTanggal);
+      if (selectedBulan) params.append('bulan', selectedBulan);
+      if (selectedTahun) params.append('tahun', selectedTahun);
+
+      const url = `${API_BASE_URL}/api/laporan/penjualan-tiket?${params}`;
+      const result = await fetchWithErrorHandling(url);
+
+      if (result.success) {
+        setLaporanData(result.data);
+        setPagination(result.pagination);
+        setStatistics(result.statistics);
+        console.log('✅ Laporan data loaded:', result.data.length, 'items');
+      } else {
+        throw new Error(result.message || 'Failed to fetch laporan data');
+      }
+    } catch (error) {
+      console.error('❌ Error fetching laporan:', error);
+      setError(`Gagal mengambil data laporan: ${error.message}`);
+      setLaporanData([]);
+      setPagination({});
+      setStatistics({
+        totalTransaksi: 0,
+        totalPenumpang: 0,
+        totalPendapatan: 0
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data saat component mount dan filter berubah
+  useEffect(() => {
+    fetchLaporanData();
+  }, [currentPage, selectedTipeArmada, selectedTanggal, selectedBulan, selectedTahun]);
 
   // Reset ke page 1 ketika filter berubah
-  React.useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedBus, selectedTanggal, selectedBulan, selectedTahun]);
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [selectedTipeArmada, selectedTanggal, selectedBulan, selectedTahun]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  const handleETicketClick = (kodePesanan) => {
-    // Navigate to etiketadmin.jsx - implementasi tergantung routing
-    window.open(`/admin/etiket/${kodePesanan}`, '_blank');
+  const handleETicketClick = (bookingCode) => {
+    // Navigate ke halaman e-tiket - buka di tab baru
+    window.open(`/admin/etiket/${bookingCode}`, '_blank');
   };
 
-  const handleSimpanPDF = () => {
-    // Implementasi export PDF
-    alert('Fitur simpan PDF akan diimplementasikan');
+  const handleSimpanPDF = async () => {
+    try {
+      // Buat request untuk export PDF dengan filter yang sama
+      const params = new URLSearchParams();
+      if (selectedTipeArmada) params.append('tipe_armada', selectedTipeArmada);
+      if (selectedTanggal) params.append('tanggal', selectedTanggal);
+      if (selectedBulan) params.append('bulan', selectedBulan);
+      if (selectedTahun) params.append('tahun', selectedTahun);
+      params.append('export', 'pdf');
+
+      const response = await fetch(`${API_BASE_URL}/api/laporan/penjualan-tiket?${params}`);
+      const blob = await response.blob();
+      
+      // Download file
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `laporan-penjualan-tiket-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      alert('Gagal mengunduh PDF');
+      console.error('Error downloading PDF:', error);
+    }
   };
 
-  // Hitung statistik berdasarkan filter
-  const getStatistik = () => {
-    const totalPenumpang = filteredData.reduce((sum, item) => sum + item.banyakPenumpang, 0);
-    const totalPendapatan = filteredData.reduce((sum, item) => {
-      const amount = parseInt(item.totalPemesanan.replace(/[^0-9]/g, ''));
-      return sum + amount;
-    }, 0);
-    
-    return {
-      totalTransaksi: filteredData.length,
-      totalPenumpang,
-      totalPendapatan: new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        minimumFractionDigits: 0
-      }).format(totalPendapatan)
-    };
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount || 0);
   };
 
-  const statistik = getStatistik();
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   const renderPagination = () => {
-    if (totalPages <= 1) return null;
+    if (!pagination.totalPages || pagination.totalPages <= 1) return null;
 
     const pageNumbers = [];
     const maxVisiblePages = 10;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    let endPage = Math.min(pagination.totalPages, startPage + maxVisiblePages - 1);
 
     if (endPage - startPage + 1 < maxVisiblePages) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
@@ -355,7 +248,7 @@ const LaporanPenjualanTiket = () => {
     }
 
     // Next button
-    if (currentPage < totalPages) {
+    if (currentPage < pagination.totalPages) {
       pageNumbers.push(
         <button
           key="next"
@@ -367,43 +260,45 @@ const LaporanPenjualanTiket = () => {
       );
     }
 
-    // Selanjutnya button
-    pageNumbers.push(
-      <button
-        key="selanjutnya"
-        onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-        className="ml-2 px-3 py-1 text-sm text-purple-600 hover:bg-gray-100"
-      >
-        Selanjutnya
-      </button>
-    );
-
     return (
       <div className="flex items-center justify-center gap-1 mt-6">
         {pageNumbers}
+        <span className="ml-4 text-sm text-gray-600">
+          Halaman {currentPage} dari {pagination.totalPages} 
+          ({pagination.totalItems} total data)
+        </span>
       </div>
     );
   };
+
+  const activeFilters = [
+    selectedTipeArmada && { key: 'tipe_armada', label: selectedTipeArmada, clear: () => setSelectedTipeArmada('') },
+    selectedTanggal && { key: 'tanggal', label: `Tanggal ${selectedTanggal}`, clear: () => setSelectedTanggal('') },
+    selectedBulan && { key: 'bulan', label: ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][parseInt(selectedBulan)], clear: () => setSelectedBulan('') },
+    selectedTahun && { key: 'tahun', label: `Tahun ${selectedTahun}`, clear: () => setSelectedTahun('') }
+  ].filter(Boolean);
 
   return (
     <div className="min-h-screen bg-white p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black1 mb-6">Laporan Penjualan Tiket</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">Laporan Penjualan Tiket</h1>
+          
+          
           
           {/* Statistik Card */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-purplelight rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-purple-50 rounded-lg">
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{statistik.totalTransaksi}</div>
+              <div className="text-2xl font-bold text-purple-600">{statistics.totalTransaksi}</div>
               <div className="text-sm text-gray-600">Total Transaksi</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{statistik.totalPenumpang}</div>
+              <div className="text-2xl font-bold text-green-600">{statistics.totalPenumpang}</div>
               <div className="text-sm text-gray-600">Total Penumpang</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{statistik.totalPendapatan}</div>
+              <div className="text-2xl font-bold text-blue-600">{formatCurrency(statistics.totalPendapatan)}</div>
               <div className="text-sm text-gray-600">Total Pendapatan</div>
             </div>
           </div>
@@ -411,13 +306,14 @@ const LaporanPenjualanTiket = () => {
           {/* Filter Controls */}
           <div className="flex flex-wrap gap-4 mb-6">
             <select 
-              value={selectedBus}
-              onChange={(e) => setSelectedBus(e.target.value)}
+              value={selectedTipeArmada}
+              onChange={(e) => setSelectedTipeArmada(e.target.value)}
               className="border border-gray-300 rounded px-3 py-2 text-sm font-medium"
             >
-              <option value="">Semua Kendaraan</option>
-              <option value="Bus">Bus</option>
-              <option value="Shuttle">Shuttle</option>
+              <option value="">Semua Tipe Armada</option>
+              {tipeArmadaOptions.map(tipe => (
+                <option key={tipe} value={tipe}>{tipe}</option>
+              ))}
             </select>
 
             <select 
@@ -459,62 +355,29 @@ const LaporanPenjualanTiket = () => {
               <option value="">Semua Tahun</option>
               <option value="2024">2024</option>
               <option value="2025">2025</option>
+              <option value="2026">2026</option>
             </select>
           </div>
 
-          {/* Filter Status */}
-          {(selectedBus || selectedTanggal || selectedBulan || selectedTahun) && (
+          {/* Active Filters */}
+          {activeFilters.length > 0 && (
             <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-purple-700 font-medium">Filter aktif:</span>
-                {selectedBus && (
-                  <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-                    {selectedBus}
+                {activeFilters.map(filter => (
+                  <span key={filter.key} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                    {filter.label}
                     <button 
-                      onClick={() => setSelectedBus('')}
+                      onClick={filter.clear}
                       className="ml-2 text-purple-600 hover:text-purple-800"
                     >
                       ×
                     </button>
                   </span>
-                )}
-                {selectedTanggal && (
-                  <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-                    Tanggal {selectedTanggal}
-                    <button 
-                      onClick={() => setSelectedTanggal('')}
-                      className="ml-2 text-purple-600 hover:text-purple-800"
-                    >
-                      ×
-                    </button>
-                  </span>
-                )}
-                {selectedBulan && (
-                  <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-                    {['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][parseInt(selectedBulan)]}
-                    <button 
-                      onClick={() => setSelectedBulan('')}
-                      className="ml-2 text-purple-600 hover:text-purple-800"
-                    >
-                      ×
-                    </button>
-                  </span>
-                )}
-                {selectedTahun && (
-                  <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
-                    Tahun {selectedTahun}
-                    <button 
-                      onClick={() => setSelectedTahun('')}
-                      className="ml-2 text-purple-600 hover:text-purple-800"
-                    >
-                      ×
-                    </button>
-                  </span>
-                )}
-                <span className="text-purple-600 ml-2">({filteredData.length} transaksi)</span>
+                ))}
                 <button 
                   onClick={() => {
-                    setSelectedBus('');
+                    setSelectedTipeArmada('');
                     setSelectedTanggal('');
                     setSelectedBulan('');
                     setSelectedTahun('');
@@ -528,75 +391,96 @@ const LaporanPenjualanTiket = () => {
           )}
         </div>
 
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            <p className="mt-2 text-gray-600">Memuat data...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <p className="text-red-700">{error}</p>
+            <button 
+              onClick={fetchLaporanData}
+              className="mt-2 text-red-600 hover:text-red-800 underline"
+            >
+              Coba lagi
+            </button>
+          </div>
+        )}
+
         {/* Table */}
-        <div className="bg-white border border-gray-300 rounded-b-lg overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray1">
-              <tr>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Kode Pesanan</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Pemesan</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Email Pemesan</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Tanggal Keberangkatan</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Rute Keberangkatan</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Jenis</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Penumpang</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Total Pemesanan</th>
-                <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">E-Tiket</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedData.length > 0 ? (
-                paginatedData.map((item, index) => (
-                  <tr key={item.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="py-3 px-4 text-sm text-gray-900">{item.kodePesanan}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{item.pemesan}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{item.emailPemesan}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{item.tanggalKeberangkatan}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{item.ruteKeberangkatan}</td>
-                    <td className="py-3 px-4 text-sm">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        item.jenisKendaraan === 'Bus' 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {item.jenisKendaraan}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-900 text-center">{item.banyakPenumpang}</td>
-                    <td className="py-3 px-4 text-sm text-gray-900">{item.totalPemesanan}</td>
-                    <td className="py-3 px-4 text-sm">
-                      <button
-                        onClick={() => handleETicketClick(item.kodePesanan)}
-                        className="text-purple-600 hover:text-purple-800 hover:underline"
-                      >
-                        E-Tiket
-                      </button>
+        {!loading && !error && (
+          <div className="bg-white border border-gray-300 rounded-b-lg overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Booking Code</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Nama Pemesan</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Email Pemesan</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Waktu Keberangkatan</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Rute</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Tipe Armada</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Penumpang</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Total</th>
+                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">E-Tiket</th>
+                </tr>
+              </thead>
+              <tbody>
+                {laporanData.length > 0 ? (
+                  laporanData.map((item, index) => (
+                    <tr key={item.id_headtransaksi} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                      <td className="py-3 px-4 text-sm text-gray-900 font-medium">{item.booking_code}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{item.nama_pemesan}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{item.email_pemesan}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{formatDate(item.waktu_keberangkatan)}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900">{item.rute}</td>
+                      <td className="py-3 px-4 text-sm">
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          {item.tipe_armada}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-900 text-center">{item.total_penumpang}</td>
+                      <td className="py-3 px-4 text-sm text-gray-900 font-medium">{formatCurrency(item.total)}</td>
+                      <td className="py-3 px-4 text-sm">
+                        <button
+                          onClick={() => handleETicketClick(item.booking_code)}
+                          className="text-purple-600 hover:text-purple-800 hover:underline font-medium"
+                        >
+                          Lihat E-Tiket
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="9" className="py-8 px-4 text-center text-gray-500">
+                      Tidak ada data yang ditemukan untuk filter yang dipilih.
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="9" className="py-8 px-4 text-center text-gray-500">
-                    Tidak ada data yang ditemukan untuk filter yang dipilih.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
 
         {/* Pagination */}
-        {renderPagination()}
+        {!loading && !error && renderPagination()}
 
         {/* Simpan PDF Button */}
-        <div className="mt-8 flex justify-end">
-          <button
-            onClick={handleSimpanPDF}
-            className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg text-sm font-medium"
-          >
-            Simpan PDF
-          </button>
-        </div>
+        {!loading && !error && laporanData.length > 0 && (
+          <div className="mt-8 flex justify-end">
+            <button
+              onClick={handleSimpanPDF}
+              className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg text-sm font-medium"
+            >
+              Simpan PDF
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

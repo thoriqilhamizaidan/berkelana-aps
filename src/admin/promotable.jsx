@@ -271,11 +271,11 @@ const handleCreatePromo = async (formData) => {
   }
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
       {/* Delete Confirmation Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 flex items-center justify-center  bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-6 w-96 relative">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 relative">
             <button 
               onClick={() => setShowConfirmModal(false)} 
               className="absolute top-3 right-3 text-black text-xl font-bold hover:text-gray-600"
@@ -286,16 +286,16 @@ const handleCreatePromo = async (formData) => {
             <p className="text-sm text-gray-600 text-center mb-6">
               Promo "{promoToDelete?.title}" akan dihapus secara permanen.
             </p>
-            <div className="flex justify-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="bg-green-400 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-semibold"
+                className="bg-green-400 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-semibold order-2 sm:order-1"
               >
                 Tidak
               </button>
               <button
                 onClick={handleConfirmDelete}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold"
+                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold order-1 sm:order-2"
                 disabled={loading}
               >
                 {loading ? 'Menghapus...' : 'Hapus'}
@@ -306,27 +306,36 @@ const handleCreatePromo = async (formData) => {
       )}
 
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 lg:mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Kelola Promo</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Kelola Promo</h1>
             <p className="text-gray-600 mt-2">Kelola data promo dan diskon</p>
           </div>
-          <button onClick={() => setCurrentPage("add")} disabled={loading} className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2">
+          <button 
+            onClick={() => setCurrentPage("add")} 
+            disabled={loading} 
+            className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-4 sm:px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 w-full sm:w-auto justify-center"
+          >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Tambah Promo
+            <span className="hidden sm:inline">Tambah Promo</span>
+            <span className="sm:hidden">Tambah</span>
           </button>
         </div>
         
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
                 <h3 className="text-red-800 font-medium">Error Loading Data</h3>
                 <p className="text-red-700 text-sm mt-1">{error}</p>
               </div>
-              <button onClick={loadPromoData} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors" disabled={loading}>
+              <button 
+                onClick={loadPromoData} 
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors w-full sm:w-auto" 
+                disabled={loading}
+              >
                 {loading ? 'Loading...' : 'Retry'}
               </button>
             </div>
@@ -334,11 +343,12 @@ const handleCreatePromo = async (formData) => {
         )}
         
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">Daftar Promo</h2>
           </div>
           
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
@@ -437,6 +447,106 @@ const handleCreatePromo = async (formData) => {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile/Tablet Card View */}
+          <div className="lg:hidden">
+            {promos.length === 0 ? (
+              <div className="px-4 sm:px-6 py-8 text-center text-gray-500">
+                {loading ? "Memuat data..." : (error ? "Gagal memuat data" : "Belum ada promo")}
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {promos.map((promo) => (
+                  <div key={promo.id} className="p-4 sm:p-6 hover:bg-gray-50">
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">
+                        {promo.image ? (
+                          <img src={promo.image} alt="Promo" className="h-16 w-20 sm:h-20 sm:w-24 object-cover rounded border" />
+                        ) : (
+                          <div className="h-16 w-20 sm:h-20 sm:w-24 bg-gray-300 rounded flex items-center justify-center">
+                            <svg className="w-8 h-8 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-2">
+                          <h3 className="text-base sm:text-lg font-medium text-gray-900 truncate">{promo.title}</h3>
+                          <div className="mt-1 sm:mt-0 sm:ml-4 flex-shrink-0">
+                            <label className="flex items-center cursor-pointer group">
+                              <input 
+                                type="checkbox" 
+                                className="sr-only" 
+                                checked={promo.is_active} 
+                                onChange={() => handleToggleActive(promo)} 
+                                disabled={loading} 
+                              />
+                              <div className={`w-10 h-5 sm:w-12 sm:h-6 rounded-full shadow-inner transition-all duration-300 ease-in-out relative ${
+                                promo.is_active ? "bg-green-500" : "bg-gray-300"
+                              } ${loading ? "opacity-50" : "group-hover:shadow-md"}`}>
+                                <div className={`w-4 h-4 sm:w-5 sm:h-5 bg-white rounded-full shadow-md absolute top-0.5 transition-all duration-300 ease-in-out ${
+                                  promo.is_active ? "translate-x-5 sm:translate-x-6" : "translate-x-0.5"
+                                } ${loading ? "" : "group-hover:scale-110"}`}>
+                                </div>
+                              </div>
+                              <span className={`ml-2 text-xs sm:text-sm font-medium transition-colors duration-200 ${
+                                promo.is_active ? "text-green-700" : "text-gray-500"
+                              }`}>
+                                {promo.is_active ? "Aktif" : "Nonaktif"}
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                        
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{promo.details}</p>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 text-sm">
+                          <div>
+                            <span className="text-gray-500">Kode:</span>
+                            <span className="ml-1 font-medium text-gray-900">{promo.code}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Potongan:</span>
+                            <span className="ml-1 font-medium text-gray-900">{promo.potongan}%</span>
+                          </div>
+                          <div className="sm:col-span-2">
+                            <span className="text-gray-500">Berlaku hingga:</span>
+                            <span className="ml-1 text-gray-900">{formatDate(promo.berlakuHingga)}</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-2">
+                          <button 
+                            className="text-blue-600 hover:text-blue-900 text-sm font-medium px-3 py-1 rounded border border-blue-200 hover:bg-blue-50" 
+                            onClick={() => { setSelectedPromo(promo); setShowDetailModal(true); }} 
+                            disabled={loading}
+                          >
+                            Detail
+                          </button>
+                          <button 
+                            className="text-green-600 hover:text-green-900 text-sm font-medium px-3 py-1 rounded border border-green-200 hover:bg-green-50" 
+                            onClick={() => handleEditClick(promo)} 
+                            disabled={loading}
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            className="text-red-600 hover:text-red-900 text-sm font-medium px-3 py-1 rounded border border-red-200 hover:bg-red-50" 
+                            onClick={() => handleDeleteClick(promo)} 
+                            disabled={loading}
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
