@@ -158,10 +158,19 @@ const getLatestArticles = async (limit = 10) => {
     const sortedArticles = allArticles.sort((a, b) => {
       const dateA = new Date(a.tanggal_publikasi || a.created_at || a.date || 0);
       const dateB = new Date(b.tanggal_publikasi || b.created_at || b.date || 0);
-      return dateB.getTime() - dateA.getTime(); // Urut dari terbaru ke terlama
+      return dateB.getTime() - dateA.getTime();
     });
 
-    return sortedArticles.slice(0, limit); // Ambil hanya sesuai limit
+    // Transform data: tambahkan penulis dan foto_penulis
+    const transformed = sortedArticles.slice(0, limit).map(article => ({
+      ...article,
+      penulis: article.nama_penulis,
+      foto_penulis: article.foto_penulis,
+      gambarUrl: article.gambar_artikel ? `http://localhost:3000/uploads/artikel/${article.gambar_artikel}` : null,
+      authorPhotoUrl: article.foto_penulis ? `http://localhost:3000/uploads/artikel/${article.foto_penulis}` : null
+    }));
+
+    return transformed;
   } catch (error) {
     console.error('Error fetching latest articles (fallback):', error);
     throw error;
