@@ -6,6 +6,7 @@ import { useAuth } from './user/context/AuthContext';
 
 import Footer from './user/footer';
 import artikelService from './services/artikelService';
+import jadwalService from './services/jadwalService';
 
 const API_URL = "http://localhost:3000/api/promos";
 
@@ -77,13 +78,37 @@ export default function BerkelanaLandingPage() {
   const [articlesLoading, setArticlesLoading] = useState(true);
   const [articlesError, setArticlesError] = useState(null);
   const navigate = useNavigate();
-  const articlesRef = useRef(null); // This ref is not currently used for scrolling; consider implementing it
+  const articlesRef = useRef(null);
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [selectedPromo, setSelectedPromo] = useState(null);
   const { isLoggedIn } = useAuth();
   
+  // State untuk form pencarian tiket
+  const [fromCity, setFromCity] = useState('');
+  const [toCity, setToCity] = useState('');
+  const [departDate, setDepartDate] = useState('');
+  const [accommodation, setAccommodation] = useState('Bus');
+  const [cities, setCities] = useState([]);
+  const [citiesLoading, setCitiesLoading] = useState(true);
   
-
+    // Fetch cities from jadwalService
+    useEffect(() => {
+      const fetchCities = async () => {
+        try {
+          setCitiesLoading(true);
+          const citiesData = await jadwalService.getUniqueCities();
+          setCities(citiesData);
+        } catch (err) {
+          console.error('Error fetching cities:', err);
+          // Fallback to default cities if error
+          setCities(['Jakarta', 'Bandung', 'Surabaya', 'Yogyakarta', 'Malang']);
+        } finally {
+          setCitiesLoading(false);
+        }
+      };
+  
+      fetchCities();
+    }, []);
   // Fetch articles from database
   useEffect(() => {
     const fetchArticles = async () => {
@@ -166,12 +191,20 @@ const getImageUrl = (image, type = 'artikel') => {
   };
 
 
-  const handleCariClick = () => {
-  if (!isLoggedIn) {
-    navigate('/daftar-masuk');
-  } else {
-    navigate('/cari-tiket');
-  }
+ // Tambahkan fungsi swapCities di bawah fungsi handleCariClick atau di area yang sama dengan fungsi-fungsi lainnya
+ const swapCities = () => {
+   const temp = fromCity;
+   setFromCity(toCity);
+   setToCity(temp);
+ };
+
+ const handleCariClick = () => {
+   if (!isLoggedIn) {
+     navigate('/daftar-masuk');
+   } else {
+     // Kirim parameter pencarian ke halaman pesan tiket
+     navigate(`/cari-tiket?from=${fromCity}&to=${toCity}&date=${departDate}&accommodation=${accommodation}`);
+   }
 };
 
   // Navigation functions
@@ -184,15 +217,6 @@ const getImageUrl = (image, type = 'artikel') => {
     } else {
       setCurrentArticleIndex(currentArticleIndex < totalPages - 1 ? currentArticleIndex + 1 : 0);
     }
-    
-    // The current implementation of articlesRef.current.scrollTo is not correctly linked
-    // to the actual visible articles display, which uses slice().
-    // For proper scrolling, you'd typically have a direct ref on the scrollable container
-    // and calculate scrollLeft based on item width and current index.
-    // Given 'visibleArticles' handles the display, we might not need direct DOM scroll manipulation here
-    // unless the intent is a horizontal scroll carousel.
-    // If it's a carousel, ensure the `renderArticleCards` output is in a horizontally scrollable div.
-    // For now, this just updates the index which changes the `visibleArticles` array.
   };
 
   const handleCopyCode = (code, e) => {
@@ -391,6 +415,15 @@ const getImageUrl = (image, type = 'artikel') => {
           <div className="h-3/5 bg-gray-300"></div>
           <div className="p-4 flex flex-col justify-between h-2/5">
             <div className="h-6 bg-gray-300 rounded mb-4 w-3/4"></div>
+            <div className="flex items-center justify-center lg:col-span-1 py-2 lg:py-0">
+              <button 
+                onClick={swapCities}
+                className="text-purple-600 hover:text-purple-800 transition-colors duration-200"
+                aria-label="Tukar kota asal dan tujuan"
+              >
+                <ArrowLeftRight className="rotate-90 md:rotate-0" size={24} />
+              </button>
+            </div>
             <div className="flex items-center">
               <div className="w-10 h-10 bg-gray-300 rounded-full mr-2"></div>
               <div>
@@ -555,72 +588,87 @@ const handleCloseTerms = () => {
           <h1 className="text-3xl sm:text-5xl font-bold mb-2 leading-tight">Berkelana kemana hari ini?</h1> {/* Responsive font size, line height */}
           <p className="text-base sm:text-lg mb-8 sm:mb-12 max-w-2xl">Bersama Berkelana - Perjalanan Tak Terbatas, Keindahan Tanpa Batas</p> {/* Responsive font size, max-width */}
           
-          {/* Search Form */}
-          <div className="bg-purplelight rounded-lg p-4 sm:p-6 w-full max-w-4xl mx-auto"> {/* Adjusted max-w */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              <div className="flex flex-col lg:col-span-3">
-                <label className="text-gray-600 text-sm mb-1 text-left">Dari</label> {/* Adjusted label alignment */}
-                <select className="w-full border border-gray-200 p-2 sm:p-3 rounded text-gray-800 appearance-none bg-white text-sm" style={fontStyle}>
-                  <option value="">Pilih Kota</option>
-                  <option value="Jakarta">Jakarta</option>
-                  <option value="Bandung">Bandung</option>
-                  <option value="Surabaya">Surabaya</option>
-                  <option value="Yogyakarta">Yogyakarta</option>
-                  <option value="Malang">Malang</option>
-                </select>
-              </div>
-              
-              <div className="flex items-center justify-center lg:col-span-1 py-2 lg:py-0"> {/* Adjusted padding */}
-                <ArrowLeftRight className="text-gray-500 rotate-90 md:rotate-0" size={24} /> {/* Rotate on small screens */}
-              </div>
-              
-              <div className="flex flex-col lg:col-span-3">
-                <label className="text-gray-600 text-sm mb-1 text-left">Ke</label> {/* Adjusted label alignment */}
-                <select className="w-full border border-gray-200 p-2 sm:p-3 rounded text-gray-800 appearance-none bg-white text-sm" style={fontStyle}>
-                  <option value="">Pilih Kota</option>
-                  <option value="Jakarta">Jakarta</option>
-                  <option value="Bandung">Bandung</option>
-                  <option value="Surabaya">Surabaya</option>
-                  <option value="Yogyakarta">Yogyakarta</option>
-                  <option value="Malang">Malang</option>
-                </select>
-              </div>
-              
-              <div className="flex flex-col lg:col-span-2">
-                <label className="text-gray-600 text-sm mb-1 text-left">Tanggal Pergi</label> {/* Adjusted label alignment */}
-                <div className="relative">
-                  <input 
-                    type="date" 
-                    placeholder="Pilih Tanggal" 
-                    className="w-full border border-gray-200 bg-white p-2 sm:p-3 rounded text-gray-800 appearance-none text-sm"
-                    style={fontStyle}
-                  />
-                  
-                </div>
-              </div>
-              
-              <div className="flex flex-col lg:col-span-2">
-                <label className="text-gray-600 text-sm mb-1 text-left">Pilih Akomodasi</label> {/* Adjusted label alignment */}
-                <select className="w-full border border-gray-200 p-2 sm:p-3 rounded text-gray-800 appearance-none bg-white text-sm" style={fontStyle}>
-                  <option value="">Pilih Akomodasi</option>
-                  <option>Bus</option>
-                  <option>Shuttle</option>
-                </select>
-              </div>
-              
-             <div className="lg:col-span-1 flex items-end">
-                <button 
-  onClick={handleCariClick}
-  className="bg-emerald1 hover:bg-green-600 text-white font-bold p-3 rounded focus:outline-none w-full flex items-center justify-center cursor-pointer text-sm sm:text-base"
->
-  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-  </svg>
-  Cari
-</button>
+        {/* Search Form */}
+        <div className="bg-purplelight backdrop-blur-sm rounded-lg p-5 w-full max-w-5xl shadow-lg">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+            <div className="flex flex-col md:col-span-3">
+              <label className="text-gray-600 text-sm mb-1 text-left">Dari</label>
+              <select 
+                className="w-full border border-gray-300 p-2 rounded text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                style={fontStyle}
+                value={fromCity}
+                onChange={(e) => setFromCity(e.target.value)}
+              >
+                <option value="">Pilih Kota</option>
+                {cities.map((city, index) => (
+                  <option key={index} value={city}>{city}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex items-center justify-center md:col-span-1">
+              <button 
+                onClick={swapCities}
+                className="text-purple-600 hover:text-purple-800 transition-colors duration-200 mt-5"
+                aria-label="Tukar kota asal dan tujuan"
+              >
+                <ArrowLeftRight className="rotate-90 md:rotate-0" size={24} />
+              </button>
+            </div>
+            
+            <div className="flex flex-col md:col-span-3">
+              <label className="text-gray-600 text-sm mb-1 text-left">Ke</label>
+              <select 
+                className="w-full border border-gray-300 p-2 rounded text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                style={fontStyle}
+                value={toCity}
+                onChange={(e) => setToCity(e.target.value)}
+              >
+                <option value="">Pilih Kota</option>
+                {cities.map((city, index) => (
+                  <option key={index} value={city}>{city}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="flex flex-col md:col-span-2">
+              <label className="text-gray-600 text-sm mb-1 text-left">Tanggal Pergi</label>
+              <div className="relative">
+                <input 
+                  type="date" 
+                  placeholder="Pilih Tanggal" 
+                  className="w-full border border-gray-300 p-2 rounded text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  style={fontStyle}
+                  value={departDate}
+                  onChange={(e) => setDepartDate(e.target.value)}
+                />
               </div>
             </div>
+            
+            <div className="flex flex-col md:col-span-2">
+              <label className="text-gray-600 text-sm mb-1 text-left">Pilih Akomodasi</label>
+              <select 
+                className="w-full border border-gray-300 p-2 rounded text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                style={fontStyle}
+                value={accommodation}
+                onChange={(e) => setAccommodation(e.target.value)}
+              >
+                <option value="Bus">Bus</option>
+                <option value="Shuttle">Shuttle</option>
+              </select>
+            </div>
+            
+            <div className="flex flex-col md:col-span-1">
+              <label className="text-gray-600 text-sm mb-1 text-left">&nbsp;</label>
+              <button 
+                onClick={handleCariClick}
+                className="bg-emerald1 hover:bg-green-600 text-black font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-500 w-full transition-colors duration-200"
+              >
+                <span>Cari</span>
+              </button>
+            </div>
           </div>
+        </div>
         </div>
       </section>
 

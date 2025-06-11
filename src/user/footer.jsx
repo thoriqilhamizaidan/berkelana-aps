@@ -199,10 +199,10 @@ const Footer = () => {
             <div className="flex-shrink-0">
               <h3 className="font-medium mb-4 text-gray-900">Temukan Kami di</h3>
               <div className="flex space-x-4">
-                <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400 transition-colors">
+                <a href="https://www.facebook.com/profile.php?id=61577281496423" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400 transition-colors">
                   <i className="fab fa-facebook-f text-gray-700 hover:text-emerald-400"></i>
                 </a>
-                <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400 transition-colors">
+                <a href="https://www.instagram.com/berkelanaapps?igsh=MXVnaWdsMjd3dHZuYg==" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400 transition-colors">
                   <i className="fab fa-instagram text-gray-700 hover:text-emerald-400"></i>
                 </a>
               </div>

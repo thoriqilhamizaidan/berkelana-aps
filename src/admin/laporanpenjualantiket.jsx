@@ -157,33 +157,31 @@ const LaporanPenjualanTiket = () => {
   };
 
   const handleSimpanPDF = async () => {
-    try {
-      // Buat request untuk export PDF dengan filter yang sama
-      const params = new URLSearchParams();
-      if (selectedTipeArmada) params.append('tipe_armada', selectedTipeArmada);
-      if (selectedTanggal) params.append('tanggal', selectedTanggal);
-      if (selectedBulan) params.append('bulan', selectedBulan);
-      if (selectedTahun) params.append('tahun', selectedTahun);
-      params.append('export', 'pdf');
+  try {
+    const params = new URLSearchParams();
+    if (selectedTipeArmada) params.append('tipe_armada', selectedTipeArmada);
+    if (selectedTanggal) params.append('tanggal', selectedTanggal);
+    if (selectedBulan) params.append('bulan', selectedBulan);
+    if (selectedTahun) params.append('tahun', selectedTahun);
 
-      const response = await fetch(`${API_BASE_URL}/api/laporan/penjualan-tiket?${params}`);
-      const blob = await response.blob();
-      
-      // Download file
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `laporan-penjualan-tiket-${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      alert('Gagal mengunduh PDF');
-      console.error('Error downloading PDF:', error);
-    }
-  };
+    const response = await fetch(`${API_BASE_URL}/api/laporan/penjualan-tiket/excel?${params}`);
+    const blob = await response.blob();
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `laporan-penjualan-${new Date().toISOString().split('T')[0]}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    alert('Gagal mengunduh Excel');
+    console.error('Error downloading Excel:', error);
+  }
+};
+
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('id-ID', {
@@ -263,10 +261,6 @@ const LaporanPenjualanTiket = () => {
     return (
       <div className="flex items-center justify-center gap-1 mt-6">
         {pageNumbers}
-        <span className="ml-4 text-sm text-gray-600">
-          Halaman {currentPage} dari {pagination.totalPages} 
-          ({pagination.totalItems} total data)
-        </span>
       </div>
     );
   };
@@ -426,7 +420,6 @@ const LaporanPenjualanTiket = () => {
                   <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Tipe Armada</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Penumpang</th>
                   <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Total</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">E-Tiket</th>
                 </tr>
               </thead>
               <tbody>
@@ -445,14 +438,7 @@ const LaporanPenjualanTiket = () => {
                       </td>
                       <td className="py-3 px-4 text-sm text-gray-900 text-center">{item.total_penumpang}</td>
                       <td className="py-3 px-4 text-sm text-gray-900 font-medium">{formatCurrency(item.total)}</td>
-                      <td className="py-3 px-4 text-sm">
-                        <button
-                          onClick={() => handleETicketClick(item.booking_code)}
-                          className="text-purple-600 hover:text-purple-800 hover:underline font-medium"
-                        >
-                          Lihat E-Tiket
-                        </button>
-                      </td>
+                    
                     </tr>
                   ))
                 ) : (
@@ -477,7 +463,7 @@ const LaporanPenjualanTiket = () => {
               onClick={handleSimpanPDF}
               className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg text-sm font-medium"
             >
-              Simpan PDF
+              Simpan Excel
             </button>
           </div>
         )}

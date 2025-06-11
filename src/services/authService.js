@@ -10,11 +10,8 @@ const API_URL = 'http://localhost:3000/api';
 // const API_URL = 'http://localhost:4000/api';  // Another common choice
 
 class AuthService {
-  // Login
   async login(email, password) {
     try {
-      console.log('Attempting to connect to:', `${API_URL}/login`); // Debug log
-      
       const response = await fetch(`${API_URL}/login`, {
         method: 'POST',
         headers: {
@@ -23,31 +20,24 @@ class AuthService {
         body: JSON.stringify({ email, password }),
       });
 
-      // Check if the response is ok
+      const data = await response.json(); // Ambil data dulu sebelum cek status
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Ambil pesan error dari response JSON
+        throw new Error(data.message || 'Login gagal');
       }
 
-      const data = await response.json();
-      
       if (data.success) {
-        // Store token in localStorage
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
       }
-      
+
       return data;
     } catch (error) {
       console.error('Login error:', error);
-      
-      // More specific error messages
-      if (error.message.includes('Failed to fetch')) {
-        throw new Error('Cannot connect to server. Please check if the server is running.');
-      } else if (error.message.includes('HTTP error')) {
-        throw new Error(`Server error: ${error.message}`);
-      } else {
-        throw new Error('Network error');
-      }
+
+      // Biarkan error.message menampilkan pesan dari server
+      throw new Error(error.message || 'Gagal login');
     }
   }
 

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { transaksiService } from '../services/transaksiService';
+import kendaraanService from '../services/kendaraanService';
 import Footer from './footer';
 import { 
   Clock, 
@@ -347,7 +348,7 @@ const handleDeleteTicket = async (ticket) => {
 
   const getBusImage = (imageName) => {
     if (!imageName) return '/images/Bis ungu.png';
-    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/uploads/kendaraan/${imageName}`;
+    return kendaraanService.getImageUrl(imageName);
   };
 
   // ✅ IMPROVED: Show loading while auth is loading
@@ -434,27 +435,6 @@ const handleDeleteTicket = async (ticket) => {
         <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-10">
           <h1 className="text-4xl font-bold">Tiket Saya</h1>
           <p className="text-lg mt-2">Check tiket kamu disini!</p>
-          
-          {/* Refresh Button */}
-          <button 
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="mt-4 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-all duration-200 disabled:opacity-50"
-          >
-            {refreshing ? (
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Refreshing...
-              </div>
-            ) : (
-              'Refresh Data'
-            )}
-          </button>
-          
-          {/* ✅ DEBUG INFO - hapus setelah masalah teratasi */}
-          <div className="mt-2 text-xs bg-black/20 px-3 py-1 rounded">
-            Debug: User ID = {user?.id || user?.id_user || 'NOT FOUND'} | Tickets: {tickets.length}
-          </div>
         </div>
       </div>
 
@@ -494,11 +474,25 @@ const handleDeleteTicket = async (ticket) => {
             </div>
           ) : (
             <div className="space-y-6">
-              {tickets.map((ticket, index) => {
-                const statusInfo = getStatusInfo(ticket);
-                
-                // ✅ FIX DUPLICATE KEYS: Use combination of id and index
-                const uniqueKey = `${ticket.id_headtransaksi}_${index}`;
+    {tickets
+      .filter(ticket => {
+        // Filter tiket yang sudah dibayar saja
+        const status = ticket.status?.toLowerCase();
+        const paymentStatus = ticket.payment_status?.toLowerCase();
+        const transactionStatus = ticket.payment_transaction_status?.toLowerCase();
+        
+        // Hanya tampilkan tiket dengan status paid, settlement, capture, atau settled
+        return status === 'paid' || 
+               paymentStatus === 'paid' || 
+               transactionStatus === 'settlement' || 
+               transactionStatus === 'capture' || 
+               transactionStatus === 'settled';
+      })
+      .map((ticket, index) => {
+        const statusInfo = getStatusInfo(ticket);
+        
+        // ✅ FIX DUPLICATE KEYS: Use combination of id and index
+        const uniqueKey = `${ticket.id_headtransaksi}_${index}`;
                 
                 return (
                   <div key={uniqueKey} className="bg-gray-50 rounded-lg shadow-md overflow-hidden">

@@ -214,7 +214,7 @@ const Navbar = () => {
                 to="/cari-tiket" 
                 className={({ isActive }) =>
                   `font-bold px-3 py-2 text-sm xl:text-base 2xl:text-lg uppercase tracking-wider transition-colors whitespace-nowrap ${
-                    isActive ? 'text-emerald-400' : 'text-gray-900 hover:text-emerald-400'
+                    isActive || location.pathname === '/pesan-tiket' ? 'text-emerald-400' : 'text-gray-900 hover:text-emerald-400'
                   }`
                 }
               >

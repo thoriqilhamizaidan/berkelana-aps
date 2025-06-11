@@ -274,8 +274,13 @@ createMultipleDetailTransaksi: async (req, res) => {
       const detailTransaksi = await db.tabel_detailtransaksi.findAll({
         where: { id_headtransaksi: headId },
         include: [{
-          model: db.tabel_jadwal,
-          as: 'Jadwal'
+          model: db.Jadwal,
+          as: 'Jadwal',
+          include: [{
+            model: db.Kendaraan,
+            as: 'Kendaraan',
+            attributes: ['id_kendaraan', 'tipe_armada', 'nomor_armada', 'gambar']
+          }]
         }]
       });
 

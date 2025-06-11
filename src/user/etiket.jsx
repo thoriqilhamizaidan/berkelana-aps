@@ -1,34 +1,150 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useRef } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { transaksiService } from '../services/transaksiService';
+import { useAuth } from './context/AuthContext';
+import kendaraanService from '../services/kendaraanService'; // Import kendaraanService
 
 const ETicket = () => {
-  const ticket = {
-    bookingCode: "29052025A",
-    date: "Selasa, 29 April 2025",
-    duration: "3 jam",
-    departureCity: "GROGOL",
-    arrivalCity: "CIHAMPELAS",
-    departureTime: "03:00",
-    departureDetails: "Jl Daan Mogot Raya KM 1N",
-    arrivalTime: "06:00 ",
-    arrivalDetails: "Jl Cihampelas No 64N",
-    passengerDetails: [
-      { name: "Nasywa Putri Nataliza", seat: "Seat 5" },
-      { name: "Irene Arawinda", seat: "Seat 6" }
-    ],
-    contactPerson: {
-      name: "Nasywa Putri Nataliza",
-      no: "08124940599",
-      email: "natalizanasywaputri@gmail.com"
-    },
-    shuttleCode: "201A",
-    kondekturNo: "081249401599"
-  };
+  const { bookingCode } = useParams(); // Mengambil booking code dari URL parameter
+  const navigate = useNavigate();
+  const { user, isLoggedIn } = useAuth();
+  
+  const [ticket, setTicket] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [vehicleImage, setVehicleImage] = useState(null); // State untuk gambar kendaraan
 
-  const navigate = useNavigate(); // Initialize navigate function
+  useEffect(() => {
+    const fetchTicketData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Pastikan user sudah login
+        if (!isLoggedIn) {
+          navigate('/login');
+          return;
+        }
+        
+        // Ambil user ID dari context atau localStorage
+        const userId = user?.id || user?.id_user || transaksiService.getCurrentUserId();
+        
+        if (!userId) {
+          setError('User ID tidak ditemukan, silakan login ulang');
+          setLoading(false);
+          return;
+        }
+        
+        // Ambil semua transaksi user
+        const response = await transaksiService.getTransaksiByUser(userId);
+        
+        if (!response.success) {
+          setError('Gagal mengambil data tiket');
+          setLoading(false);
+          return;
+        }
+        
+        // Cari transaksi dengan booking code yang sesuai
+        const ticketData = response.data.find(t => 
+          t.booking_code === bookingCode && 
+          (t.status === 'paid' || t.payment_status === 'settlement' || t.payment_status === 'capture')
+        );
+        
+        if (!ticketData) {
+          setError('Tiket tidak ditemukan atau belum dibayar');
+          setLoading(false);
+          return;
+        }
+        
+        // Ambil detail transaksi untuk mendapatkan data penumpang
+        const detailResponse = await transaksiService.getDetailTransaksi(ticketData.id_headtransaksi);
+        
+        // Format data penumpang dari detail transaksi
+        let passengerDetails = [];
+        let vehicleImageFilename = null;
+        
+        if (detailResponse.success && detailResponse.data && detailResponse.data.length > 0) {
+          passengerDetails = detailResponse.data.map(detail => ({
+            name: detail.nama_penumpang,
+            seat: `Seat ${detail.nomor_kursi}`
+          }));
+          
+          // Ambil data gambar kendaraan dari detail transaksi pertama
+          if (detailResponse.data[0]?.Jadwal?.Kendaraan?.gambar) {
+            vehicleImageFilename = detailResponse.data[0].Jadwal.Kendaraan.gambar;
+            // Dapatkan URL gambar menggunakan kendaraanService
+            const imageUrl = kendaraanService.getImageUrl(vehicleImageFilename);
+            setVehicleImage(imageUrl);
+          }
+        } else {
+          // Fallback jika tidak ada detail transaksi
+          passengerDetails = [{ name: ticketData.nama_pemesan, seat: 'Seat 1' }];
+        }
+        
+        // Format data tiket untuk ditampilkan
+        setTicket({
+          bookingCode: ticketData.booking_code,
+          date: new Date(ticketData.waktu_keberangkatan).toLocaleDateString('id-ID', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+          }),
+          duration: formatDuration(ticketData.waktu_keberangkatan, ticketData.waktu_sampai),
+          departureCity: ticketData.kota_awal,
+          arrivalCity: ticketData.kota_tujuan,
+          departureTime: new Date(ticketData.waktu_keberangkatan).toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }),
+          departureDetails: `Terminal ${ticketData.kota_awal}`,
+          arrivalTime: new Date(ticketData.waktu_sampai).toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }),
+          arrivalDetails: `Terminal ${ticketData.kota_tujuan}`,
+          passengerDetails: passengerDetails,
+          contactPerson: {
+            name: ticketData.nama_pemesan,
+            no: ticketData.no_hp_pemesan,
+            email: ticketData.email_pemesan
+          },
+          shuttleCode: ticketData.nomor_armada || '201A',
+          kondekturNo: ticketData.nomor_kondektur || '081249401599'
+        });
+        
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching ticket data:', error);
+        setError('Terjadi kesalahan saat mengambil data tiket');
+        setLoading(false);
+      }
+    };
+    
+    fetchTicketData();
+  }, [bookingCode, isLoggedIn, navigate, user]);
+
+  // Format durasi perjalanan
+  const formatDuration = (start, end) => {
+    if (!start || !end) return 'N/A';
+    
+    const startTime = new Date(start);
+    const endTime = new Date(end);
+    
+    const durationMs = endTime - startTime;
+    const hours = Math.floor(durationMs / (1000 * 60 * 60));
+    const minutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) {
+      return `${hours} jam${minutes > 0 ? ` ${minutes} menit` : ''}`;
+    }
+    return `${minutes} menit`;
+  };
 
   const handleClose = () => {
     navigate('/tiket-saya'); // Navigate to Tiketsaya page when button is clicked
@@ -45,9 +161,39 @@ const ETicket = () => {
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`E-Tiket_${ticket.bookingCode}.pdf`);
+    pdf.save(`E-Tiket_${ticket?.bookingCode || 'Ticket'}.pdf`);
   };
 
+  // Tampilkan loading state
+  if (loading) {
+    return (
+      <div className="w-full h-screen flex justify-center items-center bg-white">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Memuat data tiket...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Tampilkan error state
+  if (error || !ticket) {
+    return (
+      <div className="w-full h-screen flex justify-center items-center bg-white p-4">
+        <div className="text-center max-w-md">
+          <div className="text-red-500 text-5xl mb-4">⚠️</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Tiket Tidak Ditemukan</h2>
+          <p className="text-gray-600 mb-6">{error || 'Tiket tidak tersedia atau belum dibayar'}</p>
+          <button
+            onClick={() => navigate('/tiket-saya')}
+            className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 transition-colors"
+          >
+            Kembali ke Tiket Saya
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full bg-white p-4 md:p-6 lg:p-8">
@@ -83,7 +229,15 @@ const ETicket = () => {
           <div className="flex flex-col md:flex-row">
             {/* Bus Image Side */}
             <div className="w-full md:w-1/3 bg-gray-50 p-4 flex flex-col">
-              <img src="/images/seat.jpg" alt="Interior Bus" className="w-full h-48 object-cover rounded-lg mb-4" />
+              <img 
+                src={vehicleImage || "/images/seat.jpg"} 
+                alt="Interior Bus" 
+                className="w-full h-48 object-cover rounded-lg mb-4" 
+                onError={(e) => {
+                  e.target.onerror = null; // Prevent infinite loop
+                  e.target.src = "/images/seat.jpg"; // Fallback image
+                }}
+              />
               <div className="text-gray-600 text-sm space-y-1">
                 <p>Kode Shuttle: {ticket.shuttleCode}</p>
                 <p>No Kondektur: {ticket.kondekturNo}</p>
