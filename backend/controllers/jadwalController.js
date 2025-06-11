@@ -18,7 +18,8 @@ const getAllJadwal = async (req, res) => {
           'kapasitas_kursi', 
           'fasilitas',
           'nama_kondektur',
-          'nomor_kondektur'
+          'nomor_kondektur',
+          'gambar' // Tambahkan properti gambar di sini
         ]
       }],
       order: [['waktu_keberangkatan', 'ASC']]

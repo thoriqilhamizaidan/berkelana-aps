@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeftRight, X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Footer from './footer';
 import { Icon } from '@iconify/react'; 
 import { jadwalService, kendaraanService } from '../services/api';
@@ -26,8 +26,39 @@ const PesanTiket = () => {
   const [debugInfo, setDebugInfo] = useState('');
 
   const navigate = useNavigate();
+  const location = useLocation();
   
-
+  // Ambil parameter dari URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const fromParam = searchParams.get('from');
+    const toParam = searchParams.get('to');
+    const dateParam = searchParams.get('date');
+    const accommodationParam = searchParams.get('accommodation');
+    
+    if (fromParam) setFromCity(fromParam);
+    if (toParam) setToCity(toParam);
+    if (dateParam) setDepartDate(dateParam);
+    if (accommodationParam) setAccommodation(accommodationParam);
+    
+    // Simpan parameter pencarian untuk digunakan nanti
+    if (fromParam && toParam) {
+      // Set flag untuk menandakan ada parameter pencarian
+      sessionStorage.setItem('autoSearch', 'true');
+    }
+  }, [location.search]);
+  
+  // Lakukan pencarian otomatis setelah cities diload
+  useEffect(() => {
+    // Hanya jalankan jika cities sudah terload dan ada flag autoSearch
+    if (cities.length > 0 && sessionStorage.getItem('autoSearch') === 'true') {
+      // Hapus flag agar tidak search berulang kali
+      sessionStorage.removeItem('autoSearch');
+      // Jalankan pencarian
+      handleSearch();
+    }
+  }, [cities]);
+  
   //mapping city
   // Fungsi untuk mendapatkan singkatan kota
   const getCityCode = (city) => {
@@ -242,9 +273,13 @@ const handleSearch = async () => {
   try {
     const filters = {
       kota_awal: fromCity,
-      kota_tujuan: toCity,
-      tipe_armada: accommodation
+      kota_tujuan: toCity
     };
+    
+    // Hanya tambahkan tipe_armada ke filter jika bukan "Semua" (nilai kosong)
+    if (accommodation) {
+      filters.tipe_armada = accommodation;
+    }
     
     if (departDate) {
       filters.tanggal = departDate;
@@ -326,7 +361,8 @@ const handleSearch = async () => {
         waktu_sampai: ticket.arrivalTime,
         harga: ticket.price,
         durasi: ticket.duration,
-        fasilitas: ticket.kendaraan.fasilitas || []
+        fasilitas: ticket.kendaraan.fasilitas || [],
+        gambar: ticket.kendaraan.gambar
       });
       setAnimationState('entering');
       setShowDetailPopup(true);
@@ -371,6 +407,9 @@ const DetailPopup = ({ ticket, onClose }) => {
       onClose();
     }
   };
+
+  // Ambil URL gambar kendaraan menggunakan kendaraanService
+  const vehicleImageUrl = ticket.gambar ? kendaraanService.getImageUrl(ticket.gambar) : null;
 
   const getFacilityIcon = (facilityName) => {
     const facilityIcons = {
@@ -501,9 +540,13 @@ const DetailPopup = ({ ticket, onClose }) => {
 
             <div className="md:w-1/2 mt-4 md:mt-0">
               <img 
-                src="/images/Detail Armada.png" 
+                src={vehicleImageUrl || "/images/Detail Armada.png"} 
                 alt="Bus interior" 
                 className="w-full h-64 object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 transition-transform"
+                onError={(e) => {
+                  e.target.onerror = null; // Prevent infinite loop
+                  e.target.src = "/images/Detail Armada.png"; // Fallback image
+                }}
               />
             </div>
           </div>
@@ -548,7 +591,7 @@ const DetailPopup = ({ ticket, onClose }) => {
           <div className="bg-white/90 backdrop-blur-sm rounded-lg p-5 w-full max-w-5xl shadow-lg">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
               <div className="flex flex-col md:col-span-3">
-                <label className="text-gray-600 text-sm mb-1">Dari</label>
+                <label className="text-gray-600 text-sm mb-1 text-left">Dari</label>
                 <select 
                   className="w-full border border-gray-300 p-2 rounded text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={fromCity}
@@ -571,7 +614,7 @@ const DetailPopup = ({ ticket, onClose }) => {
               </div>
               
               <div className="flex flex-col md:col-span-3">
-                <label className="text-gray-600 text-sm mb-1">Ke</label>
+                <label className="text-gray-600 text-sm mb-1 text-left">Ke</label>
                 <select 
                   className="w-full border border-gray-300 p-2 rounded text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={toCity}
@@ -585,7 +628,7 @@ const DetailPopup = ({ ticket, onClose }) => {
               </div>
               
               <div className="flex flex-col md:col-span-2">
-                <label className="text-gray-600 text-sm mb-1">Tanggal Pergi</label>
+                <label className="text-gray-600 text-sm mb-1 text-left">Tanggal Pergi</label>
                 <input 
                   type="date" 
                   className="w-full border border-gray-300 p-2 rounded text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -596,7 +639,7 @@ const DetailPopup = ({ ticket, onClose }) => {
               </div>
               
               <div className="flex flex-col md:col-span-2">
-                <label className="text-gray-600 text-sm mb-1">Akomodasi</label>
+                <label className="text-gray-600 text-sm mb-1 text-left">Pilih Akomodasi</label>
                 <select 
                   className="w-full border border-gray-300 p-2 rounded text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                   value={accommodation}
@@ -607,7 +650,8 @@ const DetailPopup = ({ ticket, onClose }) => {
                 </select>
               </div>
               
-              <div className="md:col-span-1 flex items-end">
+              <div className="flex flex-col md:col-span-1">
+                <label className="text-gray-600 text-sm mb-1 text-left">&nbsp;</label>
                 <button 
                   className="bg-emerald1 hover:bg-green-600 text-black font-bold py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-green-500 w-full transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={handleSearch}
@@ -669,33 +713,35 @@ const DetailPopup = ({ ticket, onClose }) => {
                   <div className="flex flex-row">
                     {/* asal tujuan - TIDAK BERUBAH */}
                     <div className="flex-1">
-                      <div className="flex items-start">
-                        <div className="relative">
-                          <div className="flex flex-col items-start">
-                            <div className="flex items-center">
-                              <div className="relative left-4 h-6 w-6 rounded-full bg-emerald-400"></div>
-                              <span className="font-bold text-xl ml-3 relative left-5">{ticket.fromCity}</span>
+                            <div className="flex items-start">
+                              <div className="relative">
+                                <div className="flex flex-col items-start">
+                                  <div className="flex items-center">
+                                    <div className="relative left-4 h-6 w-6 rounded-full bg-emerald-400"></div>
+                                    <span className="font-bold text-xl ml-3 relative left-5">{ticket.fromCity}</span>
+                                  </div>
+                                  {/* Tambahkan jam keberangkatan */}
+                                  <span className="text-gray-800 font-bold ml-11 relative left-3.5">{ticket.departureTime}</span>
+                                </div>
+                                
+                                <div className="absolute left-6.5 top-6.5" style={{width: '4px', height: '160px', backgroundColor: '#33CB98'}}>
+                                  <span className="absolute left-8 top-1/2 -translate-y-1/2 text-sm text-gray-500 whitespace-nowrap">
+                                    {ticket.duration}
+                                  </span>
+                                </div>
+                                
+                                {/* tujuan */}
+                                <div className="flex flex-col items-start" style={{marginTop: '120px'}}>
+                                  <div className="flex items-center">
+                                    <div className="relative left-4 h-6 w-6 rounded-full bg-emerald-400"></div>
+                                    <span className="font-bold text-xl ml-3 relative left-5">{ticket.toCity}</span>
+                                  </div>
+                                  {/* Tambahkan jam kedatangan */}
+                                  <span className="text-gray-800 font-bold ml-11 relative left-3.5">{ticket.arrivalTime}</span>
+                                </div>
+                              </div>
                             </div>
-                            <span className="text-gray-600 ml-11 relative left-3.5">{ticket.fromCode}</span>
-                          </div>
-                          
-                          <div className="absolute left-6.5 top-9" style={{width: '2px', height: '130px', backgroundColor: '#33CB98'}}>
-                            <span className="absolute left-8 top-1/2 -translate-y-1/2 text-sm text-gray-500 whitespace-nowrap">
-                              {ticket.duration}
-                            </span>
-                          </div>
-                          
-                          {/* tujuan */}
-                          <div className="flex flex-col items-start" style={{marginTop: '120px'}}>
-                            <div className="flex items-center">
-                              <div className="relative left-4 h-6 w-6 rounded-full bg-emerald-400"></div>
-                              <span className="font-bold text-xl ml-3 relative left-5">{ticket.toCity}</span>
-                            </div>
-                            <span className="text-gray-600 ml-11 relative left-3.5">{ticket.toCode}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                     </div>
                     
                     {/* PERBAIKAN: fasilitas dengan flexbox normal */}
                     <div className="flex flex-col justify-between" style={{minHeight: '120px'}}>

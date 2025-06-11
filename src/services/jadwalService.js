@@ -139,6 +139,26 @@ async getJadwalByFilter(filters) {
       throw new Error(errorMessage);
     }
   }
+  
+  // Get unique cities from jadwal
+  async getUniqueCities() {
+    try {
+      const response = await apiClient.get('/jadwal');
+      const jadwalList = response.data?.data || [];
+      
+      // Extract unique cities
+      const cities = new Set();
+      jadwalList.forEach(jadwal => {
+        if (jadwal.kota_awal) cities.add(jadwal.kota_awal);
+        if (jadwal.kota_tujuan) cities.add(jadwal.kota_tujuan);
+      });
+      
+      return Array.from(cities).sort();
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+      throw error;
+    }
+  }
 }
 
 export default new JadwalService();

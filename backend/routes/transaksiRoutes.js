@@ -14,6 +14,9 @@ router.put('/headtransaksi/:id/promo', transaksiController.updateHeadTransaksiWi
 router.post('/detailtransaksi', transaksiController.createDetailTransaksi);
 router.post('/detailtransaksi/multiple', transaksiController.createMultipleDetailTransaksi);
 router.get('/detail-transaksi/jadwal/:jadwalId/seats', transaksiController.getBookedSeatsByJadwal);
+// Tambahkan endpoint baru untuk mendapatkan detail transaksi berdasarkan ID head transaksi
+router.get('/transaksi/:headId/detail', transaksiController.getDetailTransaksiByHeadId);
+router.put('/headtransaksi/:id/promo', transaksiController.updateHeadTransaksiWithPromo);
 
 // XENDIT: Fixed payment routes with correct paths
 try {

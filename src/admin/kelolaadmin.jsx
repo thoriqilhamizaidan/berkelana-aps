@@ -117,7 +117,7 @@ const KelolaAdmin = () => {
     if (totalPages <= 1) return null;
 
     const pageNumbers = [];
-    const maxVisiblePages = 10;
+    const maxVisiblePages = window.innerWidth < 640 ? 5 : 10; // Responsive pagination
 
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
@@ -131,7 +131,7 @@ const KelolaAdmin = () => {
         <button
           key={i}
           onClick={() => handlePageChange(i)}
-          className={`w-8 h-8 text-sm flex items-center justify-center ${
+          className={`w-8 h-8 sm:w-10 sm:h-10 text-xs sm:text-sm flex items-center justify-center ${
             currentPage === i
               ? 'bg-purple-100 text-black rounded'
               : 'text-gray-600 hover:bg-gray-100'
@@ -143,13 +143,13 @@ const KelolaAdmin = () => {
     }
 
     pageNumbers.push(
-      <span key="selanjutnya" className="ml-4 text-sm text-gray-600">
+      <span key="selanjutnya" className="ml-2 sm:ml-4 text-xs sm:text-sm text-gray-600">
         Selanjutnya
       </span>
     );
 
     return (
-      <div className="flex items-center gap-0 mt-6">
+      <div className="flex items-center gap-0 mt-4 sm:mt-6 justify-start">
         {pageNumbers}
       </div>
     );
@@ -175,19 +175,21 @@ const KelolaAdmin = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white p-6 pt-18">
+    <div className="min-h-screen bg-white p-3 sm:p-6 pt-16 sm:pt-18">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Kelola Admin</h1>
+        {/* Header - Responsive */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4 sm:gap-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Kelola Admin</h1>
           <button
             onClick={handleTambahClick}
-            className="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
+            className="w-full sm:w-auto bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium"
           >
             Tambah Data +
           </button>
         </div>
 
-        <div className="bg-gray-100 rounded-lg shadow-sm overflow-hidden">
+        {/* Desktop Table View */}
+        <div className="hidden lg:block bg-gray-100 rounded-lg shadow-sm overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-100">
               <tr className="border-b border-gray-300">
@@ -243,29 +245,92 @@ const KelolaAdmin = () => {
           </table>
         </div>
 
+        {/* Mobile/Tablet Card View */}
+        <div className="lg:hidden space-y-4">
+          {paginatedData.map((admin) => (
+            <div key={admin.id_admin} className="bg-gray-100 rounded-lg p-4 shadow-sm">
+              <div className="space-y-3">
+                {/* Email */}
+                <div>
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Email</label>
+                  <p className="text-sm font-medium text-gray-900 mt-1 break-all">{admin.email_admin}</p>
+                </div>
+                
+                {/* Status and Role - Side by side on mobile */}
+                <div className="flex justify-start items-start gap-4">
+                  <div className="flex-1">
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Status</label>
+                    <div className="mt-1 text-left">
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                        admin.status_admin === 'aktif' ? 'bg-green-100 text-green-800' :
+                        admin.status_admin === 'nonaktif' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {admin.status_admin}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1">
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Role</label>
+                    <div className="mt-1 text-left">
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                        admin.role_admin === 'superadmin' ? 'bg-purple-100 text-purple-800' :
+                        admin.role_admin === 'admin' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {admin.role_admin}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Actions */}
+                <div className="pt-3 border-t border-gray-200">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEditClick(admin)}
+                      className="flex-1 bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm font-medium"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(admin.id_admin)}
+                      className="flex-1 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded text-sm font-medium"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
         {renderPagination()}
       </div>
 
+      {/* Responsive Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-opacity-50 z-50">
-          <div className="bg-white rounded-lg p-6 w-96 relative">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-sm mx-auto relative">
             <button
               onClick={() => setShowConfirmModal(false)}
-              className="absolute top-3 right-3 text-black text-xl font-bold"
+              className="absolute top-3 right-3 text-black text-xl font-bold hover:text-gray-600"
             >
               ×
             </button>
-            <h2 className="text-lg font-bold text-center mb-6">Apakah anda yakin?</h2>
-            <div className="flex justify-center gap-4">
+            <h2 className="text-lg font-bold text-center mb-6 pr-6">Apakah anda yakin?</h2>
+            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="bg-green-400 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-semibold"
+                className="w-full sm:w-auto bg-green-400 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-semibold"
               >
                 Tidak
               </button>
               <button
                 onClick={handleConfirmDelete}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold"
+                className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold"
               >
                 Hapus
               </button>
