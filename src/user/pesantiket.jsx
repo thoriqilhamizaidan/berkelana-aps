@@ -3,7 +3,7 @@ import { ArrowLeftRight, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Footer from './footer';
 import { Icon } from '@iconify/react'; 
-import { jadwalService, kendaraanService } from '../services/api';
+import { jadwalService, kendaraanService, transaksiService } from '../services/api';
 
 const PesanTiket = () => {
   const [fromCity, setFromCity] = useState('');
@@ -141,8 +141,20 @@ useEffect(() => {
         return;
       }
   
+      // Filter jadwal yang sudah lewat tanggal
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const filteredJadwal = jadwalData.filter(jadwal => {
+        // Filter berdasarkan tanggal keberangkatan
+        const departureDate = new Date(jadwal.waktu_keberangkatan);
+        return departureDate >= today;
+      });
+      
+      console.log('Filtered jadwal (not past date):', filteredJadwal.length);
+      
       // Sort by price and take top 5
-      const sortedJadwal = jadwalData
+      const sortedJadwal = filteredJadwal
         .sort((a, b) => (a.harga || 0) - (b.harga || 0))
         .slice(0, 5);
       console.log('Sorted jadwal (top 5):', sortedJadwal);
@@ -151,11 +163,15 @@ useEffect(() => {
       const transformedResults = await transformJadwalData(sortedJadwal);
       console.log('Transformed results for best schedules:', transformedResults);
       
-      if (transformedResults && transformedResults.length > 0) {
-        setTicketResults(transformedResults);
-        console.log('Ticket results set successfully:', transformedResults.length);
+      // Filter tiket yang sudah habis (remainingSeats <= 0)
+      const availableTickets = transformedResults.filter(ticket => ticket && ticket.remainingSeats > 0);
+      console.log('Available tickets (seats > 0):', availableTickets.length);
+      
+      if (availableTickets && availableTickets.length > 0) {
+        setTicketResults(availableTickets);
+        console.log('Ticket results set successfully:', availableTickets.length);
       } else {
-        console.log('No transformed results available');
+        console.log('No available tickets found');
         setTicketResults([]);
       }
 
@@ -174,6 +190,7 @@ useEffect(() => {
 
   // Transform jadwal data helper function
   // Perbaiki fungsi transformJadwalData untuk konsistensi:
+// Tambahkan fungsi untuk mendapatkan jumlah kursi yang tersedia
 const transformJadwalData = async (jadwalData) => {
   const transformedResults = await Promise.all(jadwalData.map(async (jadwal) => {
     try {
@@ -237,6 +254,23 @@ const transformJadwalData = async (jadwalData) => {
         return `${hours}j ${minutes}m`;
       };
 
+      // Ambil data kursi yang sudah dipesan
+      let bookedSeats = [];
+      try {
+        const response = await transaksiService.getBookedSeatsByJadwal(jadwal.id_jadwal);
+        if (response?.success && response?.data) {
+          bookedSeats = response.data;
+        }
+      } catch (error) {
+        console.error('Error fetching booked seats:', error);
+      }
+
+      // Hitung sisa kursi
+      const totalSeats = kendaraan?.kapasitas_kursi || 0;
+      const bookedSeatsCount = bookedSeats.length;
+      const remainingSeats = totalSeats - bookedSeatsCount;
+      const isAlmostFull = remainingSeats <= 5 && remainingSeats > 0;
+
       const result = {
         id: jadwal.id_jadwal,
         id_kendaraan: jadwal.id_kendaraan,
@@ -256,7 +290,11 @@ const transformJadwalData = async (jadwalData) => {
           ...kendaraan,
           fasilitas: fasilitas // Pastikan fasilitas sudah ter-parse
         },
-        jadwal: jadwal
+        jadwal: jadwal,
+        totalSeats: totalSeats,
+        bookedSeatsCount: bookedSeatsCount,
+        remainingSeats: remainingSeats,
+        isAlmostFull: isAlmostFull
       };
 
       console.log('Final transformed result:', result);
@@ -395,7 +433,8 @@ const handleSearch = async () => {
       state: { 
         ticket: {
           ...ticket.jadwal,
-          kendaraan: ticket.kendaraan
+          kendaraan: ticket.kendaraan,
+          remainingSeats: ticket.remainingSeats
         }
       }
     });
@@ -722,11 +761,27 @@ const DetailPopup = ({ ticket, onClose }) => {
           <div className="space-y-8">
             {currentItems.map((ticket) => (
               <div key={ticket.id} className="bg-neutral-100 rounded-lg shadow-md hover:shadow-lg hover:scale-102 transition-transform duration-300">
-                {ticket.promo && (
-                  <div className="bg-red-600 text-white text-sm font-bold py-1 px-4 inline-block">
-                    Gampang habis!
-                  </div>
-                )}
+                <div className="flex">
+                  {ticket.promo && (
+                    <div className="bg-red-600 text-white text-sm font-bold py-1 px-4 inline-block">
+                      Gampang habis!
+                    </div>
+                  )}
+                  
+                  {/* Tambahkan badge untuk kursi yang hampir penuh */}
+                  {ticket.isAlmostFull && (
+                    <div className="bg-red-600 text-white text-sm font-bold py-1 px-4 inline-block ml-2">
+                      Sisa {ticket.remainingSeats} kursi!
+                    </div>
+                  )}
+
+                  {/* Badge untuk tiket yang sudah habis */}
+                  {ticket.remainingSeats === 0 && (
+                    <div className="bg-gray-600 text-white text-sm font-bold py-1 px-4 inline-block ml-2">
+                      Tiket Habis
+                    </div>
+                  )}
+                </div>
                 
                 <div className="p-4">
                   <div className="flex flex-row">
@@ -801,10 +856,11 @@ const DetailPopup = ({ ticket, onClose }) => {
                           Rp {ticket.price.toLocaleString('id-ID')}
                         </div>
                         <button 
-                          className="bg-emerald-400 hover:bg-green-600 text-black text-sm font-bold py-2 px-6 rounded-lg mt-1 cursor-pointer hover:scale-110 transition-transform duration-300"
-                          onClick={() => handleBuyTicket(ticket)}
+                          className={`${ticket.remainingSeats > 0 ? 'bg-emerald-400 hover:bg-green-600' : 'bg-gray-400 cursor-not-allowed'} text-black text-sm font-bold py-2 px-6 rounded-lg mt-1 ${ticket.remainingSeats > 0 ? 'cursor-pointer hover:scale-110 transition-transform duration-300' : ''}`}
+                          onClick={() => ticket.remainingSeats > 0 && handleBuyTicket(ticket)}
+                          disabled={ticket.remainingSeats === 0}
                         >
-                          Beli
+                          {ticket.remainingSeats > 0 ? 'Beli' : 'Habis'}
                         </button>
                       </div>
                     </div>

@@ -541,6 +541,22 @@ const handleDeleteTicket = async (ticket) => {
                transactionStatus === 'capture' || 
                transactionStatus === 'settled';
       })
+      .sort((a, b) => {
+        // Mendapatkan status info untuk tiket a dan b
+        const statusInfoA = getStatusInfo(a);
+        const statusInfoB = getStatusInfo(b);
+        
+        // Tiket aktif ditampilkan di atas
+        if (statusInfoA.text === 'Aktif' && statusInfoB.text !== 'Aktif') {
+          return -1; // a di atas b
+        }
+        // Tiket selesai ditampilkan di bawah
+        if (statusInfoA.text !== 'Aktif' && statusInfoB.text === 'Aktif') {
+          return 1; // b di atas a
+        }
+        // Jika keduanya memiliki status yang sama, urutkan berdasarkan waktu keberangkatan (terbaru di atas)
+        return new Date(b.waktu_keberangkatan || 0) - new Date(a.waktu_keberangkatan || 0);
+      })
       .map((ticket, index) => {
         const statusInfo = getStatusInfo(ticket);
         

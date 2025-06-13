@@ -12,6 +12,9 @@ const Pemesanan1 = () => {
   const { user, isLoggedIn } = useAuth(); // ✅ Get user data from context
   const ticket = location.state?.ticket || {};
   
+  // Mendapatkan jumlah kursi yang tersisa dari data tiket
+  const remainingSeats = ticket?.remainingSeats || 0;
+  
   const [formData, setFormData] = useState({
     namaPesanan: '',
     noHandphone: '',
@@ -52,6 +55,18 @@ const Pemesanan1 = () => {
     }
   }, [isLoggedIn, user]);
 
+  // Debug: Log user data when component mounts
+  useEffect(() => {
+    if (user) {
+      console.log('DEBUG - User data structure:', user);
+      console.log('DEBUG - Gender fields available:', {
+        gender_user: user.gender_user,
+        gender: user.gender,
+        jenis_kelamin: user.jenis_kelamin
+      });
+    }
+  }, [user]);
+
   // Fungsi untuk handle checkbox "Pemesan adalah penumpang"
   const handlePesananPenumpangChange = (e) => {
     const checked = e.target.checked;
@@ -59,10 +74,14 @@ const Pemesanan1 = () => {
 
     if (checked) {
       // Jika checkbox dicentang, copy data pemesan ke penumpang 1
+      // Coba berbagai kemungkinan field name untuk gender
+      const userGender = user?.gender_user || user?.gender || user?.jenis_kelamin || 'Laki-laki';
+      console.log('User gender detected:', userGender);
+      
       setFormData(prev => ({
         ...prev,
         namaPenumpang1: prev.namaPesanan,
-        jenisKelamin1: user?.gender_user || 'Laki-laki' // ✅ Use user's gender if available
+        jenisKelamin1: userGender
       }));
     } else {
       // Jika checkbox tidak dicentang, kosongkan data penumpang 1
@@ -441,11 +460,20 @@ const Pemesanan1 = () => {
                   <div className="text-center py-2">
                     <button
                       type="button"
-                      onClick={() => setAddSecondPassenger(true)}
-                      className="text-purple-600 hover:text-purple-700 font-medium"
+                      onClick={() => {
+                        if (remainingSeats < 2) {
+                          alert('Maaf, hanya tersisa 1 kursi. Anda tidak dapat menambahkan penumpang lagi.');
+                          return;
+                        }
+                        setAddSecondPassenger(true);
+                      }}
+                      className={`text-purple-600 hover:text-purple-700 font-medium ${remainingSeats < 2 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       + Tambah Penumpang
                     </button>
+                    {remainingSeats < 2 && (
+                      <p className="text-xs text-red-500 mt-1">Hanya tersisa 1 kursi</p>
+                    )}
                   </div>
                 ) : (
                   <div className="space-y-3 pt-4 border-t">
@@ -503,11 +531,20 @@ const Pemesanan1 = () => {
                       <div className="text-center py-2">
                         <button
                           type="button"
-                          onClick={() => setAddThirdPassenger(true)}
-                          className="text-purple-600 hover:text-purple-700 font-medium"
+                          onClick={() => {
+                            if (remainingSeats < 3) {
+                              alert('Maaf, hanya tersisa 2 kursi. Anda tidak dapat menambahkan penumpang lagi.');
+                              return;
+                            }
+                            setAddThirdPassenger(true);
+                          }}
+                          className={`text-purple-600 hover:text-purple-700 font-medium ${remainingSeats < 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                           + Tambah Penumpang
                         </button>
+                        {remainingSeats < 3 && (
+                          <p className="text-xs text-red-500 mt-1">Hanya tersisa 2 kursi</p>
+                        )}
                       </div>
                     )}
                   </div>

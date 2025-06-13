@@ -209,7 +209,6 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
                   required
                 >
                   <option value="">Pilih kategori</option>
-                  <option value="Popular">Popular</option>
                   <option value="Destinasi">Destinasi</option>
                   <option value="Inspirasi">Inspirasi</option>
                 </select>

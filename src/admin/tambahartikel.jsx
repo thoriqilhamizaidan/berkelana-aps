@@ -13,7 +13,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
     articleImagePreview: null
   });
 
-  const categories = ['Popular', 'Destinasi', 'Inspirasi'];
+  const categories = ['Destinasi', 'Inspirasi'];
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
