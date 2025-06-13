@@ -13,7 +13,8 @@ import {
   CheckCircle, 
   XCircle,
   Trash2,
-  RefreshCw
+  RefreshCw,
+  PlayCircle  // ✅ Tambahkan ini
 } from 'lucide-react';
 
 const TiketSaya = () => {
@@ -27,41 +28,20 @@ const TiketSaya = () => {
   const [paymentLoading, setPaymentLoading] = useState({});
   
   const getStatusInfo = (ticket) => {
-    // ✅ PRIORITIZE MAIN STATUS FIRST
-    const mainStatus = ticket.status?.toLowerCase();
-    const paymentStatus = ticket.payment_status?.toLowerCase();
-    
-    // ✅ PAID TRANSACTIONS: Always show as completed (HIGHEST PRIORITY)
-    if (mainStatus === 'paid') {
-      return {
-        text: 'Selesai',
-        className: 'bg-green-100 text-green-600',
-        icon: <CheckCircle className="w-4 h-4" />,
-        showContinue: false,
-        showDelete: false // ✅ NEVER allow delete for paid transactions
-      };
-    }
-    
-    // For non-paid transactions, check payment status and auto-expiry
-    const status = ticket.payment_transaction_status || paymentStatus || mainStatus;
-    
-    const isAutoExpired = () => {
-      if (status === 'pending' && ticket.createdAt) {
-        const createdAt = new Date(ticket.createdAt);
-        const now = new Date();
-        const minutesSinceCreated = Math.floor((now - createdAt) / (1000 * 60));
-        return minutesSinceCreated >= 15;
-      }
-      return false;
-    };
-    
-    const autoExpired = isAutoExpired();
-    
-    switch (status) {
-      case 'settlement':
-      case 'capture':
-      case 'settled':
-        // Additional paid statuses
+  // ✅ PRIORITIZE MAIN STATUS FIRST
+  const mainStatus = ticket.status?.toLowerCase();
+  const paymentStatus = ticket.payment_status?.toLowerCase();
+  
+  // ✅ PAID TRANSACTIONS: Check departure time for Active/Completed status
+  if (mainStatus === 'paid') {
+    // Check if departure time has passed by 15 minutes
+    if (ticket.waktu_keberangkatan) {
+      const departureTime = new Date(ticket.waktu_keberangkatan);
+      const now = new Date();
+      const minutesSinceDeparture = Math.floor((now - departureTime) / (1000 * 60));
+      
+      if (minutesSinceDeparture >= 15) {
+        // Departure time has passed by 15+ minutes - mark as completed
         return {
           text: 'Selesai',
           className: 'bg-green-100 text-green-600',
@@ -69,64 +49,137 @@ const TiketSaya = () => {
           showContinue: false,
           showDelete: false
         };
-        
-      case 'pending':
-        if (autoExpired) {
-          return {
-            text: 'Kedaluwarsa',
-            className: 'bg-orange-100 text-orange-600',
-            icon: <XCircle className="w-4 h-4" />,
-            showContinue: false,
-            showDelete: true, // ✅ Allow delete for expired pending
-            autoExpired: true
-          };
-        }
+      } else {
+        // Departure time hasn't passed yet - mark as active
         return {
-          text: 'Dalam proses',
-          className: 'bg-yellow-100 text-yellow-600',
-          icon: <Clock className="w-4 h-4" />,
-          showContinue: true,
+          text: 'Aktif',
+          className: 'bg-blue-100 text-blue-600',
+          icon: <PlayCircle className="w-4 h-4" />,
+          showContinue: false,
           showDelete: false
         };
+      }
+    } else {
+      // No departure time available - default to completed
+      return {
+        text: 'Selesai',
+        className: 'bg-green-100 text-green-600',
+        icon: <CheckCircle className="w-4 h-4" />,
+        showContinue: false,
+        showDelete: false
+      };
+    }
+  }
+  
+  // For non-paid transactions, check payment status and auto-expiry
+  const status = ticket.payment_transaction_status || paymentStatus || mainStatus;
+  
+  const isAutoExpired = () => {
+    if (status === 'pending' && ticket.createdAt) {
+      const createdAt = new Date(ticket.createdAt);
+      const now = new Date();
+      const minutesSinceCreated = Math.floor((now - createdAt) / (1000 * 60));
+      return minutesSinceCreated >= 15;
+    }
+    return false;
+  };
+  
+  const autoExpired = isAutoExpired();
+  
+  switch (status) {
+    case 'settlement':
+    case 'capture':
+    case 'settled':
+      // Additional paid statuses - also check departure time
+      if (ticket.waktu_keberangkatan) {
+        const departureTime = new Date(ticket.waktu_keberangkatan);
+        const now = new Date();
+        const minutesSinceDeparture = Math.floor((now - departureTime) / (1000 * 60));
         
-      case 'failed':
+        if (minutesSinceDeparture >= 15) {
+          return {
+            text: 'Selesai',
+            className: 'bg-green-100 text-green-600',
+            icon: <CheckCircle className="w-4 h-4" />,
+            showContinue: false,
+            showDelete: false
+          };
+        } else {
+          return {
+            text: 'Aktif',
+            className: 'bg-blue-100 text-blue-600',
+            icon: <PlayCircle className="w-4 h-4" />,
+            showContinue: false,
+            showDelete: false
+          };
+        }
+      } else {
         return {
-          text: 'Pembayaran Gagal',
-          className: 'bg-red-100 text-red-600',
-          icon: <XCircle className="w-4 h-4" />,
+          text: 'Selesai',
+          className: 'bg-green-100 text-green-600',
+          icon: <CheckCircle className="w-4 h-4" />,
           showContinue: false,
-          showDelete: true
+          showDelete: false
         };
-        
-      case 'expired':
+      }
+      
+    case 'pending':
+      if (autoExpired) {
         return {
           text: 'Kedaluwarsa',
           className: 'bg-orange-100 text-orange-600',
           icon: <XCircle className="w-4 h-4" />,
           showContinue: false,
-          showDelete: true
+          showDelete: true,
+          autoExpired: true
         };
-        
-      case 'cancelled':
-      case 'cancel':
-        return {
-          text: 'Dibatalkan',
-          className: 'bg-gray-100 text-gray-600',
-          icon: <XCircle className="w-4 h-4" />,
-          showContinue: false,
-          showDelete: true
-        };
-        
-      default:
-        return {
-          text: status || 'Tidak diketahui',
-          className: 'bg-gray-100 text-gray-600',
-          icon: <AlertCircle className="w-4 h-4" />,
-          showContinue: false,
-          showDelete: false
-        };
-    }
-  };
+      }
+      return {
+        text: 'Dalam proses',
+        className: 'bg-yellow-100 text-yellow-600',
+        icon: <Clock className="w-4 h-4" />,
+        showContinue: true,
+        showDelete: false
+      };
+      
+    case 'failed':
+      return {
+        text: 'Pembayaran Gagal',
+        className: 'bg-red-100 text-red-600',
+        icon: <XCircle className="w-4 h-4" />,
+        showContinue: false,
+        showDelete: true
+      };
+      
+    case 'expired':
+      return {
+        text: 'Kedaluwarsa',
+        className: 'bg-orange-100 text-orange-600',
+        icon: <XCircle className="w-4 h-4" />,
+        showContinue: false,
+        showDelete: true
+      };
+      
+    case 'cancelled':
+    case 'cancel':
+      return {
+        text: 'Dibatalkan',
+        className: 'bg-gray-100 text-gray-600',
+        icon: <XCircle className="w-4 h-4" />,
+        showContinue: false,
+        showDelete: true
+      };
+      
+    default:
+      return {
+        text: status || 'Tidak diketahui',
+        className: 'bg-gray-100 text-gray-600',
+        icon: <AlertCircle className="w-4 h-4" />,
+        showContinue: false,
+        showDelete: false
+      };
+  }
+};
 
   // ✅ DEBUG: Log auth state only when it changes significantly
   useEffect(() => {
@@ -618,7 +671,7 @@ const handleDeleteTicket = async (ticket) => {
                           </div>
                           
                           {/* E-Ticket Link */}
-                          {statusInfo.text === 'Selesai' && (
+                          {(statusInfo.text === 'Selesai' || statusInfo.text === 'Aktif') && (
                             <div 
                               className="text-sm text-emerald-500 font-medium cursor-pointer hover:underline mb-2"
                               onClick={() => handleETicketClick(ticket.booking_code)}

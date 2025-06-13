@@ -508,7 +508,7 @@ const navigateToArticleDetail = async (articleId) => {
         className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
         onClick={() => navigateToArticleDetail(article.id_artikel)}
       >
-        <div className={`h-48 overflow-hidden ${activeTab === 'destinasi' ? 'border-4 border-purple-400' : 'border-2 border-gray-300'} rounded-t-lg`}>
+        <div className={`h-48 overflow-hidden border-2 border-gray-300 rounded-t-lg`}>
           {article.gambarUrl ? (
             <img 
               src={article.gambarUrl} 
@@ -569,7 +569,7 @@ const navigateToArticleDetail = async (articleId) => {
           className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 flex-shrink-0 w-72"
           onClick={() => navigateToArticleDetail(article.id_artikel)}
         >
-          <div className={`h-40 overflow-hidden ${activeTab === 'destinasi' ? 'border-4 border-purple-400' : 'border-2 border-gray-300'} rounded-t-lg`}>
+          <div className={`h-40 overflow-hidden border-2 border-gray-300 rounded-t-lg`}>
             {article.gambarUrl ? (
               <img 
                 src={article.gambarUrl} 
@@ -680,7 +680,8 @@ const navigateToArticleDetail = async (articleId) => {
         </div>
       </div>
 
-      {/* Email Modal */}
+      
+           {/* Email Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
           <div className="absolute inset-0 bg-black opacity-50" onClick={closeModal}></div>
@@ -700,7 +701,12 @@ const navigateToArticleDetail = async (articleId) => {
               <h2 className="text-2xl font-bold mb-4">Kirim Pengalaman kalian pada kami!</h2>
               
               <p className="mb-2">kirim via email ke:</p>
-              <p className="font-bold mb-6">berkelanaapps@gmail.com</p>
+              <a 
+                href="mailto:berkelanaapps@gmail.com"
+                className="font-bold mb-6 text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
+              >
+                berkelanaapps@gmail.com
+              </a>
             </div>
           </div>
         </div>
@@ -886,10 +892,10 @@ const navigateToArticleDetail = async (articleId) => {
                    <div className="flex-shrink-0">
                      <h3 className="font-medium mb-4 text-gray-900">Temukan Kami di</h3>
                      <div className="flex space-x-4">
-                       <a href="https://www.facebook.com/profile.php?id=61577281496423" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400 transition-colors">
+                       <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400 transition-colors">
                          <i className="fab fa-facebook-f text-gray-700 hover:text-emerald-400"></i>
                        </a>
-                       <a href="https://www.instagram.com/berkelanaapps?igsh=MXVnaWdsMjd3dHZuYg==" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400 transition-colors">
+                       <a href="#" className="inline-block border border-gray-300 rounded-full p-3 hover:border-emerald-400 transition-colors">
                          <i className="fab fa-instagram text-gray-700 hover:text-emerald-400"></i>
                        </a>
                      </div>

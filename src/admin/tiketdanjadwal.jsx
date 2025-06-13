@@ -378,18 +378,18 @@ const TiketDanJadwal = () => {
 
   // Main list page
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-3 sm:p-8 bg-gray-50 min-h-screen overflow-x-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Tiket dan Jadwal</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Tiket dan Jadwal</h1>
             <p className="text-gray-600 mt-2">Kelola jadwal keberangkatan dan tiket perjalanan</p>
           </div>
           <button
             onClick={handleTambahClick}
             disabled={loading}
-            className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
+            className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm flex items-center gap-2 w-full sm:w-auto justify-center sm:justify-start"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -407,63 +407,63 @@ const TiketDanJadwal = () => {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
             <div className="flex items-center">
-              <div className="p-3 bg-blue-100 rounded-full">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-2 sm:p-3 bg-blue-100 rounded-full">
+                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Jadwal</p>
-                <p className="text-2xl font-bold text-gray-900">{jadwalData.length}</p>
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Total Jadwal</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">{jadwalData.length}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
             <div className="flex items-center">
-              <div className="p-3 bg-green-100 rounded-full">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-2 sm:p-3 bg-green-100 rounded-full">
+                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2v0a2 2 0 01-2-2v-5H8z" />
                 </svg>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Jadwal Bus</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Jadwal Bus</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">
                   {jadwalData.filter(j => j.kategoriArmada === 'Bus').length}
                 </p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
             <div className="flex items-center">
-              <div className="p-3 bg-purple-100 rounded-full">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-2 sm:p-3 bg-purple-100 rounded-full">
+                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2v0a2 2 0 01-2-2v-5H8z" />
                 </svg>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Jadwal Shuttle</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Jadwal Shuttle</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">
                   {jadwalData.filter(j => j.kategoriArmada === 'Shuttle').length}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-3 sm:p-6">
             <div className="flex items-center">
-              <div className="p-3 bg-yellow-100 rounded-full">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="p-2 sm:p-3 bg-yellow-100 rounded-full">
+                <svg className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Rata-rata Harga</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Rata-rata Harga</p>
+                <p className="text-lg sm:text-2xl font-bold text-gray-900">
                   {jadwalData.length > 0 
                     ? formatCurrency(jadwalData.reduce((sum, j) => sum + j.harga, 0) / jadwalData.length)
                     : 'Rp 0'
@@ -475,11 +475,11 @@ const TiketDanJadwal = () => {
         </div>
 
         {/* Filter Controls */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-6 mb-6 sm:mb-8">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Filter Jadwal</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Jenis Kendaraan</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">Jenis Kendaraan</label>
               <select 
                 value={selectedKendaraan}
                 onChange={(e) => setSelectedKendaraan(e.target.value)}
@@ -492,7 +492,7 @@ const TiketDanJadwal = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tanggal</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">Tanggal</label>
               <select 
                 value={selectedTanggal}
                 onChange={(e) => setSelectedTanggal(e.target.value)}
@@ -506,7 +506,7 @@ const TiketDanJadwal = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Bulan</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">Bulan</label>
               <select 
                 value={selectedBulan}
                 onChange={(e) => setSelectedBulan(e.target.value)}
@@ -529,7 +529,7 @@ const TiketDanJadwal = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Tahun</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">Tahun</label>
               <select 
                 value={selectedTahun}
                 onChange={(e) => setSelectedTahun(e.target.value)}
@@ -546,7 +546,7 @@ const TiketDanJadwal = () => {
 
         {/* Table */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+          <div className="px-3 sm:px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">Daftar Jadwal Keberangkatan</h2>
             <p className="text-sm text-gray-600 mt-1">
               Menampilkan {filteredData.length} dari {jadwalData.length} jadwal
@@ -558,25 +558,25 @@ const TiketDanJadwal = () => {
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Jadwal Keberangkatan
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Jadwal
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Rute
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Waktu & Durasi
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Waktu
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Kendaraan
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Harga
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Aksi
                       </th>
                     </tr>
@@ -584,7 +584,7 @@ const TiketDanJadwal = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentData.length === 0 ? (
                       <tr>
-                        <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                        <td colSpan="6" className="px-2 sm:px-6 py-8 text-center text-gray-500">
                           {filteredData.length === 0 && jadwalData.length > 0 
                             ? 'Tidak ada jadwal yang sesuai filter' 
                             : 'Tidak ada data jadwal'}
@@ -593,58 +593,60 @@ const TiketDanJadwal = () => {
                     ) : (
                       currentData.map((jadwal) => (
                         <tr key={jadwal.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{jadwal.jadwalKeberangkatan}</div>
-                            <div className="text-sm text-gray-500">{jadwal.tanggal}/{jadwal.bulan}/{jadwal.tahun}</div>
+                          <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
+                            <div className="font-medium text-gray-900">{jadwal.jadwalKeberangkatan}</div>
+                            <div className="text-gray-500">{jadwal.tanggal}/{jadwal.bulan}/{jadwal.tahun}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
                             <div className="flex items-center">
-                              <div className="text-sm font-medium text-gray-900">{jadwal.ruteKeberangkatan}</div>
-                              <svg className="w-4 h-4 mx-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <div className="font-medium text-gray-900">{jadwal.ruteKeberangkatan}</div>
+                              <svg className="w-3 h-3 sm:w-4 sm:h-4 mx-1 sm:mx-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                               </svg>
-                              <div className="text-sm font-medium text-gray-900">{jadwal.ruteTujuan}</div>
+                              <div className="font-medium text-gray-900">{jadwal.ruteTujuan}</div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{jadwal.waktu}</div>
-                            <div className="text-sm text-gray-500">{formatDuration(jadwal.durasi)}</div>
+                          <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
+                            <div className="text-gray-900">{jadwal.waktu}</div>
+                            <div className="text-gray-500">{formatDuration(jadwal.durasi)}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
+                            <span className={`inline-flex px-2 py-0.5 sm:py-1 text-xs font-semibold rounded-full ${
                               jadwal.kategoriArmada === 'Bus' 
                                 ? 'bg-blue-100 text-blue-800' 
                                 : 'bg-green-100 text-green-800'
                             }`}>
                               {jadwal.kategoriArmada}
                             </span>
-                            <div className="text-sm text-gray-500 mt-1">{jadwal.nomorArmada}</div>
+                            <div className="text-gray-500 mt-1">{jadwal.nomorArmada}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{formatCurrency(jadwal.harga)}</div>
+                          <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm">
+                            <div className="font-medium text-gray-900">{formatCurrency(jadwal.harga)}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button 
-                              onClick={() => handleDetailClick(jadwal)}
-                              className="text-green-600 hover:text-green-900 mr-3 transition-colors"
-                              disabled={loading}
-                            >
-                              Detail
-                            </button>
-                            <button 
-                              onClick={() => handleEditClick(jadwal)}
-                              className="text-indigo-600 hover:text-indigo-900 mr-3 transition-colors"
-                              disabled={loading}
-                            >
-                              Edit
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteClick(jadwal)}
-                              className="text-red-600 hover:text-red-900 transition-colors"
-                              disabled={loading}
-                            >
-                              Hapus
-                            </button>
+                          <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                              <button 
+                                onClick={() => handleDetailClick(jadwal)}
+                                className="text-green-600 hover:text-green-900 transition-colors"
+                                disabled={loading}
+                              >
+                                Detail
+                              </button>
+                              <button 
+                                onClick={() => handleEditClick(jadwal)}
+                                className="text-indigo-600 hover:text-indigo-900 transition-colors"
+                                disabled={loading}
+                              >
+                                Edit
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteClick(jadwal)}
+                                className="text-red-600 hover:text-red-900 transition-colors"
+                                disabled={loading}
+                              >
+                                Hapus
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -655,15 +657,15 @@ const TiketDanJadwal = () => {
               
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                  <div className="text-sm text-gray-700">
+                <div className="px-3 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-xs sm:text-sm text-gray-700 text-center sm:text-left">
                     Menampilkan {startIndex + 1} sampai {Math.min(endIndex, filteredData.length)} dari {filteredData.length} data
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
                     <button
                       onClick={() => setCurrentTablePage(prev => Math.max(prev - 1, 1))}
                       disabled={currentTablePage === 1}
-                      className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                      className="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                     >
                       Previous
                     </button>
@@ -671,7 +673,7 @@ const TiketDanJadwal = () => {
                       <button
                         key={page}
                         onClick={() => setCurrentTablePage(page)}
-                        className={`px-3 py-1 border rounded-md text-sm transition-colors ${
+                        className={`px-2 sm:px-3 py-1 border rounded-md text-xs sm:text-sm transition-colors ${
                           currentTablePage === page 
                             ? 'bg-purple-600 text-white border-purple-600' 
                             : 'border-gray-300 hover:bg-gray-50'
@@ -683,7 +685,7 @@ const TiketDanJadwal = () => {
                     <button
                       onClick={() => setCurrentTablePage(prev => Math.min(prev + 1, totalPages))}
                       disabled={currentTablePage === totalPages}
-                      className="px-3 py-1 border border-gray-300 rounded-md text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                      className="px-2 sm:px-3 py-1 border border-gray-300 rounded-md text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                     >
                       Next
                     </button>

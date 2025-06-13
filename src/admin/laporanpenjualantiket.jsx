@@ -157,31 +157,30 @@ const LaporanPenjualanTiket = () => {
   };
 
   const handleSimpanPDF = async () => {
-  try {
-    const params = new URLSearchParams();
-    if (selectedTipeArmada) params.append('tipe_armada', selectedTipeArmada);
-    if (selectedTanggal) params.append('tanggal', selectedTanggal);
-    if (selectedBulan) params.append('bulan', selectedBulan);
-    if (selectedTahun) params.append('tahun', selectedTahun);
+    try {
+      const params = new URLSearchParams();
+      if (selectedTipeArmada) params.append('tipe_armada', selectedTipeArmada);
+      if (selectedTanggal) params.append('tanggal', selectedTanggal);
+      if (selectedBulan) params.append('bulan', selectedBulan);
+      if (selectedTahun) params.append('tahun', selectedTahun);
 
-    const response = await fetch(`${API_BASE_URL}/api/laporan/penjualan-tiket/excel?${params}`);
-    const blob = await response.blob();
+      const response = await fetch(`${API_BASE_URL}/api/laporan/penjualan-tiket/excel?${params}`);
+      const blob = await response.blob();
 
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = `laporan-penjualan-${new Date().toISOString().split('T')[0]}.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-  } catch (error) {
-    alert('Gagal mengunduh Excel');
-    console.error('Error downloading Excel:', error);
-  }
-};
-
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `laporan-penjualan-${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      alert('Gagal mengunduh Excel');
+      console.error('Error downloading Excel:', error);
+    }
+  };
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('id-ID', {
@@ -204,11 +203,21 @@ const LaporanPenjualanTiket = () => {
     });
   };
 
+  const formatDateShort = (dateString) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit'
+    });
+  };
+
   const renderPagination = () => {
     if (!pagination.totalPages || pagination.totalPages <= 1) return null;
 
     const pageNumbers = [];
-    const maxVisiblePages = 10;
+    const maxVisiblePages = window.innerWidth < 768 ? 5 : 10; // Kurangi jumlah halaman untuk mobile
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(pagination.totalPages, startPage + maxVisiblePages - 1);
 
@@ -222,7 +231,7 @@ const LaporanPenjualanTiket = () => {
         <button
           key="prev"
           onClick={() => handlePageChange(currentPage - 1)}
-          className="px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
+          className="px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded"
         >
           ‹
         </button>
@@ -234,9 +243,9 @@ const LaporanPenjualanTiket = () => {
         <button
           key={i}
           onClick={() => handlePageChange(i)}
-          className={`px-3 py-1 text-sm ${
+          className={`px-2 sm:px-3 py-1 text-sm rounded ${
             currentPage === i
-              ? 'bg-purple-500 text-white rounded'
+              ? 'bg-purple-500 text-white'
               : 'text-gray-600 hover:bg-gray-100'
           }`}
         >
@@ -251,7 +260,7 @@ const LaporanPenjualanTiket = () => {
         <button
           key="next"
           onClick={() => handlePageChange(currentPage + 1)}
-          className="px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
+          className="px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded"
         >
           ›
         </button>
@@ -273,36 +282,36 @@ const LaporanPenjualanTiket = () => {
   ].filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-white p-6">
+    <div className="min-h-screen bg-white p-3 sm:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Laporan Penjualan Tiket</h1>
-          
-          
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">
+            Laporan Penjualan Tiket
+          </h1>
           
           {/* Statistik Card */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-4 bg-purple-50 rounded-lg">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6 p-3 sm:p-4 bg-purple-50 rounded-lg">
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600">{statistics.totalTransaksi}</div>
-              <div className="text-sm text-gray-600">Total Transaksi</div>
+              <div className="text-lg sm:text-2xl font-bold text-purple-600">{statistics.totalTransaksi}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Total Transaksi</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{statistics.totalPenumpang}</div>
-              <div className="text-sm text-gray-600">Total Penumpang</div>
+              <div className="text-lg sm:text-2xl font-bold text-green-600">{statistics.totalPenumpang}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Total Penumpang</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">{formatCurrency(statistics.totalPendapatan)}</div>
-              <div className="text-sm text-gray-600">Total Pendapatan</div>
+              <div className="text-lg sm:text-2xl font-bold text-blue-600">{formatCurrency(statistics.totalPendapatan)}</div>
+              <div className="text-xs sm:text-sm text-gray-600">Total Pendapatan</div>
             </div>
           </div>
           
           {/* Filter Controls */}
-          <div className="flex flex-wrap gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
             <select 
               value={selectedTipeArmada}
               onChange={(e) => setSelectedTipeArmada(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 text-sm font-medium"
+              className="border border-gray-300 rounded px-3 py-2 text-sm font-medium w-full"
             >
               <option value="">Semua Tipe Armada</option>
               {tipeArmadaOptions.map(tipe => (
@@ -313,7 +322,7 @@ const LaporanPenjualanTiket = () => {
             <select 
               value={selectedTanggal}
               onChange={(e) => setSelectedTanggal(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 text-sm"
+              className="border border-gray-300 rounded px-3 py-2 text-sm w-full"
             >
               <option value="">Semua Tanggal</option>
               {[...Array(31)].map((_, i) => (
@@ -324,7 +333,7 @@ const LaporanPenjualanTiket = () => {
             <select 
               value={selectedBulan}
               onChange={(e) => setSelectedBulan(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 text-sm"
+              className="border border-gray-300 rounded px-3 py-2 text-sm w-full"
             >
               <option value="">Semua Bulan</option>
               <option value="1">Januari</option>
@@ -344,7 +353,7 @@ const LaporanPenjualanTiket = () => {
             <select 
               value={selectedTahun}
               onChange={(e) => setSelectedTahun(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 text-sm"
+              className="border border-gray-300 rounded px-3 py-2 text-sm w-full"
             >
               <option value="">Semua Tahun</option>
               <option value="2024">2024</option>
@@ -357,13 +366,13 @@ const LaporanPenjualanTiket = () => {
           {activeFilters.length > 0 && (
             <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-purple-700 font-medium">Filter aktif:</span>
+                <span className="text-purple-700 font-medium text-sm">Filter aktif:</span>
                 {activeFilters.map(filter => (
-                  <span key={filter.key} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">
+                  <span key={filter.key} className="px-2 sm:px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs sm:text-sm">
                     {filter.label}
                     <button 
                       onClick={filter.clear}
-                      className="ml-2 text-purple-600 hover:text-purple-800"
+                      className="ml-1 sm:ml-2 text-purple-600 hover:text-purple-800"
                     >
                       ×
                     </button>
@@ -376,7 +385,7 @@ const LaporanPenjualanTiket = () => {
                     setSelectedBulan('');
                     setSelectedTahun('');
                   }}
-                  className="ml-3 text-purple-600 hover:text-purple-800 text-sm underline"
+                  className="ml-1 sm:ml-3 text-purple-600 hover:text-purple-800 text-xs sm:text-sm underline"
                 >
                   Hapus Semua Filter
                 </button>
@@ -396,60 +405,109 @@ const LaporanPenjualanTiket = () => {
         {/* Error State */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-700">{error}</p>
+            <p className="text-red-700 text-sm">{error}</p>
             <button 
               onClick={fetchLaporanData}
-              className="mt-2 text-red-600 hover:text-red-800 underline"
+              className="mt-2 text-red-600 hover:text-red-800 underline text-sm"
             >
               Coba lagi
             </button>
           </div>
         )}
 
-        {/* Table */}
+        {/* Desktop Table */}
         {!loading && !error && (
-          <div className="bg-white border border-gray-300 rounded-b-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Booking Code</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Nama Pemesan</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Email Pemesan</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Waktu Keberangkatan</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Rute</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Tipe Armada</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Penumpang</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {laporanData.length > 0 ? (
-                  laporanData.map((item, index) => (
-                    <tr key={item.id_headtransaksi} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                      <td className="py-3 px-4 text-sm text-gray-900 font-medium">{item.booking_code}</td>
-                      <td className="py-3 px-4 text-sm text-gray-900">{item.nama_pemesan}</td>
-                      <td className="py-3 px-4 text-sm text-gray-900">{item.email_pemesan}</td>
-                      <td className="py-3 px-4 text-sm text-gray-900">{formatDate(item.waktu_keberangkatan)}</td>
-                      <td className="py-3 px-4 text-sm text-gray-900">{item.rute}</td>
-                      <td className="py-3 px-4 text-sm">
-                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {item.tipe_armada}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-gray-900 text-center">{item.total_penumpang}</td>
-                      <td className="py-3 px-4 text-sm text-gray-900 font-medium">{formatCurrency(item.total)}</td>
-                    
-                    </tr>
-                  ))
-                ) : (
+          <div className="hidden lg:block bg-white border border-gray-300 rounded-b-lg overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-full">
+                <thead className="bg-gray-50">
                   <tr>
-                    <td colSpan="9" className="py-8 px-4 text-center text-gray-500">
-                      Tidak ada data yang ditemukan untuk filter yang dipilih.
-                    </td>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Booking Code</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Nama Pemesan</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Email Pemesan</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Waktu Keberangkatan</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Rute</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Tipe Armada</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Penumpang</th>
+                    <th className="text-left py-3 px-4 font-medium text-gray-700 text-sm">Total</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {laporanData.length > 0 ? (
+                    laporanData.map((item, index) => (
+                      <tr key={item.id_headtransaksi} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                        <td className="py-3 px-4 text-sm text-gray-900 font-medium">{item.booking_code}</td>
+                        <td className="py-3 px-4 text-sm text-gray-900">{item.nama_pemesan}</td>
+                        <td className="py-3 px-4 text-sm text-gray-900">{item.email_pemesan}</td>
+                        <td className="py-3 px-4 text-sm text-gray-900">{formatDate(item.waktu_keberangkatan)}</td>
+                        <td className="py-3 px-4 text-sm text-gray-900">{item.rute}</td>
+                        <td className="py-3 px-4 text-sm">
+                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {item.tipe_armada}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-sm text-gray-900 text-center">{item.total_penumpang}</td>
+                        <td className="py-3 px-4 text-sm text-gray-900 font-medium">{formatCurrency(item.total)}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="8" className="py-8 px-4 text-center text-gray-500">
+                        Tidak ada data yang ditemukan untuk filter yang dipilih.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Cards */}
+        {!loading && !error && (
+          <div className="lg:hidden space-y-4">
+            {laporanData.length > 0 ? (
+              laporanData.map((item) => (
+                <div key={item.id_headtransaksi} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="font-medium text-gray-900 text-sm">{item.booking_code}</div>
+                    <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {item.tipe_armada}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-2 text-sm">
+                    <div>
+                      <span className="font-medium text-gray-700">Pemesan:</span>
+                      <div className="text-gray-900">{item.nama_pemesan}</div>
+                      <div className="text-gray-600 text-xs">{item.email_pemesan}</div>
+                    </div>
+                    
+                    <div>
+                      <span className="font-medium text-gray-700">Keberangkatan:</span>
+                      <div className="text-gray-900">{formatDateShort(item.waktu_keberangkatan)}</div>
+                    </div>
+                    
+                    <div>
+                      <span className="font-medium text-gray-700">Rute:</span>
+                      <div className="text-gray-900">{item.rute}</div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                      <div>
+                        <span className="font-medium text-gray-700">Penumpang:</span>
+                        <span className="ml-1 text-gray-900">{item.total_penumpang}</span>
+                      </div>
+                      <div className="font-medium text-gray-900">{formatCurrency(item.total)}</div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                Tidak ada data yang ditemukan untuk filter yang dipilih.
+              </div>
+            )}
           </div>
         )}
 
@@ -458,10 +516,10 @@ const LaporanPenjualanTiket = () => {
 
         {/* Simpan PDF Button */}
         {!loading && !error && laporanData.length > 0 && (
-          <div className="mt-8 flex justify-end">
+          <div className="mt-6 sm:mt-8 flex justify-center sm:justify-end">
             <button
               onClick={handleSimpanPDF}
-              className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg text-sm font-medium"
+              className="bg-purple-500 hover:bg-purple-600 text-white px-4 sm:px-6 py-2 rounded-lg text-sm font-medium w-full sm:w-auto"
             >
               Simpan Excel
             </button>

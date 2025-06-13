@@ -1,7 +1,7 @@
 // src/admin/detailkendaraan.jsx
 import React, { useState, useEffect } from 'react';
 import KendaraanForm from './kendaraanform';
-import { DeleteModal, DetailModal } from './kendaraanmodal';
+import { DeleteModal, DetailModal } from './KendaraanModal';
 import kendaraanService from '../services/kendaraanService';
 
 const DetailKendaraan = () => {
@@ -197,17 +197,17 @@ const DetailKendaraan = () => {
 
   // Main list page
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 md:p-8 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Detail Kendaraan</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8">
+          <div className="mb-4 sm:mb-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Detail Kendaraan</h1>
             <p className="text-gray-600 mt-2">Kelola data kendaraan yang tersedia</p>
           </div>
           <button
             onClick={handleTambahClick}
             disabled={loading}
-            className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+            className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm w-full sm:w-auto"
           >
             + Tambah Data
           </button>
@@ -222,45 +222,45 @@ const DetailKendaraan = () => {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
             <div className="flex items-center">
               <div className="p-3 bg-blue-100 rounded-full">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2v0a2 2 0 01-2-2v-5H8z" />
                 </svg>
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Kendaraan</p>
-                <p className="text-2xl font-bold text-gray-900">{kendaraanData.length}</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{kendaraanData.length}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
             <div className="flex items-center">
               <div className="p-3 bg-green-100 rounded-full">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Kendaraan Aktif</p>
-                <p className="text-2xl font-bold text-gray-900">{kendaraanData.length}</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{kendaraanData.length}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
             <div className="flex items-center">
               <div className="p-3 bg-purple-100 rounded-full">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Kapasitas</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">
                   {kendaraanData.reduce((total, k) => total + (k.kapasitasKursi || 0), 0)}
                 </p>
               </div>
@@ -270,7 +270,7 @@ const DetailKendaraan = () => {
 
         {/* Table */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900">Daftar Kendaraan</h2>
           </div>
           
@@ -278,26 +278,26 @@ const DetailKendaraan = () => {
             <LoadingSpinner />
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-hidden sm:overflow-x-auto"> {/* Ubah overflow-x-auto menjadi overflow-x-hidden pada mobile */}
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Tipe Armada
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         No Armada
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         No Kendaraan
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                         Kapasitas
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                         Kondektur
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Aksi
                       </th>
                     </tr>
@@ -305,53 +305,55 @@ const DetailKendaraan = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {currentData.length === 0 ? (
                       <tr>
-                        <td colSpan="6" className="px-6 py-8 text-center text-gray-500">
+                        <td colSpan="6" className="px-3 sm:px-6 py-8 text-center text-gray-500">
                           {loading ? 'Memuat data...' : 'Tidak ada data kendaraan'}
                         </td>
                       </tr>
                     ) : (
                       currentData.map((kendaraan) => (
                         <tr key={kendaraan.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 sm:px-6 py-4 break-words sm:whitespace-nowrap"> {/* Ubah whitespace-nowrap */}
                             <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                               {kendaraan.tipeArmada}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-3 sm:px-6 py-4 break-words sm:whitespace-nowrap text-sm text-gray-900"> {/* Ubah whitespace-nowrap */}
                             {kendaraan.nomorArmada}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-3 sm:px-6 py-4 break-words sm:whitespace-nowrap text-sm text-gray-900"> {/* Ubah whitespace-nowrap */}
                             {kendaraan.nomorKendaraan}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-3 sm:px-6 py-4 break-words sm:whitespace-nowrap text-sm text-gray-900 hidden md:table-cell">
                             {kendaraan.kapasitasKursi} kursi ({kendaraan.formatKursi})
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-3 sm:px-6 py-4 break-words sm:whitespace-nowrap hidden md:table-cell">
                             <div className="text-sm text-gray-900">{kendaraan.namaKondektur}</div>
                             <div className="text-sm text-gray-500">{kendaraan.nomorKondektur}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button 
-                              onClick={() => handleDetailClick(kendaraan)}
-                              className="text-green-600 hover:text-green-900 mr-3"
-                              disabled={loading}
-                            >
-                              Detail
-                            </button>
-                            <button 
-                              onClick={() => handleEditClick(kendaraan)}
-                              className="text-indigo-600 hover:text-indigo-900 mr-3"
-                              disabled={loading}
-                            >
-                              Edit
-                            </button>
-                            <button 
-                              onClick={() => handleDeleteClick(kendaraan.id)}
-                              className="text-red-600 hover:text-red-900"
-                              disabled={loading}
-                            >
-                              Hapus
-                            </button>
+                          <td className="px-3 sm:px-6 py-4 break-words sm:whitespace-nowrap text-sm font-medium"> {/* Ubah whitespace-nowrap */}
+                            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                              <button 
+                                onClick={() => handleDetailClick(kendaraan)}
+                                className="text-green-600 hover:text-green-900"
+                                disabled={loading}
+                              >
+                                Detail
+                              </button>
+                              <button 
+                                onClick={() => handleEditClick(kendaraan)}
+                                className="text-indigo-600 hover:text-indigo-900"
+                                disabled={loading}
+                              >
+                                Edit
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteClick(kendaraan.id)}
+                                className="text-red-600 hover:text-red-900"
+                                disabled={loading}
+                              >
+                                Hapus
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -362,11 +364,11 @@ const DetailKendaraan = () => {
               
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                  <div className="text-sm text-gray-700">
+                <div className="px-3 sm:px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-sm text-gray-700 text-center sm:text-left">
                     Menampilkan {startIndex + 1} sampai {Math.min(endIndex, kendaraanData.length)} dari {kendaraanData.length} data
                   </div>
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center flex-wrap justify-center gap-2">
                     <button
                       onClick={() => setCurrentTablePage(prev => Math.max(prev - 1, 1))}
                       disabled={currentTablePage === 1}
