@@ -24,16 +24,45 @@ const Pemesanan2 = () => {
     formData?.namaPenumpang3
   ].filter(Boolean).length;
   
-  const [seatData, setSeatData] = useState({
-    rows: 7,
-    cols: 4,
-    seatMap: {
-      'A': 0,
-      'B': 1,
-      'C': 2,
-      'D': 3
-    }
-  });
+  // ... existing code ...
+
+// Ubah state seatData menjadi seperti ini
+const [seatData, setSeatData] = useState({
+  rows: 7, // Nilai default
+  cols: 4, // Nilai default
+  seatMap: {
+    'A': 0,
+    'B': 1,
+    'C': 2,
+    'D': 3
+  }
+});
+
+// Tambahkan useEffect untuk mengupdate seatData berdasarkan kapasitas kursi
+useEffect(() => {
+  if (ticket?.kendaraan?.kapasitas_kursi && ticket?.kendaraan?.format_kursi) {
+    const formatKursi = ticket.kendaraan.format_kursi; // Misalnya "2-2"
+    const kapasitasKursi = ticket.kendaraan.kapasitas_kursi;
+    
+    // Parse format kursi untuk mendapatkan jumlah kolom
+    const formatParts = formatKursi.split('-');
+    const totalCols = formatParts.reduce((sum, part) => sum + parseInt(part), 0);
+    
+    // Hitung jumlah baris berdasarkan kapasitas dan format
+    const calculatedRows = Math.ceil(kapasitasKursi / totalCols);
+    
+    console.log(`Menyesuaikan layout kursi: ${calculatedRows} baris x ${totalCols} kolom (total: ${kapasitasKursi} kursi)`);
+    
+    // Update seatData
+    setSeatData(prev => ({
+      ...prev,
+      rows: calculatedRows,
+      cols: totalCols
+    }));
+  }
+}, [ticket]);
+
+// ... existing code ...
   
   useEffect(() => {
     const fetchBookedSeats = async () => {

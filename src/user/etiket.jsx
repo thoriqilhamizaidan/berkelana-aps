@@ -737,12 +737,12 @@ const handleDownloadPDF = async () => {
   }
 
   return (
-    <div className="w-full bg-white p-4 md:p-6 lg:p-8">
+    <div className="w-full bg-white p-2 sm:p-4 md:p-6 lg:p-8">
       <div className="w-full max-w-7xl mx-auto" ref={ticketRef}>
         {/* Header with Logo (No Padding) */}
         <div className="flex justify-between items-center mb-4">
           <div>
-            <img src="/images/Berkelana-logo.png" alt="Berkelana" className="h-20 text-purple-600" />
+            <img src="/images/Berkelana-logo.png" alt="Berkelana" className="h-12 sm:h-16 md:h-20 text-purple-600" />
           </div>
           <button
             onClick={handleClose} // Add onClick event to handle the close button
@@ -755,18 +755,18 @@ const handleDownloadPDF = async () => {
         </div>
 
         {/* Title Section with Padding */}
-        <div className="flex justify-between items-center mb-4 px-10">
-          <h1 className="text-3xl font-bold text-black">E-Tiket Bus</h1>
-          <div className="text-sm">
-    <span className="bg-purple-100 text-black font-semibold px-6 py-3 rounded">
-      Kode Booking: <span className="font-semibold">{ticket.bookingCode}</span>
-    </span>
-  </div>
-</div>
-        <p className="text-gray-600 mb-4 px-10">Pilih kursi Anda dan review pesanan Anda.</p>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 px-4 sm:px-6 md:px-10 gap-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-black">E-Tiket Bus</h1>
+          <div className="text-sm w-full sm:w-auto">
+            <span className="bg-purple-100 text-black font-semibold px-3 sm:px-6 py-2 sm:py-3 rounded inline-block w-full sm:w-auto text-center">
+              Kode Booking: <span className="font-semibold">{ticket.bookingCode}</span>
+            </span>
+          </div>
+        </div>
+        <p className="text-gray-600 mb-4 px-4 sm:px-6 md:px-10">Pilih kursi Anda dan review pesanan Anda.</p>
 
         {/* Bus Image and Details */}
-        <div className="border border-gray-200 rounded-lg mb-6 overflow-hidden mx-10">
+        <div className="border border-gray-200 rounded-lg mb-6 overflow-hidden mx-4 sm:mx-6 md:mx-10">
           <div className="flex flex-col md:flex-row">
             {/* Bus Image Side */}
             <div className="w-full md:w-1/3 bg-gray-50 p-4 flex flex-col">
@@ -786,7 +786,7 @@ const handleDownloadPDF = async () => {
             </div>
 
             {/* Journey Details Side */}
-            <div className="w-full md:w-2/3 p-6 bg-white">
+            <div className="w-full md:w-2/3 p-4 sm:p-6 bg-white">
               <div className="text-xl font-semibold mb-6">{ticket.date}</div>
               {/* Journey Timeline */}
               <div className="relative">
@@ -823,16 +823,16 @@ const handleDownloadPDF = async () => {
         </div>
 
         {/* Information Icons */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 px-10">
-          <div className="bg-gray-100 rounded-md flex items-center p-3 text-sm text-gray-600">
-            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" className="text-green-500 mr-2 flex-shrink-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-6 px-4 sm:px-6 md:px-10">
+          <div className="bg-gray-100 rounded-md flex items-start sm:items-center p-3 text-sm text-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" className="text-green-500 mr-2 flex-shrink-0 mt-1 sm:mt-0">
               <path fill="currentColor" fillRule="evenodd" d="M7.5.85a.5.5 0 0 0-.5.5v2.172a.5.5 0 1 0 1 0v-1.65a5.65 5.65 0 1 1-4.81 1.974a.5.5 0 1 0-.762-.647A6.65 6.65 0 1 0 7.5.85m-.76 7.23L4.224 4.573a.25.25 0 0 1 .348-.348L8.081 6.74a.96.96 0 1 1-1.34 1.34" clipRule="evenodd"/>
             </svg>
             <span>Tiba di titik naik setidaknya 60 menit sebelum keberangkatan</span>
           </div>
-          <div className="bg-gray-100 rounded-md flex items-center p-3 text-sm text-gray-600">
+          <div className="bg-gray-100 rounded-md flex items-start sm:items-center p-3 text-sm text-gray-600">
             <svg xmlns="http://www.w3.org/2000/svg" 
-                className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" 
+                className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-1 sm:mt-0" 
                 viewBox="0 0 48 48" fill="none">
               <g stroke="currentColor" strokeLinecap="round" strokeWidth="4">
                 <path strokeLinejoin="round" d="M9 16L34 6l4 10M4 16h40v6c-3 0-6 2-6 5.5s3 6.5 6 6.5v6H4v-6c3 0 6-2 6-6s-3-6-6-6z"/>
@@ -841,8 +841,8 @@ const handleDownloadPDF = async () => {
             </svg>
             <span>Tunjukkan e-tiket ke petugas bus atau shuttle</span>
           </div>
-          <div className="bg-gray-100 rounded-md flex items-center p-3 text-sm text-gray-600">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+          <div className="bg-gray-100 rounded-md flex items-start sm:items-center p-3 text-sm text-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-1 sm:mt-0" viewBox="0 0 24 24" fill="none">
               <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5">
                 <path d="M14 3.5h-4c-3.771 0-5.657 0-6.828 1.172S2 7.729 2 11.5v1c0 3.771 0 5.657 1.172 6.828S6.229 20.5 10 20.5h4c3.771 0 5.657 0 6.828-1.172S22 16.271 22 12.5v-1c0-3.771 0-5.657-1.172-6.828S17.771 3.5 14 3.5"/>
                 <path d="M5 16c1.036-2.581 4.896-2.75 6 0M9.75 9.75a1.75 1.75 0 1 1-3.5 0a1.75 1.75 0 0 1 3.5 0M14 8.5h5M14 12h5m-5 3.5h2.5"/>
@@ -853,7 +853,7 @@ const handleDownloadPDF = async () => {
         </div>
 
         {/* Passenger Data */}
-        <div className="mb-6 px-10">
+        <div className="mb-6 px-4 sm:px-6 md:px-10">
           <h2 className="text-xl font-semibold mb-3">Data Pemesan</h2>
           <div className="bg-gray-100 p-4 rounded-md">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -863,14 +863,14 @@ const handleDownloadPDF = async () => {
               </div>
               <div>
                 <p className="text-gray-600">Email</p>
-                <p>{ticket.contactPerson.email}</p>
+                <p className="break-words">{ticket.contactPerson.email}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Additional Passengers */}
-        <div className="mb-6 px-10">
+        <div className="mb-6 px-4 sm:px-6 md:px-10">
           <h2 className="text-xl font-semibold mb-3">Data Penumpang</h2>
           <div className="space-y-2">
             {ticket.passengerDetails.map((passenger, index) => (
@@ -883,7 +883,7 @@ const handleDownloadPDF = async () => {
         </div>
 
         {/* Things to Know */}
-        <div className="mb-6 px-10">
+        <div className="mb-6 px-4 sm:px-6 md:px-10">
           <h2 className="text-xl font-semibold mb-3">Hal yang perlu diketahui</h2>
           <div className="bg-gray-100 p-4 rounded-md">
             <h3 className="font-semibold mb-2">Ketentuan Umum</h3>
@@ -898,7 +898,7 @@ const handleDownloadPDF = async () => {
         </div>
 
         {/* Luggage */}
-        <div className="mb-6 px-10">
+        <div className="mb-6 px-4 sm:px-6 md:px-10">
           <h2 className="text-xl font-semibold mb-3">Barang Bawaan</h2>
           <div className="bg-gray-100 p-4 rounded-md">
             <ul className="text-sm text-gray-700 space-y-1 list-decimal pl-5">
@@ -912,7 +912,7 @@ ukuran atau berat tersebut, maka penumpang diharuskan membayar biaya tambahan se
         </div>
 
         {/* Cancellation Policy */}
-        <div className="px-10">
+        <div className="px-4 sm:px-6 md:px-10">
           <h2 className="text-xl font-semibold mb-3">Kebijakan Pembatalan, Refund dan Reschedule</h2>
           <div className="bg-gray-100 p-4 rounded-md">
             <ul className="text-sm text-gray-700 space-y-1 list-decimal pl-5">
@@ -923,14 +923,14 @@ ukuran atau berat tersebut, maka penumpang diharuskan membayar biaya tambahan se
         </div>
 
         {/* Tombol Download */}
-        <div className="text-center mt-6 mb-10 px-10">
+        <div className="text-center mt-6 mb-10 px-4 sm:px-6 md:px-10">
           <button
-    onClick={handleDownloadPDF}
-    className="bg-green-500 hover:bg-green-400 text-white px-6 py-3 rounded-md font-semibold"
-  >
+            onClick={handleDownloadPDF}
+            className="bg-green-500 hover:bg-green-400 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-md font-semibold w-full sm:w-auto"
+          >
             Download PDF
-  </button>
-</div>
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -412,8 +412,8 @@ const handleDeleteTicket = async (ticket) => {
         <div className="relative bg-cover bg-center h-80" style={{ backgroundImage: "url('/images/backgroundtiketsaya.jpg')" }}>
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.6)] via-transparent to-transparent z-1"></div>
           <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-10">
-            <h1 className="text-4xl font-bold">Tiket Saya</h1>
-            <p className="text-lg mt-2">Check tiket kamu disini!</p>
+            <h1 className="text-4xl md:text-4xl sm:text-3xl xs:text-2xl font-bold">Tiket Saya</h1>
+            <p className="text-lg md:text-lg sm:text-base xs:text-sm mt-2">Check tiket kamu disini!</p>
           </div>
         </div>
         
@@ -440,8 +440,8 @@ const handleDeleteTicket = async (ticket) => {
         <div className="relative bg-cover bg-center h-80" style={{ backgroundImage: "url('/images/backgroundtiketsaya.jpg')" }}>
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.6)] via-transparent to-transparent z-1"></div>
           <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-10">
-            <h1 className="text-4xl font-bold">Tiket Saya</h1>
-            <p className="text-lg mt-2">Check tiket kamu disini!</p>
+            <h1 className="text-4xl md:text-4xl sm:text-3xl xs:text-2xl font-bold">Tiket Saya</h1>
+            <p className="text-lg md:text-lg sm:text-base xs:text-sm mt-2">Check tiket kamu disini!</p>
           </div>
         </div>
         
@@ -486,8 +486,8 @@ const handleDeleteTicket = async (ticket) => {
       <div className="relative bg-cover bg-center h-80" style={{ backgroundImage: "url('/images/backgroundtiketsaya.jpg')" }}>
         <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.6)] via-transparent to-transparent z-1"></div>
         <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-10">
-          <h1 className="text-4xl font-bold">Tiket Saya</h1>
-          <p className="text-lg mt-2">Check tiket kamu disini!</p>
+          <h1 className="text-4xl md:text-4xl sm:text-3xl xs:text-2xl font-bold">Tiket Saya</h1>
+          <p className="text-lg md:text-lg sm:text-base xs:text-sm mt-2">Check tiket kamu disini!</p>
         </div>
       </div>
 
@@ -549,13 +549,13 @@ const handleDeleteTicket = async (ticket) => {
                 
                 return (
                   <div key={uniqueKey} className="bg-gray-50 rounded-lg shadow-md overflow-hidden">
-                    <div className="flex p-4">
+                    <div className="flex flex-col md:flex-row p-4">
                       {/* Left Section - Bus Image */}
-                      <div className="w-1/4">
+                      <div className="w-full md:w-1/4 mb-4 md:mb-0">
                         <img
                           src={getBusImage(ticket.bus_image)}
                           alt="Bus"
-                          className="w-full h-40 object-cover rounded"
+                          className="w-full h-40 object-cover rounded mx-auto md:mx-0"
                           onError={(e) => {
                             e.target.src = '/images/Bis ungu.png';
                           }}
@@ -563,9 +563,9 @@ const handleDeleteTicket = async (ticket) => {
                       </div>
 
                       {/* Middle Section - Trip Details */}
-                      <div className="w-2/4 pl-6 pr-4 flex flex-col">
-                        <div className="flex items-center mb-3">
-                          <h3 className="text-lg font-semibold text-black mr-3">
+                      <div className="w-full md:w-2/4 px-0 md:px-6 mb-4 md:mb-0 flex flex-col">
+                        <div className="flex flex-col sm:flex-row sm:items-center mb-3">
+                          <h3 className="text-lg font-semibold text-black mr-0 sm:mr-3 mb-2 sm:mb-0">
                             {ticket.waktu_keberangkatan ? 
                               new Date(ticket.waktu_keberangkatan).toLocaleDateString('id-ID', {
                                 weekday: 'long',
@@ -578,7 +578,7 @@ const handleDeleteTicket = async (ticket) => {
                           </h3>
                           
                           {/* Status Badge */}
-                          <div className={`flex items-center text-xs px-3 py-1 rounded-full font-medium ${statusInfo.className}`}>
+                          <div className={`flex items-center text-xs px-3 py-1 rounded-full font-medium ${statusInfo.className} w-fit`}>
                             {statusInfo.icon}
                             <span className="ml-1">{statusInfo.text}</span>
                           </div>
@@ -639,7 +639,7 @@ const handleDeleteTicket = async (ticket) => {
                       </div>
 
                       {/* Right Section - Booking Info */}
-                      <div className="w-1/4 flex flex-col justify-between pl-4">
+                      <div className="w-full md:w-1/4 flex flex-col justify-between pl-0 md:pl-4 border-t md:border-t-0 pt-4 md:pt-0 mt-4 md:mt-0">
                         <div>
                           {/* Booking Code */}
                           <div className="bg-purple-100 rounded-lg p-3 mb-4">
@@ -681,7 +681,6 @@ const handleDeleteTicket = async (ticket) => {
                           )}
                         </div>
                         
-                        {/* Continue Payment Button */}
                         {/* Action Buttons */}
                         <div className="space-y-2">
                           {/* Continue Payment Button */}
