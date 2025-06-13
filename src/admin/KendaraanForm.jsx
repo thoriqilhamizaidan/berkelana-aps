@@ -9,6 +9,7 @@ const fasilitasOptions = [
 
 const tipeArmadaOptions = ['Bus', 'Shuttle'];
 const formatKursiOptions = ['2-2', '3-1'];
+const kapasitasKursiOptions = [12, 16, 20, 24, 28, 32, 36, 40];
 
 const initialFormData = {
   tipeArmada: '',
@@ -123,9 +124,7 @@ const KendaraanForm = ({
     if (!formData.nomorKendaraan) newErrors.nomorKendaraan = 'Nomor kendaraan harus diisi';
     if (!formData.formatKursi) newErrors.formatKursi = 'Format kursi harus dipilih';
     if (!formData.kapasitasKursi) {
-      newErrors.kapasitasKursi = 'Kapasitas kursi harus diisi';
-    } else if (isNaN(formData.kapasitasKursi) || parseInt(formData.kapasitasKursi) < 1) {
-      newErrors.kapasitasKursi = 'Kapasitas kursi harus berupa angka yang valid';
+      newErrors.kapasitasKursi = 'Kapasitas kursi harus dipilih';
     }
     if (!formData.namaKondektur) newErrors.namaKondektur = 'Nama kondektur harus diisi';
     if (!formData.nomorKondektur) newErrors.nomorKondektur = 'Nomor kondektur harus diisi';
@@ -338,18 +337,20 @@ const KendaraanForm = ({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Kapasitas Kursi <span className="text-red-500">*</span>
                 </label>
-                <input 
-                  type="number" 
+                <select
                   name="kapasitasKursi"
                   value={formData.kapasitasKursi}
                   onChange={handleInputChange}
-                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white ${
                     errors.kapasitasKursi ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="30"
-                  min="1"
                   required
-                />
+                >
+                  <option value="">Pilih kapasitas kursi</option>
+                  {kapasitasKursiOptions.map(kapasitas => (
+                    <option key={kapasitas} value={kapasitas}>{kapasitas}</option>
+                  ))}
+                </select>
                 <ErrorMessage error={errors.kapasitasKursi} />
               </div>
 

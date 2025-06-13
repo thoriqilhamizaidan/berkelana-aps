@@ -13,7 +13,7 @@ const Pemesanan2 = () => {
   const [passengerSeats, setPassengerSeats] = useState({});
   const [passengerGenders, setPassengerGenders] = useState({});
   const [activePassenger, setActivePassenger] = useState(null);
-  const [bookedSeats, setBookedSeats] = useState([]);
+  const [bookedSeats, setBookedSeats] = useState({});
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
   
@@ -24,54 +24,59 @@ const Pemesanan2 = () => {
     formData?.namaPenumpang3
   ].filter(Boolean).length;
   
-  // ... existing code ...
-
-// Ubah state seatData menjadi seperti ini
-const [seatData, setSeatData] = useState({
-  rows: 7, // Nilai default
-  cols: 4, // Nilai default
-  seatMap: {
-    'A': 0,
-    'B': 1,
-    'C': 2,
-    'D': 3
-  }
-});
-
-// Tambahkan useEffect untuk mengupdate seatData berdasarkan kapasitas kursi
-useEffect(() => {
-  if (ticket?.kendaraan?.kapasitas_kursi && ticket?.kendaraan?.format_kursi) {
-    const formatKursi = ticket.kendaraan.format_kursi; // Misalnya "2-2"
-    const kapasitasKursi = ticket.kendaraan.kapasitas_kursi;
-    
-    // Parse format kursi untuk mendapatkan jumlah kolom
-    const formatParts = formatKursi.split('-');
-    const totalCols = formatParts.reduce((sum, part) => sum + parseInt(part), 0);
-    
-    // Hitung jumlah baris berdasarkan kapasitas dan format
-    const calculatedRows = Math.ceil(kapasitasKursi / totalCols);
-    
-    console.log(`Menyesuaikan layout kursi: ${calculatedRows} baris x ${totalCols} kolom (total: ${kapasitasKursi} kursi)`);
-    
-    // Update seatData
-    setSeatData(prev => ({
-      ...prev,
-      rows: calculatedRows,
-      cols: totalCols
-    }));
-  }
-}, [ticket]);
-
-// ... existing code ...
+  // Ubah state seatData menjadi seperti ini
+  const [seatData, setSeatData] = useState({
+    rows: 7, // Nilai default
+    cols: 4, // Nilai default
+    seatMap: {
+      'A': 0,
+      'B': 1,
+      'C': 2,
+      'D': 3
+    }
+  });
   
+  // Tambahkan useEffect untuk mengupdate seatData berdasarkan kapasitas kursi
+  useEffect(() => {
+    if (ticket?.kendaraan?.kapasitas_kursi && ticket?.kendaraan?.format_kursi) {
+      const formatKursi = ticket.kendaraan.format_kursi; // Misalnya "2-2"
+      const kapasitasKursi = ticket.kendaraan.kapasitas_kursi;
+      
+      // Parse format kursi untuk mendapatkan jumlah kolom
+      const formatParts = formatKursi.split('-');
+      const totalCols = formatParts.reduce((sum, part) => sum + parseInt(part), 0);
+      
+      // Hitung jumlah baris berdasarkan kapasitas dan format
+      const calculatedRows = Math.ceil(kapasitasKursi / totalCols);
+      
+      console.log(`Menyesuaikan layout kursi: ${calculatedRows} baris x ${totalCols} kolom (total: ${kapasitasKursi} kursi)`);
+      
+      // Update seatData
+      setSeatData(prev => ({
+        ...prev,
+        rows: calculatedRows,
+        cols: totalCols
+      }));
+    }
+  }, [ticket]);
+  
+  // Tambahkan useEffect untuk mengambil data kursi yang sudah dipesan dan data pengguna
   useEffect(() => {
     const fetchBookedSeats = async () => {
       try {
         setLoading(true);
         
-        // Ambil data user yang login
-        const userData = await getCurrentUser();
-        setCurrentUser(userData);
+        // Ambil data user yang login dari localStorage
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          setCurrentUser(parsedUser);
+          console.log('✅ User data loaded from localStorage:', parsedUser);
+        } else {
+          // Default user jika tidak ada data
+          setCurrentUser({ gender: 'Laki-laki' });
+          console.log('⚠️ No user data found in localStorage, using default');
+        }
         
         // Ambil data kursi yang sudah DIBAYAR (status = 'paid') untuk jadwal ini
         const jadwalId = ticket?.id_jadwal || ticket?.id || ticket?.jadwal?.id_jadwal;
@@ -116,32 +121,8 @@ useEffect(() => {
     fetchBookedSeats();
   }, [ticket]);
 
-  const getCurrentUser = async () => {
-    try {
-      // Coba ambil dari localStorage terlebih dahulu
-      const userFromStorage = localStorage.getItem('currentUser');
-      if (userFromStorage) {
-        return JSON.parse(userFromStorage);
-      }
-      
-      // Coba ambil dari session storage
-      const userFromSession = sessionStorage.getItem('user');
-      if (userFromSession) {
-        return JSON.parse(userFromSession);
-      }
-      
-      // Default user jika tidak ada data
-      return {
-        gender: 'Laki-laki' // default
-      };
-    } catch (error) {
-      console.error('❌ Error getting current user:', error);
-      return { gender: 'Laki-laki' }; // default
-    }
-  };
-
+  // Initialize passenger seats mapping and gender mapping
   useEffect(() => {
-    // Initialize passenger seats mapping and gender mapping
     if (passengerCount > 0) {
       const initialMapping = {};
       const genderMapping = {};
@@ -168,7 +149,103 @@ useEffect(() => {
       }
     }
   }, [formData, passengerCount]);
+  
+  // Get the passenger who selected this seat (if any)
+  const getPassengerForSeat = (seatId) => {
+    for (const [passenger, seat] of Object.entries(passengerSeats)) {
+      if (seat === seatId) {
+        return passenger;
+      }
+    }
+    return null;
+  };
+  
+  // Get gender-based color for a selected seat
+  const getGenderColor = (gender) => {
+    return gender === 'Perempuan' ? 'bg-pink-500' : 'bg-blue-500';
+  };
+  
+  // Get information about reserved seat occupants (for tooltip or display)
+  const getReservedSeatInfo = (seatId) => {
+    if (bookedSeats[seatId]) {
+      const gender = bookedSeats[seatId];
+      // Tampilkan info gender hanya untuk user perempuan
+      if (currentUser?.gender === 'Perempuan') {
+        return `Kursi telah dipesan (${gender})`;
+      } else {
+        return 'Kursi telah dipesan';
+      }
+    }
+    return '';
+  };
+  
+  // Get seat color based on gender and booking status
+  const getSeatColor = (rowIndex, colIndex) => {
+    const seatId = getSeatId(rowIndex, colIndex);
+    
+    // If the seat is booked from database
+    if (bookedSeats[seatId]) {
+      const bookedGender = bookedSeats[seatId];
+      
+      // Jika pemesan adalah laki-laki, semua kursi yang sudah dipesan ditampilkan dengan warna abu-abu gelap
+      if (currentUser?.gender === 'Laki-laki') {
+        return `bg-gray-600 text-white opacity-70 cursor-not-allowed`; // Warna abu-abu gelap
+      } 
+      // Jika pemesan adalah perempuan, kursi yang sudah dipesan oleh laki-laki ditampilkan biru, perempuan ditampilkan pink
+      else if (currentUser?.gender === 'Perempuan') {
+        const genderColor = bookedGender === 'Perempuan' ? 'bg-pink-400' : 'bg-blue-400';
+        return `${genderColor} text-white opacity-70 cursor-not-allowed`;
+      }
+      // Default fallback
+      return `bg-gray-600 text-white opacity-70 cursor-not-allowed`;
+    }
+    
+    // Get the passenger who has this seat in current session (if any)
+    const seatOwner = getPassengerForSeat(seatId);
+    
+    if (selectedSeats.includes(seatId) && seatOwner) {
+      // If this is active passenger's seat, add a highlight border
+      const isActiveSeat = seatOwner === activePassenger;
+      const borderClass = isActiveSeat ? 'ring-2 ring-yellow-400' : '';
+      
+      // Use gender-specific color for selected seats
+      const gender = passengerGenders[seatOwner];
+      return `${getGenderColor(gender)} text-white ${borderClass} cursor-pointer`; 
+    }
+    
+    return 'bg-gray-200 hover:bg-gray-300 cursor-pointer'; // Available seat
+  };
+  
+  const getSeatId = (rowIndex, colIndex) => {
+    const row = rowIndex + 1;
+    const col = Object.keys(seatData.seatMap).find(key => seatData.seatMap[key] === colIndex);
+    return `${row}${col}`;
+  };
+  
+  const calculateTotal = () => {
+    const ticketPrice = ticket?.harga || 150000; // Ambil harga dari database
+    const baseTotal = ticketPrice * passengerCount;
+    const adminFee = 10000;
+    return baseTotal + adminFee;
+  };
 
+  // Get passenger list item class
+  const getPassengerItemClass = (passenger) => {
+    const isActive = passenger === activePassenger;
+    const hasSeat = passengerSeats[passenger] !== null;
+    
+    let baseClass = "p-3 rounded-lg cursor-pointer flex justify-between items-center";
+    
+    if (isActive) {
+      return `${baseClass} bg-purple-100 border-2 border-purple-500`;
+    } else if (hasSeat) {
+      return `${baseClass} bg-gray-100`;
+    }
+    
+    return `${baseClass} bg-white border border-gray-200`;
+  };
+
+  // Tambahkan fungsi handleSeatClick untuk menangani klik pada kursi
   const handleSeatClick = (seatId) => {
     // If seat is already booked (PAID) from database, do nothing
     if (bookedSeats[seatId]) {
@@ -217,11 +294,13 @@ useEffect(() => {
     console.log(`✅ Seat ${seatId} assigned to ${activePassenger}`);
   };
   
+  // Tambahkan fungsi handleSelectPassenger untuk menangani pemilihan penumpang
   const handleSelectPassenger = (passenger) => {
     setActivePassenger(passenger);
     console.log(`Active passenger changed to: ${passenger}`);
   };
   
+  // Tambahkan fungsi handleSubmit untuk menangani pengiriman data
   const handleSubmit = async () => {
     // Validasi dasar
     const allSeatsAssigned = Object.values(passengerSeats).every(seat => seat !== null);
@@ -347,90 +426,6 @@ useEffect(() => {
       console.error('❌ Error processing seat selection:', error);
       alert('Gagal menyimpan pilihan kursi. Silakan coba lagi.');
     }
-  };
-  
-  // Get the passenger who selected this seat (if any)
-  const getPassengerForSeat = (seatId) => {
-    for (const [passenger, seat] of Object.entries(passengerSeats)) {
-      if (seat === seatId) {
-        return passenger;
-      }
-    }
-    return null;
-  };
-  
-  // Get gender-based color for a selected seat
-  const getGenderColor = (gender) => {
-    return gender === 'Perempuan' ? 'bg-pink-500' : 'bg-blue-500';
-  };
-  
-  const getSeatColor = (rowIndex, colIndex) => {
-    const seatId = getSeatId(rowIndex, colIndex);
-    
-    // If the seat is booked from database
-    if (bookedSeats[seatId]) {
-      const bookedGender = bookedSeats[seatId];
-      const genderColor = bookedGender === 'Perempuan' ? 'bg-pink-400' : 'bg-blue-400';
-      return `${genderColor} text-white opacity-70 cursor-not-allowed`; // Booked seat with gender color
-    }
-    
-    // Get the passenger who has this seat in current session (if any)
-    const seatOwner = getPassengerForSeat(seatId);
-    
-    if (selectedSeats.includes(seatId) && seatOwner) {
-      // If this is active passenger's seat, add a highlight border
-      const isActiveSeat = seatOwner === activePassenger;
-      const borderClass = isActiveSeat ? 'ring-2 ring-yellow-400' : '';
-      
-      // Use gender-specific color for selected seats
-      const gender = passengerGenders[seatOwner];
-      return `${getGenderColor(gender)} text-white ${borderClass} cursor-pointer`; 
-    }
-    
-    return 'bg-gray-200 hover:bg-gray-300 cursor-pointer'; // Available seat
-  };
-  
-  const getSeatId = (rowIndex, colIndex) => {
-    const row = rowIndex + 1;
-    const col = Object.keys(seatData.seatMap).find(key => seatData.seatMap[key] === colIndex);
-    return `${row}${col}`;
-  };
-  
-  const calculateTotal = () => {
-    const ticketPrice = ticket?.harga || 150000; // Ambil harga dari database
-    const baseTotal = ticketPrice * passengerCount;
-    const adminFee = 10000;
-    return baseTotal + adminFee;
-  };
-
-  // Get passenger list item class
-  const getPassengerItemClass = (passenger) => {
-    const isActive = passenger === activePassenger;
-    const hasSeat = passengerSeats[passenger] !== null;
-    
-    let baseClass = "p-3 rounded-lg cursor-pointer flex justify-between items-center";
-    
-    if (isActive) {
-      return `${baseClass} bg-purple-100 border-2 border-purple-500`;
-    } else if (hasSeat) {
-      return `${baseClass} bg-gray-100`;
-    }
-    
-    return `${baseClass} bg-white border border-gray-200`;
-  };
-
-  // Get information about reserved seat occupants (for tooltip or display)
-  const getReservedSeatInfo = (seatId) => {
-    if (bookedSeats[seatId]) {
-      const gender = bookedSeats[seatId];
-      // Tampilkan info gender hanya untuk user perempuan
-      if (currentUser?.gender === 'Perempuan') {
-        return `Kursi telah dipesan (${gender})`;
-      } else {
-        return 'Kursi telah dipesan';
-      }
-    }
-    return '';
   };
 
   return (
@@ -583,7 +578,7 @@ useEffect(() => {
                 ) : (
                   // Untuk user laki-laki, hanya tampilkan "sudah dipesan" tanpa detail gender
                   <div className="flex items-center">
-                    <div className="w-4 h-4 bg-gray-400 opacity-70 mr-2"></div>
+                    <div className="w-4 h-4 bg-gray-600 opacity-70 mr-2"></div>
                     <span>Sudah dipesan</span>
                   </div>
                 )}
