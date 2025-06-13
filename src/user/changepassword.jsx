@@ -143,7 +143,7 @@ const ChangePassword = () => {
                 className="focus:outline-none ml-2 p-1"
               >
                 <FontAwesomeIcon
-                  icon={showCurrentPassword ? faEyeSlash : faEye}
+                  icon={showCurrentPassword ? faEye : faEyeSlash}
                   className="text-gray-400 text-sm sm:text-base"
                 />
               </button>
@@ -176,7 +176,7 @@ const ChangePassword = () => {
                 className="focus:outline-none ml-2 p-1"
               >
                 <FontAwesomeIcon
-                  icon={showNewPassword ? faEyeSlash : faEye}
+                  icon={showNewPassword ? faEye : faEyeSlash}
                   className="text-gray-400 text-sm sm:text-base"
                 />
               </button>
@@ -209,7 +209,7 @@ const ChangePassword = () => {
                 className="focus:outline-none ml-2 p-1"
               >
                 <FontAwesomeIcon
-                  icon={showConfirmPassword ? faEyeSlash : faEye}
+                  icon={showConfirmPassword ? faEye : faEyeSlash}
                   className="text-gray-400 text-sm sm:text-base"
                 />
               </button>

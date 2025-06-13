@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope, faLock } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faLock, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from './context/AuthContext.jsx';
 import authService from '../services/authService'; // Import langsung authService
 
@@ -17,6 +17,7 @@ const LoginForm = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Check if coming from register or other page with success message
   useEffect(() => {
@@ -177,7 +178,7 @@ const LoginForm = () => {
                   <FontAwesomeIcon icon={faLock} className="text-gray-400 mr-2 sm:mr-3 text-sm sm:text-base" />
                   <input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     className="w-full p-3 sm:p-4 text-base sm:text-lg border-none bg-transparent placeholder:text-gray-400 focus:outline-none"
                     placeholder="Masukkan kata sandi"
                     value={formData.password}
@@ -185,6 +186,17 @@ const LoginForm = () => {
                     required
                     disabled={loading}
                   />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="focus:outline-none ml-2 p-1"
+                  >
+                    <FontAwesomeIcon
+                      icon={showPassword ? faEye : faEyeSlash}
+                      className="text-gray-400 text-sm sm:text-base"
+                    />
+                  </button>
                 </div>
               </div>
 

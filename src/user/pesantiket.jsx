@@ -133,6 +133,13 @@ useEffect(() => {
       const response = await jadwalService.getAllJadwal();
       const jadwalData = response?.data?.data || response?.data || [];
       console.log('Fetched jadwal data:', jadwalData);
+      
+      if (!jadwalData || jadwalData.length === 0) {
+        console.log('No jadwal data found');
+        setTicketResults([]);
+        setLoading(false);
+        return;
+      }
   
       // Sort by price and take top 5
       const sortedJadwal = jadwalData
@@ -140,11 +147,17 @@ useEffect(() => {
         .slice(0, 5);
       console.log('Sorted jadwal (top 5):', sortedJadwal);
 
-      // Transform using the same function as search (ini yang penting!)
+      // Transform using the same function as search
       const transformedResults = await transformJadwalData(sortedJadwal);
       console.log('Transformed results for best schedules:', transformedResults);
       
-      setTicketResults(transformedResults);
+      if (transformedResults && transformedResults.length > 0) {
+        setTicketResults(transformedResults);
+        console.log('Ticket results set successfully:', transformedResults.length);
+      } else {
+        console.log('No transformed results available');
+        setTicketResults([]);
+      }
 
     } catch (error) {
       console.error('Error fetching best schedules:', error);
@@ -341,9 +354,15 @@ const handleSearch = async () => {
 };
 
   // Pagination logic
+  // Tambahkan ini di bagian atas komponen, setelah state declarations
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = ticketResults.slice(indexOfFirstItem, indexOfLastItem);
+  
+  // Tambahkan log untuk debugging
+  useEffect(() => {
+    console.log('Current items to display:', currentItems);
+  }, [currentItems]);
   const totalPages = Math.ceil(ticketResults.length / itemsPerPage);
 
   const handlePageChange = (pageNumber) => {
@@ -490,48 +509,48 @@ const DetailPopup = ({ ticket, onClose }) => {
       className={`fixed inset-0 flex items-center justify-center z-50 backdrop-blur-md bg-black/30 transition-opacity duration-300 ${animationState === 'entering' ? 'animate-fadeIn' : animationState === 'exiting' ? 'animate-fadeOut' : ''}`}
       onClick={handleBackdropClick}
     >
-      <div className={`bg-white rounded-lg w-full max-w-3xl mx-4 overflow-hidden shadow-xl transition-all duration-300 ${animationState === 'entering' ? 'animate-popIn' : animationState === 'exiting' ? 'animate-popOut' : ''}`}>
-        <div className="p-4 flex justify-between items-center bg-white border-b">
-          <h2 className="text-xl font-bold">Detail Armada</h2>
+      <div className={`bg-white rounded-lg w-full max-w-3xl mx-4 overflow-hidden shadow-xl transition-all duration-300 ${animationState === 'entering' ? 'animate-popIn' : animationState === 'exiting' ? 'animate-popOut' : ''} scale-[0.85] sm:scale-100`}>
+        <div className="p-3 sm:p-4 flex justify-between items-center bg-white border-b">
+          <h2 className="text-lg sm:text-xl font-bold">Detail Armada</h2>
           <button 
             onClick={onClose}
             className="text-gray-700 hover:text-gray-900 hover:rotate-90 transition-transform duration-300"
           >
-            <X size={24} />
+            <X size={20} sm:size={24} />
           </button>
         </div>
 
-        <div className="p-6 bg-gray-50">
+        <div className="p-4 sm:p-6 bg-gray-50">
           <div className="flex flex-col md:flex-row">
             <div className="md:w-1/2">
-              <div className="mb-6">
-                <p className="font-bold">Tipe Bus: {ticket.tipe_armada}</p>
-                <p className="font-bold">Kapasitas Kursi: {ticket.kapasitas_kursi}</p>
-                <p className="font-bold">Format Kursi: {ticket.format_kursi}</p>
-                <p className="font-bold">Nomor Armada: {ticket.nomor_armada}</p>
+              <div className="mb-4 sm:mb-6">
+                <p className="font-bold text-sm sm:text-base">Tipe Bus: {ticket.tipe_armada}</p>
+                <p className="font-bold text-sm sm:text-base">Kapasitas Kursi: {ticket.kapasitas_kursi}</p>
+                <p className="font-bold text-sm sm:text-base">Format Kursi: {ticket.format_kursi}</p>
+                <p className="font-bold text-sm sm:text-base">Nomor Armada: {ticket.nomor_armada}</p>
               </div>
               <div>
-                <p className="font-bold mb-2">Fasilitas:</p>
-                <div className="grid grid-cols-2 gap-y-2">
+                <p className="font-bold mb-2 text-sm sm:text-base">Fasilitas:</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2">
                   {fasilitas.length > 0 ? (
                     fasilitas.map((f, index) => (
                       <div key={index} className="flex items-center">
                         <Icon 
                           icon={getFacilityIcon(f)} 
-                          className="w-5 h-5 mr-2" 
+                          className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" 
                           style={{ color: '#9966FF' }}
                         />
-                        <span>{f}</span>
+                        <span className="text-xs sm:text-sm">{f}</span>
                       </div>
                     ))
                   ) : (
                     <div className="flex items-center col-span-2">
                       <Icon 
                         icon="material-symbols:info" 
-                        className="w-5 h-5 mr-2" 
+                        className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" 
                         style={{ color: '#9966FF' }}
                       />
-                      <span className="text-gray-500">Tidak ada fasilitas tersedia</span>
+                      <span className="text-gray-500 text-xs sm:text-sm">Tidak ada fasilitas tersedia</span>
                     </div>
                   )}
                 </div>
@@ -542,7 +561,7 @@ const DetailPopup = ({ ticket, onClose }) => {
               <img 
                 src={vehicleImageUrl || "/images/Detail Armada.png"} 
                 alt="Bus interior" 
-                className="w-full h-64 object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 transition-transform"
+                className="w-full h-48 sm:h-64 object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 transition-transform"
                 onError={(e) => {
                   e.target.onerror = null; // Prevent infinite loop
                   e.target.src = "/images/Detail Armada.png"; // Fallback image
@@ -551,9 +570,9 @@ const DetailPopup = ({ ticket, onClose }) => {
             </div>
           </div>
 
-          <div className="mt-6 border-t pt-6">
-            <h3 className="text-xl font-bold mb-4">Informasi Tiket</h3>
-            <ul className="list-disc pl-6 space-y-2">
+          <div className="mt-4 sm:mt-6 border-t pt-4 sm:pt-6">
+            <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-4">Informasi Tiket</h3>
+            <ul className="list-disc pl-4 sm:pl-6 space-y-1 sm:space-y-2 text-xs sm:text-sm">
               {[
                 'Sesampainya di titik keberangkatan, Anda harus menunjukkan e-tiket ke staf bus dan mendapatkan tiket kertas dari operator',
                 'E-tiket Berkelana akan terbit setelah pembayaran anda di konfirmasi',
@@ -764,7 +783,7 @@ const DetailPopup = ({ ticket, onClose }) => {
                         <div className="flex justify-end mt-2">
                           <button 
                             onClick={() => handleViewDetail(ticket)}
-                            className="text-purple-700 text-sm hover:text-purple-900 hover:underline focus:outline-none transition-colors duration-200"
+                            className="text-purple-700 text-xs sm:text-sm hover:text-purple-900 hover:underline focus:outline-none transition-colors duration-200 px-2 py-1 sm:px-3 sm:py-1.5 border border-purple-700 rounded-md sm:rounded-lg"
                           >
                             View Detail
                           </button>

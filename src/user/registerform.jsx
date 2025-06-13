@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import authService from '../services/authService';
 
 const RegisterForm = () => {
@@ -18,7 +20,9 @@ const RegisterForm = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -39,8 +43,8 @@ const RegisterForm = () => {
     }
 
     // Validate password length
-    if (formData.password.length < 6) {
-      setError('Password minimal 6 karakter');
+    if (formData.password.length < 8) {
+      setError('Password minimal 8 karakter');
       return;
     }
 
@@ -222,22 +226,29 @@ const RegisterForm = () => {
               </div>
               
               {/* Sandi Input */}
-              <div>
+              <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
-                  placeholder="Masukkan kata sandi (min. 6 karakter)"
+                  placeholder="Masukkan kata sandi (min. 8 karakter)"
                   className="w-full p-3 text-base sm:text-lg border-2 border-purple-300 rounded-xl bg-white placeholder:text-gray-400 focus:outline-none focus:border-purple-500 transition"
                   value={formData.password}
                   onChange={handleChange}
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 focus:outline-none"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  <FontAwesomeIcon icon={showPassword ? faEye : faEyeSlash} />
+                </button>
               </div>
               
               {/* Konfirmasi Sandi Input */}
-              <div>
+              <div className="relative">
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
                   placeholder="Konfirmasi kata sandi"
                   className="w-full p-3 text-base sm:text-lg border-2 border-purple-300 rounded-xl bg-white placeholder:text-gray-400 focus:outline-none focus:border-purple-500 transition"
@@ -245,6 +256,13 @@ const RegisterForm = () => {
                   onChange={handleChange}
                   required
                 />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 focus:outline-none"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  <FontAwesomeIcon icon={showConfirmPassword ? faEye : faEyeSlash} />
+                </button>
               </div>
               
               {/* Register Button */}

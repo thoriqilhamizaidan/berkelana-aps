@@ -305,8 +305,8 @@ const getJadwalByFilter = async (req, res) => {
     // Include kendaraan dengan filter tipe_armada jika ada
     const include = [{
       model: Kendaraan,
-      as: 'Kendaraan', // ✅ TAMBAHKAN ALIAS
-      attributes: ['id_kendaraan', 'tipe_armada', 'nomor_armada', 'nomor_kendaraan', 'format_kursi', 'kapasitas_kursi', 'fasilitas'],
+      as: 'Kendaraan',
+      attributes: ['id_kendaraan', 'tipe_armada', 'nomor_armada', 'nomor_kendaraan', 'format_kursi', 'kapasitas_kursi', 'fasilitas', 'gambar'], // Tambahkan 'gambar' di sini
       where: tipe_armada ? { tipe_armada } : {},
       required: true
     }];
