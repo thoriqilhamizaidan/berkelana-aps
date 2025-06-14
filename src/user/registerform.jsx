@@ -103,13 +103,15 @@ const RegisterForm = () => {
     >
       <div className="flex flex-col lg:flex-row w-full max-w-screen-xl gap-8 lg:gap-0">
         {/* Left Side: Logo and Tagline */}
-        <div className="flex-1 flex items-center justify-center lg:block hidden">
+        <div className="flex-1 flex items-center justify-center mb-6 lg:mb-0">
           <div className="text-center text-white">
-            <img
-              src="/images/berkelana-logo-white.png"
-              alt="Logo"
-              className="max-w-full h-auto mx-auto"
-            />
+            <Link to="/" className="inline-block hover:opacity-80 transition-opacity duration-300">
+              <img
+                src="/images/berkelana-logo-white.png"
+                alt="Logo Berkelana"
+                className="max-w-full h-auto cursor-pointer max-h-20 sm:max-h-24 lg:max-h-none"
+              />
+            </Link>
           </div>
         </div>
         

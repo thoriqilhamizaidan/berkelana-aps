@@ -17,6 +17,10 @@ const Artikel = () => {
   const [error, setError] = useState(null);
   const carouselRef = useRef(null);
   const navigate = useNavigate();
+  
+  // State untuk pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(6); // Maksimal 6 artikel per halaman
 
   // Mengambil data artikel saat komponen dimuat
   useEffect(() => {
@@ -148,17 +152,27 @@ const Artikel = () => {
       
     } else if (activeTab === 'terbaru') {
       // Sort by creation date - newest first
-      return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    } else if (activeTab === 'destinasi') {
-      // Filter by category 'Destinasi'
-      return filtered.filter(article => 
-        article.kategori && article.kategori.toLowerCase() === 'destinasi'
+      return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 9);
+    } else if (activeTab === 'destinasi' || activeTab === 'inspirasi') {
+      // Filter by category 'Destinasi' atau 'Inspirasi'
+      const categoryFiltered = filtered.filter(article => 
+        article.kategori && article.kategori.toLowerCase() === activeTab.toLowerCase()
       );
-    } else if (activeTab === 'inspirasi') {
-      // Filter by category 'Inspirasi'
-      return filtered.filter(article => 
-        article.kategori && article.kategori.toLowerCase() === 'inspirasi'
-      );
+      
+      // Hitung total halaman
+      const totalPages = Math.ceil(categoryFiltered.length / itemsPerPage);
+      
+      // Reset ke halaman 1 jika halaman saat ini melebihi total halaman
+      if (currentPage > totalPages && totalPages > 0) {
+        setCurrentPage(1);
+      }
+      
+      // Hitung indeks awal dan akhir untuk pagination
+      const indexOfLastItem = currentPage * itemsPerPage;
+      const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+      
+      // Potong array sesuai dengan halaman saat ini
+      return categoryFiltered.slice(indexOfFirstItem, indexOfLastItem);
     }
     return filtered;
   };
@@ -167,6 +181,7 @@ const Artikel = () => {
   const handleTabChange = (tab) => {
     setActiveTab(tab);
     setExpandedArticle(null); // Reset expanded article when changing tabs
+    setCurrentPage(1); // Reset pagination ke halaman 1 saat ganti tab
     
     // Show destinations content when Destinasi tab is clicked
     if (tab === 'destinasi') {
@@ -174,6 +189,12 @@ const Artikel = () => {
     } else {
       setShowDestinations(false);
     }
+  };
+  
+  // Function untuk menangani perubahan halaman pagination
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Function to handle article click (expand/collapse)
@@ -399,7 +420,7 @@ const navigateToArticleDetail = async (articleId) => {
         )}
         
         {/* Articles Content */}
-        <div className="bg-gray-200 rounded-lg p-6">
+        <div className="rounded-lg p-6">
           {filteredArticles.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-500">
@@ -413,15 +434,6 @@ const navigateToArticleDetail = async (articleId) => {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Tambahkan info khusus untuk tab populer */}
-              {activeTab === 'populer' && (
-                <div className="mb-4 text-center">
-                  <p className="text-gray-600 text-sm">
-                    Menampilkan {filteredArticles.length} artikel paling populer (berdasarkan jumlah pembaca)
-                  </p>
-                </div>
-              )}
-
               {/* Jika ada artikel yang diperluas, tampilkan hanya artikel tersebut */}
               {expandedArticle ? (
                 <div>
@@ -502,10 +514,16 @@ const navigateToArticleDetail = async (articleId) => {
                <div>
   {/* Desktop Grid - 3 columns */}
   <div className="hidden md:grid md:grid-cols-3 gap-6">
-    {filteredArticles.map((article) => (
+    {filteredArticles.length === 0 && (activeTab === 'destinasi' || activeTab === 'inspirasi') ? (
+      <div className="col-span-3 text-center py-8">
+        <p className="text-gray-500">
+          Tidak ada artikel {activeTab} yang ditemukan.
+        </p>
+      </div>
+    ) : filteredArticles.slice(0, 3).map((article) => (
       <div 
         key={article.id_artikel} 
-        className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+        className="rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
         onClick={() => navigateToArticleDetail(article.id_artikel)}
       >
         <div className={`h-48 overflow-hidden border-2 border-gray-300 rounded-t-lg`}>
@@ -563,10 +581,10 @@ const navigateToArticleDetail = async (articleId) => {
   {/* Mobile Horizontal Scroll */}
   <div className="md:hidden">
     <div className="flex overflow-x-auto space-x-4 pb-6 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-      {filteredArticles.map((article) => (
+      {filteredArticles.slice(0, 3).map((article) => (
         <div 
           key={article.id_artikel} 
-          className="bg-gray-100 rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 flex-shrink-0 w-72"
+          className="rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 flex-shrink-0 w-72"
           onClick={() => navigateToArticleDetail(article.id_artikel)}
         >
           <div className={`h-40 overflow-hidden border-2 border-gray-300 rounded-t-lg`}>
@@ -628,6 +646,57 @@ const navigateToArticleDetail = async (articleId) => {
       ))}
     </div>
   </div>
+  
+  {/* Pagination untuk tab Destinasi dan Inspirasi */}
+  {(activeTab === 'destinasi' || activeTab === 'inspirasi') && (
+    <div className="mt-8 flex justify-center">
+      <div className="flex space-x-2">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`px-3 py-1 rounded-md ${currentPage === 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
+        >
+          <ChevronLeft size={18} />
+        </button>
+        
+        {/* Hitung total halaman */}
+        {(() => {
+          const categoryArticles = articles.filter(article => 
+            article.kategori && article.kategori.toLowerCase() === activeTab.toLowerCase()
+          );
+          const totalPages = Math.ceil(categoryArticles.length / itemsPerPage);
+          
+          return Array.from({ length: totalPages }, (_, i) => i + 1).map(pageNumber => (
+            <button
+              key={pageNumber}
+              onClick={() => handlePageChange(pageNumber)}
+              className={`px-3 py-1 rounded-md ${pageNumber === currentPage ? 'bg-purple-600 text-white' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
+            >
+              {pageNumber}
+            </button>
+          ));
+        })()} 
+        
+        {/* Hitung total halaman untuk tombol Next */}
+        {(() => {
+          const categoryArticles = articles.filter(article => 
+            article.kategori && article.kategori.toLowerCase() === activeTab.toLowerCase()
+          );
+          const totalPages = Math.ceil(categoryArticles.length / itemsPerPage);
+          
+          return (
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className={`px-3 py-1 rounded-md ${currentPage === totalPages || totalPages === 0 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'}`}
+            >
+              <ChevronRight size={18} />
+            </button>
+          );
+        })()}
+      </div>
+    </div>
+  )}
 </div>
                     
                 
@@ -636,6 +705,278 @@ const navigateToArticleDetail = async (articleId) => {
           )}
         </div>
       </div>
+
+      {/* Artikel Destinasi Section */}
+      {activeTab === 'populer' && (
+        <div className="container mx-auto py-8 px-4 sm:px-6">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center">
+              <h2 className="text-xl font-bold">Artikel Destinasi</h2>
+              <ChevronRight size={20} className="ml-2 text-gray-500" />
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 mb-6">Referensi dan pilihan destinasi di bawah ini, selamat!</p>
+          
+          {/* Desktop Grid - 3 columns */}
+          <div className="hidden md:grid md:grid-cols-3 gap-6">
+            {articles
+              .filter(article => article.kategori === 'Destinasi')
+              .slice(0, 3)
+              .map((article) => (
+                <div 
+                  key={article.id_artikel} 
+                  className="rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                  onClick={() => navigateToArticleDetail(article.id_artikel)}
+                >
+                  <div className={`h-48 overflow-hidden border-2 border-gray-300 rounded-t-lg`}>
+                    {article.gambarUrl ? (
+                      <img 
+                        src={article.gambarUrl} 
+                        alt={article.judul} 
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                        <span className="text-gray-500">Tidak ada gambar</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="font-bold flex-1">{article.judul}</h3>
+                      <ChevronDown size={20} className="text-gray-500 ml-2 flex-shrink-0" />
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
+                        {article.authorPhotoUrl ? (
+                          <img src={article.authorPhotoUrl} alt={article.penulis} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-gray-400 flex items-center justify-center">
+                            <User size={16} className="text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{article.penulis}</p>
+                        <p className="text-xs text-gray-600">{article.tanggal}</p>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' :
+                        article.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' :
+                        article.kategori === 'Popular' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {article.kategori || 'Umum'}
+                      </span>
+                      <div className="flex items-center text-xs text-gray-600">
+                        <Eye size={12} className="mr-1" />
+                        <span>{article.jumlah_pembaca || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          {/* Mobile Horizontal Scroll */}
+          <div className="md:hidden">
+            <div className="flex overflow-x-auto space-x-4 pb-6 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {articles
+                .filter(article => article.kategori === 'Destinasi')
+                .slice(0, 3)
+                .map((article) => (
+                  <div 
+                    key={article.id_artikel} 
+                    className="rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 flex-shrink-0 w-72"
+                    onClick={() => navigateToArticleDetail(article.id_artikel)}
+                  >
+                    <div className={`h-40 overflow-hidden border-2 border-gray-300 rounded-t-lg`}>
+                      {article.gambarUrl ? (
+                        <img 
+                          src={article.gambarUrl} 
+                          alt={article.judul} 
+                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                          <span className="text-gray-500 text-sm">Tidak ada gambar</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <h3 className="font-bold text-sm flex-1">{article.judul}</h3>
+                        <ChevronDown size={16} className="text-gray-500 ml-2 flex-shrink-0" />
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-6 h-6 rounded-full overflow-hidden mr-2">
+                          {article.authorPhotoUrl ? (
+                            <img src={article.authorPhotoUrl} alt={article.penulis} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gray-400 flex items-center justify-center">
+                              <User size={12} className="text-white" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium">{article.penulis}</p>
+                          <p className="text-xs text-gray-600">{article.tanggal}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' : article.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' : article.kategori === 'Popular' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {article.kategori || 'Umum'}
+                        </span>
+                        <div className="flex items-center text-xs text-gray-600">
+                          <Eye size={10} className="mr-1" />
+                          <span>{article.jumlah_pembaca || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Artikel Inspirasi Section */}
+      {activeTab === 'populer' && (
+        <div className="container mx-auto py-8 px-4 sm:px-6">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center">
+              <h2 className="text-xl font-bold">Artikel Inspirasi</h2>
+              <ChevronRight size={20} className="ml-2 text-gray-500" />
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 mb-6">Perkaya referensi perjalanan Anda dengan membaca artikel inspirasi berikut.</p>
+          
+          {/* Desktop Grid - 3 columns */}
+          <div className="hidden md:grid md:grid-cols-3 gap-6">
+            {articles
+              .filter(article => article.kategori === 'Inspirasi')
+              .slice(0, 3)
+              .map((article) => (
+                <div 
+                  key={article.id_artikel} 
+                  className="rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                  onClick={() => navigateToArticleDetail(article.id_artikel)}
+                >
+                  <div className={`h-48 overflow-hidden border-2 border-gray-300 rounded-t-lg`}>
+                    {article.gambarUrl ? (
+                      <img 
+                        src={article.gambarUrl} 
+                        alt={article.judul} 
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                        <span className="text-gray-500">Tidak ada gambar</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <div className="flex justify-between items-start mb-4">
+                      <h3 className="font-bold flex-1">{article.judul}</h3>
+                      <ChevronDown size={20} className="text-gray-500 ml-2 flex-shrink-0" />
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 rounded-full overflow-hidden mr-2">
+                        {article.authorPhotoUrl ? (
+                          <img src={article.authorPhotoUrl} alt={article.penulis} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-gray-400 flex items-center justify-center">
+                            <User size={16} className="text-white" />
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{article.penulis}</p>
+                        <p className="text-xs text-gray-600">{article.tanggal}</p>
+                      </div>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' :
+                        article.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' :
+                        article.kategori === 'Popular' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {article.kategori || 'Umum'}
+                      </span>
+                      <div className="flex items-center text-xs text-gray-600">
+                        <Eye size={12} className="mr-1" />
+                        <span>{article.jumlah_pembaca || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+
+          {/* Mobile Horizontal Scroll */}
+          <div className="md:hidden">
+            <div className="flex overflow-x-auto space-x-4 pb-6 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {articles
+                .filter(article => article.kategori === 'Inspirasi')
+                .slice(0, 3)
+                .map((article) => (
+                  <div 
+                    key={article.id_artikel} 
+                    className="rounded-lg overflow-hidden shadow cursor-pointer hover:shadow-lg transition-all duration-300 flex-shrink-0 w-72"
+                    onClick={() => navigateToArticleDetail(article.id_artikel)}
+                  >
+                    <div className={`h-40 overflow-hidden border-2 border-gray-300 rounded-t-lg`}>
+                      {article.gambarUrl ? (
+                        <img 
+                          src={article.gambarUrl} 
+                          alt={article.judul} 
+                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                          <span className="text-gray-500 text-sm">Tidak ada gambar</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <h3 className="font-bold text-sm flex-1">{article.judul}</h3>
+                        <ChevronDown size={16} className="text-gray-500 ml-2 flex-shrink-0" />
+                      </div>
+                      <div className="flex items-center">
+                        <div className="w-6 h-6 rounded-full overflow-hidden mr-2">
+                          {article.authorPhotoUrl ? (
+                            <img src={article.authorPhotoUrl} alt={article.penulis} className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full bg-gray-400 flex items-center justify-center">
+                              <User size={12} className="text-white" />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium">{article.penulis}</p>
+                          <p className="text-xs text-gray-600">{article.tanggal}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${article.kategori === 'Destinasi' ? 'bg-blue-100 text-blue-800' : article.kategori === 'Inspirasi' ? 'bg-green-100 text-green-800' : article.kategori === 'Popular' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'}`}>
+                          {article.kategori || 'Umum'}
+                        </span>
+                        <div className="flex items-center text-xs text-gray-600">
+                          <Eye size={10} className="mr-1" />
+                          <span>{article.jumlah_pembaca || 0}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Banner Section dengan Purple Background above Footer */}
       <div className="w-full bg-purple1 py-12">
