@@ -5,7 +5,7 @@ export const DeleteModal = ({ show, onClose, onConfirm }) => {
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 flex justify-center items-center bg-black/50 z-50 p-4">
+    <div className="fixed inset-0 flex justify-center items-center bg-black/30 backdrop-blur-sm z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
         <div className="p-4 sm:p-6 text-center">
           <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">

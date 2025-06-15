@@ -1,6 +1,6 @@
 // src/admin/detailkendaraan.jsx
 import React, { useState, useEffect } from 'react';
-import KendaraanForm from './kendaraanform';
+import KendaraanForm from './KendaraanForm';
 import { DeleteModal, DetailModal } from './KendaraanModal';
 import kendaraanService from '../services/kendaraanService';
 

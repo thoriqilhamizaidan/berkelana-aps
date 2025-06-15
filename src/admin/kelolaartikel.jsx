@@ -210,7 +210,7 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
   return (
     <div className="min-h-screen bg-white p-4 sm:p-6 pt-18">
      {showConfirmModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm bg-opacity-50 z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-sm sm:w-96 relative">
             <button 
               onClick={() => setShowConfirmModal(false)} 
