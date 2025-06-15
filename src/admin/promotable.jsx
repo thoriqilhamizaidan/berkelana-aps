@@ -274,7 +274,7 @@ const handleCreatePromo = async (formData) => {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
       {/* Delete Confirmation Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm bg-opacity-20 z-50 p-4">
           <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 relative">
             <button 
               onClick={() => setShowConfirmModal(false)} 
