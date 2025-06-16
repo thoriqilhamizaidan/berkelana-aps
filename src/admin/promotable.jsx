@@ -433,13 +433,7 @@ const handleCreatePromo = async (formData) => {
                           >
                             Edit
                           </button>
-                          <button 
-                            className="text-red-600 hover:text-red-900" 
-                            onClick={() => handleDeleteClick(promo)} 
-                            disabled={loading}
-                          >
-                            Hapus
-                          </button>
+                          {/* Tombol Hapus dihapus karena tidak berfungsi dengan baik */}
                         </div>
                       </td>
                     </tr>
@@ -533,13 +527,7 @@ const handleCreatePromo = async (formData) => {
                           >
                             Edit
                           </button>
-                          <button 
-                            className="text-red-600 hover:text-red-900 text-sm font-medium px-3 py-1 rounded border border-red-200 hover:bg-red-50" 
-                            onClick={() => handleDeleteClick(promo)} 
-                            disabled={loading}
-                          >
-                            Hapus
-                          </button>
+                          {/* Tombol Hapus dihapus karena tidak berfungsi dengan baik */}
                         </div>
                       </div>
                     </div>

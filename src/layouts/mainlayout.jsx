@@ -9,7 +9,7 @@ const MainLayout = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar isLoggedIn={isLoggedIn} />
-      <main className="flex-grow">
+      <main className="flex-grow pt-14 sm:pt-16 lg:pt-18">
         {children}
       </main>
     </div>

@@ -70,12 +70,23 @@ const TiketDanJadwal = () => {
             harga: item.harga,
             idKendaraan: item.id_kendaraan,
             idPromo: item.id_promo,
+            createdAt: new Date(item.createdAt || Date.now()),
             // Keep original data for API operations
             _original: item
           };
         });
         
-        setJadwalData(transformedData);
+        // Urutkan data berdasarkan ID jadwal (terbaru dulu) atau createdAt jika tersedia
+        const sortedData = transformedData.sort((a, b) => {
+          // Jika createdAt tersedia, gunakan itu
+          if (a._original.createdAt && b._original.createdAt) {
+            return new Date(b._original.createdAt) - new Date(a._original.createdAt);
+          }
+          // Jika tidak, gunakan ID jadwal (asumsi ID lebih besar = lebih baru)
+          return b.id - a.id;
+        });
+        
+        setJadwalData(sortedData);
       } else {
         throw new Error('Format response tidak valid');
       }
@@ -204,6 +215,7 @@ const TiketDanJadwal = () => {
     try {
       // Reload data after submit
       await loadJadwalData();
+      // Kembali ke halaman daftar jadwal
       setCurrentPage('list');
     } catch (err) {
       alert(`Gagal menyimpan data: ${err.message}`);

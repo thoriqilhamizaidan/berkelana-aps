@@ -715,7 +715,7 @@ const handleCloseTerms = () => {
               Serbu diskon <span className="text-purple-500">#Berkelana</span>
             </h2>
             <button 
-              className="bg-emerald1 text-white px-4 py-2 rounded-lg flex items-center mt-4 md:mt-0 cursor-pointer hover:bg-green-600 transition-colors text-sm sm:text-base"
+              className="bg-emerald1 text-black px-4 py-2 rounded-lg flex items-center mt-4 md:mt-0 cursor-pointer hover:bg-green-600 transition-colors text-sm sm:text-base"
               onClick={goToPromoPage}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
@@ -788,7 +788,7 @@ const handleCloseTerms = () => {
           {/* View All Button */}
           <div className="flex justify-center mt-8">
             <button 
-              className="bg-emerald1 text-white px-5 py-2 sm:px-6 sm:py-3 rounded-lg flex items-center hover:bg-green-600 transition-colors cursor-pointer text-sm sm:text-base"
+              className="bg-emerald1 text-black px-5 py-2 sm:px-6 sm:py-3 rounded-lg flex items-center hover:bg-green-600 transition-colors cursor-pointer text-sm sm:text-base"
               onClick={goToArticlesPage}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

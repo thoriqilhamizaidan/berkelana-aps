@@ -619,9 +619,11 @@ const Pembayaran = () => {
           <h1 className="text-2xl font-bold ml-2">Pembayaran</h1>
         </div>
         
-        <p className="text-gray-600 mb-6">
-          Selesaikan pembayaran dalam {formatCountdown()}
-        </p>
+        {paymentStatus !== 'paid' && (
+          <p className="text-gray-600 mb-6">
+            Selesaikan pembayaran dalam {formatCountdown()}
+          </p>
+        )}
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Side */}
@@ -910,15 +912,15 @@ const Pembayaran = () => {
                       <span>Kartu Kredit</span>
                     </div>
                     <div className="flex flex-col items-center text-xs text-gray-600 p-2 bg-gray-50 rounded">
-                      <Icon icon="simple-icons:bca" className="w-6 h-6 mb-1 text-blue-600" />
+                      <img src="../images/va-logo.svg" alt="Virtual Account" className="w-6 h-6 mb-1" />
                       <span>Virtual Account</span>
                     </div>
                     <div className="flex flex-col items-center text-xs text-gray-600 p-2 bg-gray-50 rounded">
-                      <Icon icon="simple-icons:qris" className="w-6 h-6 mb-1" />
+                      <img src="../images/qris.png" alt="QRIS" className="w-6 h-6 mb-1" />
                       <span>QRIS</span>
                     </div>
                     <div className="flex flex-col items-center text-xs text-gray-600 p-2 bg-gray-50 rounded">
-                      <Icon icon="simple-icons:gopay" className="w-6 h-6 mb-1 text-green-600" />
+                      <img src="../images/ewallet-logo.svg" alt="E-Wallet" className="w-6 h-6 mb-1" />
                       <span>E-Wallet</span>
                     </div>
                   </div>
@@ -1063,30 +1065,80 @@ const Pembayaran = () => {
               <div className="pt-3">
                 <div className="font-bold mb-1">Fasilitas:</div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="flex items-center">
-                    <Icon icon="mynaui:air-conditioner-solid" className="w-5 h-5 mr-2 text-purple-600" />
-                    <span>AC</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Icon icon="f7:tv-fill" className="w-5 h-5 mr-2 text-purple-600" />
-                    <span>Hiburan Sentral</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Icon icon="material-symbols:wifi-rounded" className="w-5 h-5 mr-2 text-purple-600" />
-                    <span>Wi-Fi</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Icon icon="ph:seat-fill" className="w-5 h-5 mr-2 text-purple-600" />
-                    <span>Kursi Recliner</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Icon icon="material-symbols:bed" className="w-5 h-5 mr-2 text-purple-600" />
-                    <span>Selimut</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Icon icon="tabler:bottle-filled" className="w-5 h-5 mr-2 text-purple-600" />
-                    <span>Mineral dan Snack</span>
-                  </div>
+                  {ticket?.kendaraan?.fasilitas ? (
+                    ticket.kendaraan.fasilitas.map((fasilitas, index) => {
+                      let icon;
+                      switch(fasilitas.toLowerCase()) {
+                        case 'ac':
+                          icon = <Icon icon="mynaui:air-conditioner-solid" className="w-5 h-5 mr-2 text-purple-600" />;
+                          break;
+                        case 'wifi':
+                        case 'wi-fi':
+                          icon = <Icon icon="material-symbols:wifi-rounded" className="w-5 h-5 mr-2 text-purple-600" />;
+                          break;
+                        case 'toilet':
+                          icon = <Icon icon="mdi:toilet" className="w-5 h-5 mr-2 text-purple-600" />;
+                          break;
+                        case 'tv':
+                        case 'hiburan sentral':
+                          icon = <Icon icon="f7:tv-fill" className="w-5 h-5 mr-2 text-purple-600" />;
+                          break;
+                        case 'reclining seat':
+                        case 'kursi recliner':
+                          icon = <Icon icon="ph:seat-fill" className="w-5 h-5 mr-2 text-purple-600" />;
+                          break;
+                        case 'charging port':
+                          icon = <Icon icon="mdi:power-plug" className="w-5 h-5 mr-2 text-purple-600" />;
+                          break;
+                        case 'snack':
+                        case 'mineral dan snack':
+                          icon = <Icon icon="tabler:bottle-filled" className="w-5 h-5 mr-2 text-purple-600" />;
+                          break;
+                        case 'selimut':
+                          icon = <Icon icon="material-symbols:bed" className="w-5 h-5 mr-2 text-purple-600" />;
+                          break;
+                        case 'bantal':
+                          icon = <Icon icon="mdi:pillow" className="w-5 h-5 mr-2 text-purple-600" />;
+                          break;
+                        default:
+                          icon = <Icon icon="mdi:check-circle" className="w-5 h-5 mr-2 text-purple-600" />;
+                      }
+                      return (
+                        <div key={index} className="flex items-center">
+                          {icon}
+                          <span>{fasilitas}</span>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    // Fallback jika tidak ada data fasilitas
+                    <>
+                      <div className="flex items-center">
+                        <Icon icon="mynaui:air-conditioner-solid" className="w-5 h-5 mr-2 text-purple-600" />
+                        <span>AC</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Icon icon="f7:tv-fill" className="w-5 h-5 mr-2 text-purple-600" />
+                        <span>Hiburan Sentral</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Icon icon="material-symbols:wifi-rounded" className="w-5 h-5 mr-2 text-purple-600" />
+                        <span>Wi-Fi</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Icon icon="ph:seat-fill" className="w-5 h-5 mr-2 text-purple-600" />
+                        <span>Kursi Recliner</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Icon icon="material-symbols:bed" className="w-5 h-5 mr-2 text-purple-600" />
+                        <span>Selimut</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Icon icon="tabler:bottle-filled" className="w-5 h-5 mr-2 text-purple-600" />
+                        <span>Mineral dan Snack</span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
               
