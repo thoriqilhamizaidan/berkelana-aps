@@ -154,7 +154,7 @@ const Navbar = () => {
   };
   
   return (
-    <nav className="bg-white shadow-sm w-full font-['League_Spartan'] relative z-50">
+    <nav className="bg-white shadow-sm w-full font-['League_Spartan'] fixed top-0 left-0 right-0 z-50">
       {/* Tambahkan style inline untuk memastikan navbar tampil di semua ukuran layar */}
       <style>{`
         .navbar-desktop {

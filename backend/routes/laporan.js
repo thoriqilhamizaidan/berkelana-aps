@@ -60,31 +60,34 @@ router.get('/penjualan-tiket', async (req, res) => {
     let jadwalWhere = {};
     let kendaraanWhere = {};
 
+    // Perbaikan filter tanggal, bulan, tahun - menggunakan tanggal pemesanan (createdAt)
     if (tanggal || bulan || tahun) {
-      let dateConditions = {};
       if (tahun) {
-        dateConditions[Op.and] = dateConditions[Op.and] || [];
-        dateConditions[Op.and].push(require('sequelize').where(
-          require('sequelize').fn('YEAR', require('sequelize').col('Jadwal.waktu_keberangkatan')), parseInt(tahun)
+        whereCondition[Op.and] = whereCondition[Op.and] || [];
+        whereCondition[Op.and].push(require('sequelize').where(
+          require('sequelize').fn('YEAR', require('sequelize').col('tabel_headtransaksi.createdAt')), 
+          parseInt(tahun)
         ));
       }
       if (bulan) {
-        dateConditions[Op.and] = dateConditions[Op.and] || [];
-        dateConditions[Op.and].push(require('sequelize').where(
-          require('sequelize').fn('MONTH', require('sequelize').col('Jadwal.waktu_keberangkatan')), parseInt(bulan)
+        whereCondition[Op.and] = whereCondition[Op.and] || [];
+        whereCondition[Op.and].push(require('sequelize').where(
+          require('sequelize').fn('MONTH', require('sequelize').col('tabel_headtransaksi.createdAt')), 
+          parseInt(bulan)
         ));
       }
       if (tanggal) {
-        dateConditions[Op.and] = dateConditions[Op.and] || [];
-        dateConditions[Op.and].push(require('sequelize').where(
-          require('sequelize').fn('DAY', require('sequelize').col('Jadwal.waktu_keberangkatan')), parseInt(tanggal)
+        whereCondition[Op.and] = whereCondition[Op.and] || [];
+        whereCondition[Op.and].push(require('sequelize').where(
+          require('sequelize').fn('DAY', require('sequelize').col('tabel_headtransaksi.createdAt')), 
+          parseInt(tanggal)
         ));
       }
-      jadwalWhere = dateConditions;
     }
 
+    // Perbaikan filter tipe_armada - gunakan LIKE yang lebih umum daripada iLike
     if (tipe_armada) {
-      kendaraanWhere.tipe_armada = { [Op.iLike]: `%${tipe_armada}%` };
+      kendaraanWhere.tipe_armada = { [Op.like]: `%${tipe_armada}%` };
     }
 
     const offset = (parseInt(page) - 1) * parseInt(limit);
@@ -208,26 +211,33 @@ router.get('/penjualan-tiket/excel', async (req, res) => {
     let jadwalWhere = {};
     let kendaraanWhere = {};
 
-    if (tahun) {
-      jadwalWhere[Op.and] = jadwalWhere[Op.and] || [];
-      jadwalWhere[Op.and].push(require('sequelize').where(
-        require('sequelize').fn('YEAR', require('sequelize').col('Jadwal.waktu_keberangkatan')), parseInt(tahun)
-      ));
-    }
-    if (bulan) {
-      jadwalWhere[Op.and] = jadwalWhere[Op.and] || [];
-      jadwalWhere[Op.and].push(require('sequelize').where(
-        require('sequelize').fn('MONTH', require('sequelize').col('Jadwal.waktu_keberangkatan')), parseInt(bulan)
-      ));
-    }
-    if (tanggal) {
-      jadwalWhere[Op.and] = jadwalWhere[Op.and] || [];
-      jadwalWhere[Op.and].push(require('sequelize').where(
-        require('sequelize').fn('DAY', require('sequelize').col('Jadwal.waktu_keberangkatan')), parseInt(tanggal)
-      ));
+    // Perbaikan filter tanggal, bulan, tahun - menggunakan tanggal pemesanan (createdAt)
+    if (tanggal || bulan || tahun) {
+      if (tahun) {
+        whereCondition[Op.and] = whereCondition[Op.and] || [];
+        whereCondition[Op.and].push(require('sequelize').where(
+          require('sequelize').fn('YEAR', require('sequelize').col('tabel_headtransaksi.createdAt')), 
+          parseInt(tahun)
+        ));
+      }
+      if (bulan) {
+        whereCondition[Op.and] = whereCondition[Op.and] || [];
+        whereCondition[Op.and].push(require('sequelize').where(
+          require('sequelize').fn('MONTH', require('sequelize').col('tabel_headtransaksi.createdAt')), 
+          parseInt(bulan)
+        ));
+      }
+      if (tanggal) {
+        whereCondition[Op.and] = whereCondition[Op.and] || [];
+        whereCondition[Op.and].push(require('sequelize').where(
+          require('sequelize').fn('DAY', require('sequelize').col('tabel_headtransaksi.createdAt')), 
+          parseInt(tanggal)
+        ));
+      }
     }
     if (tipe_armada) {
-      kendaraanWhere.tipe_armada = { [Op.iLike]: `%${tipe_armada}%` };
+      // Perbaikan filter tipe_armada - gunakan LIKE yang lebih umum daripada iLike
+      kendaraanWhere.tipe_armada = { [Op.like]: `%${tipe_armada}%` };
     }
 
     const data = await tabel_headtransaksi.findAll({

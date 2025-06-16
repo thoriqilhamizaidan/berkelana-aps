@@ -410,12 +410,22 @@ const handleSearch = async () => {
 
   const handleViewDetail = async (ticket) => {
     try {
+      // Format tanggal keberangkatan
+      const departureDate = ticket.jadwal?.waktu_keberangkatan ? new Date(ticket.jadwal.waktu_keberangkatan) : null;
+      const formattedDate = departureDate ? departureDate.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      }) : 'Tanggal tidak tersedia';
+
       setSelectedTicket({
         ...ticket.kendaraan,
         kota_awal: ticket.fromCity,
         kota_tujuan: ticket.toCity,
         waktu_keberangkatan: ticket.departureTime,
         waktu_sampai: ticket.arrivalTime,
+        tanggal_keberangkatan: formattedDate, // Tambahkan tanggal keberangkatan
         harga: ticket.price,
         durasi: ticket.duration,
         fasilitas: ticket.kendaraan.fasilitas || [],
@@ -567,6 +577,9 @@ const DetailPopup = ({ ticket, onClose }) => {
                 <p className="font-bold text-sm sm:text-base">Kapasitas Kursi: {ticket.kapasitas_kursi}</p>
                 <p className="font-bold text-sm sm:text-base">Format Kursi: {ticket.format_kursi}</p>
                 <p className="font-bold text-sm sm:text-base">Nomor Armada: {ticket.nomor_armada}</p>
+                {ticket.tanggal_keberangkatan && (
+                  <p className="font-bold text-sm sm:text-base mt-2">Tanggal Keberangkatan: {ticket.tanggal_keberangkatan}</p>
+                )}
               </div>
               <div>
                 <p className="font-bold mb-2 text-sm sm:text-base">Fasilitas:</p>
