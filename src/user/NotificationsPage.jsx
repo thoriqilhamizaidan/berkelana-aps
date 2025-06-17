@@ -11,13 +11,16 @@ const NotificationsPage = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
   
+  // API URL from environment variables
+  const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5052/api';
+  
   // Fetch notifications from API
   const fetchNotifications = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('http://localhost:5052/api/notifications', {
+      const response = await fetch(`${API_URL}/notifications`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -67,7 +70,7 @@ const NotificationsPage = () => {
   
   const handleMarkAsRead = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5052/api/notifications/${id}/read`, {
+      const response = await fetch(`${API_URL}/notifications/${id}/read`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +99,7 @@ const NotificationsPage = () => {
   
   const handleMarkAllAsRead = async () => {
     try {
-      const response = await fetch('http://localhost:5052/api/notifications/mark-all-read', {
+      const response = await fetch(`${API_URL}/notifications/mark-all-read`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

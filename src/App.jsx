@@ -23,7 +23,7 @@ import ForgotPassword from './user/forgotpassword'
 import ResetPassword from './user/resetpassword'
 import ChangePassword from './user/changepassword'
 import UserAccount from './user/useraccount'
-import NotificationsPage from './user/notificationspage'
+import NotificationsPage from './user/NotificationsPage'
 // TAMBAH import di bagian atas setelah NotificationsPage:
 import PaymentClose from './user/PaymentClose';
 import PaymentFailed from './user/PaymentFailed';

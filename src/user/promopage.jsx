@@ -3,7 +3,8 @@ import Footer from "./footer";
 import React, { useState, useEffect } from 'react';
 import { ArrowLeftRight } from 'lucide-react';
 
-const API_URL = "http://localhost:5052/api/promos";
+// API URL from environment variables
+const API_URL = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/promos` : "http://localhost:5052/api/promos";
 
 // Modal Component for Terms and Conditions
 const TermsModal = ({ show, promo, onClose }) => {
