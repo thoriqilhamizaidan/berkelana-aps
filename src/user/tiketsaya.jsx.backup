@@ -253,7 +253,7 @@ const TiketSaya = () => {
 
   const getBusImage = (imageName) => {
     if (!imageName) return '/images/Bis ungu.png';
-    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'}/uploads/kendaraan/${imageName}`;
+    return `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5052'}/uploads/kendaraan/${imageName}`;
   };
 
   // ✅ IMPROVED: Show loading while auth is loading

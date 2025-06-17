@@ -1,4 +1,4 @@
-VITE_API_BASE_URL=http://localhost:3000/api
+VITE_API_BASE_URL=http://localhost:5052/api
 # Database Configuration
 DB_HOST=localhost
 DB_PORT=3306
@@ -17,7 +17,7 @@ JWT_EXPIRES_IN=7d
 
 
 # Other Configuration
-CORS_ORIGIN=http://localhost:3000
+CORS_ORIGIN=http://localhost:5052
 
 
 EMAIL_USER=berkelanaapps@gmail.com 

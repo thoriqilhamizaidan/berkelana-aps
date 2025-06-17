@@ -1,13 +1,7 @@
 // src/services/authService.js
 
-// Try different ports - update this based on where your backend is actually running
-const API_URL = 'http://localhost:3000/api';
-
-// Common alternatives if 3000 doesn't work:
-// const API_URL = 'http://localhost:5000/api';  // Very common for Express servers
-// const API_URL = 'http://localhost:8000/api';  // Common for Python/Django
-// const API_URL = 'http://localhost:3001/api';  // If React is on 3000
-// const API_URL = 'http://localhost:4000/api';  // Another common choice
+// Use environment variable with fallback
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5052/api';
 
 class AuthService {
   async login(email, password) {

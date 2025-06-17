@@ -3,7 +3,7 @@ import TambahPromo from "./tambahpromo.jsx";
 import EditPromo from "./editpromo.jsx";
 import DetailPromoModal from "./detailpromo.jsx";
 
-const API_URL = "http://localhost:3000/api/promos";
+const API_URL = "http://localhost:5052/api/promos";
 
 // Shared form input component
 const FormInput = ({ label, type = "text", required, className = "", ...props }) => (
@@ -82,7 +82,7 @@ const PromoTable = () => {
       const processedPromos = promoArray.map(promo => ({
         ...promo,
         image: promo.image ? 
-          (promo.image.startsWith('http') ? promo.image : `http://localhost:3000${promo.image}`) 
+          (promo.image.startsWith('http') ? promo.image : `http://localhost:5052${promo.image}`) 
           : null,
       }));
       

@@ -49,8 +49,8 @@ const Artikel = () => {
             penulis: article.nama_penulis,
             judul: article.judul,
             tanggal: tanggalUpload,
-            gambarUrl: article.gambar_artikel ? `http://localhost:3000/uploads/artikel/${article.gambar_artikel}` : null,
-            authorPhotoUrl: article.foto_penulis ? `http://localhost:3000/uploads/artikel/${article.foto_penulis}` : null,
+            gambarUrl: article.gambar_artikel ? `http://localhost:5052/uploads/artikel/${article.gambar_artikel}` : null,
+            authorPhotoUrl: article.foto_penulis ? `http://localhost:5052/uploads/artikel/${article.foto_penulis}` : null,
             // Menggunakan isi dari database, bukan konten dummy
             isiArtikel: article.isi || 'Konten artikel tidak tersedia.',
             // Pastikan jumlah_pembaca ada dan merupakan number

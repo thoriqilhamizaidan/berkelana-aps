@@ -15,7 +15,7 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
       setLoading(true);
       setError(null);
 
-      fetch("http://localhost:3000/api/artikel")
+      fetch("http://localhost:5052/api/artikel")
         .then((res) => {
           if (!res.ok) {
             throw new Error(`HTTP error! status: ${res.status}`);
@@ -38,8 +38,8 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
               artikel: item.judul,
               isi: item.isi,
               kategori: item.kategori,
-              gambarUrl: item.gambar_artikel ? `http://localhost:3000/uploads/artikel/${item.gambar_artikel}` : null,
-              authorPhotoUrl: item.foto_penulis ? `http://localhost:3000/uploads/artikel/${item.foto_penulis}` : null,
+              gambarUrl: item.gambar_artikel ? `http://localhost:5052/uploads/artikel/${item.gambar_artikel}` : null,
+              authorPhotoUrl: item.foto_penulis ? `http://localhost:5052/uploads/artikel/${item.foto_penulis}` : null,
               tanggal: tanggalUpload
             };
           });
@@ -87,7 +87,7 @@ const KelolaArtikel = ({ onTambahClick, onDeleteArticle, onEditArticle, newArtic
   const handleConfirmDelete = () => {
     if (articleToDelete) {
       const token = localStorage.getItem('token');
-      fetch(`http://localhost:3000/api/artikel/${articleToDelete}`, {
+      fetch(`http://localhost:5052/api/artikel/${articleToDelete}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
