@@ -3,7 +3,7 @@ import Footer from "./footer";
 import React, { useState, useEffect } from 'react';
 import { ArrowLeftRight } from 'lucide-react';
 
-const API_URL = "http://localhost:3000/api/promos";
+const API_URL = "http://localhost:5052/api/promos";
 
 // Modal Component for Terms and Conditions
 const TermsModal = ({ show, promo, onClose }) => {
@@ -168,11 +168,11 @@ const PromoCard = ({ promo, onCopyCode, onShowTerms }) => {
     
     // If starts with /, it's a relative path from server root
     if (image.startsWith('/')) {
-      return `http://localhost:3000${image}`;
+      return `http://localhost:5052${image}`;
     }
     
     // Otherwise, assume it's a relative path that needs /uploads/ prefix
-    return `http://localhost:3000/uploads/${image}`;
+    return `http://localhost:5052/uploads/${image}`;
   };
 
   const imageUrl = getImageUrl(promo.image || promo.gambar);

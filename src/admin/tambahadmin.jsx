@@ -30,7 +30,7 @@ const TambahAdmin = ({ onBack, onSave }) => {
           return;
         }
 
-        const res = await fetch('http://localhost:3000/api/admin', {
+        const res = await fetch('http://localhost:5052/api/admin', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',

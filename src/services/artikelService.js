@@ -1,5 +1,5 @@
 // src/services/artikelService.js
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5052/api';
 
 // Fungsi untuk mengambil semua artikel
 const fetchArticles = async () => {
@@ -166,8 +166,8 @@ const getLatestArticles = async (limit = 10) => {
       ...article,
       penulis: article.nama_penulis,
       foto_penulis: article.foto_penulis,
-      gambarUrl: article.gambar_artikel ? `http://localhost:3000/uploads/artikel/${article.gambar_artikel}` : null,
-      authorPhotoUrl: article.foto_penulis ? `http://localhost:3000/uploads/artikel/${article.foto_penulis}` : null
+      gambarUrl: article.gambar_artikel ? `http://localhost:5052/uploads/artikel/${article.gambar_artikel}` : null,
+      authorPhotoUrl: article.foto_penulis ? `http://localhost:5052/uploads/artikel/${article.foto_penulis}` : null
     }));
 
     return transformed;

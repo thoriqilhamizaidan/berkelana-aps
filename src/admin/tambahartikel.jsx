@@ -51,7 +51,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
 
       // >>>> Tambahkan token Authorization
       const token = localStorage.getItem('token');
-      fetch('http://localhost:3000/api/artikel', {
+      fetch('http://localhost:5052/api/artikel', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

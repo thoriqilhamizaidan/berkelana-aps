@@ -44,7 +44,7 @@ const Navbar = () => {
     }
     
     try {
-      const response = await fetch('http://localhost:3000/api/notifications', {
+      const response = await fetch('http://localhost:5052/api/notifications', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -292,7 +292,7 @@ const Navbar = () => {
                     <div className="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 rounded-full overflow-hidden border-2 border-emerald-400 hover:scale-105 transition-transform">
                       {user?.profil_user ? (
                         <img
-                          src={user.profil_user.startsWith('http') ? user.profil_user : `http://localhost:3000${user.profil_user}`}
+                          src={user.profil_user.startsWith('http') ? user.profil_user : `http://localhost:5052${user.profil_user}`}
                           alt="User Profile"
                           className="w-full h-full object-cover"
                           onError={(e) => {
@@ -446,7 +446,7 @@ const Navbar = () => {
                   <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-emerald-400 mr-3">
                     {user?.profil_user ? (
                       <img
-                        src={user.profil_user.startsWith('http') ? user.profil_user : `http://localhost:3000${user.profil_user}`}
+                        src={user.profil_user.startsWith('http') ? user.profil_user : `http://localhost:5052${user.profil_user}`}
                         alt="User Profile"
                         className="w-full h-full object-cover"
                         onError={(e) => {

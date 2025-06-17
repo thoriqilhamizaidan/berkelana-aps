@@ -8,7 +8,7 @@ import Footer from './user/footer';
 import artikelService from './services/artikelService';
 import jadwalService from './services/jadwalService';
 
-const API_URL = "http://localhost:3000/api/promos";
+const API_URL = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/promos` : "http://localhost:5052/api/promos";
 
 const TermsModal = ({ show, promo, onClose }) => {
   if (!show || !promo) return null;
@@ -170,10 +170,10 @@ const getImageUrl = (image, type = 'artikel') => {
   if (image.startsWith('http://') || image.startsWith('https://')) return image;
 
   // Jika sudah mulai dengan "/uploads", berarti sudah lengkap
-  if (image.startsWith('/uploads')) return `http://localhost:3000${image}`;
+  if (image.startsWith('/uploads')) return `http://localhost:5052${image}`;
 
   const folder = type === 'promo' ? 'promo' : 'artikel';
-  return `http://localhost:3000/uploads/${folder}/${image}`;
+  return `http://localhost:5052/uploads/${folder}/${image}`;
 };
 
   const isPromoExpired = (berlakuHingga) => {
@@ -502,7 +502,7 @@ const getImageUrl = (image, type = 'artikel') => {
   <div className="w-9 h-9 rounded-full overflow-hidden mr-2">
     {article.foto_penulis ? (
       <img
-        src={`http://localhost:3000/uploads/artikel/${article.foto_penulis}`}
+        src={`http://localhost:5052/uploads/artikel/${article.foto_penulis}`}
         alt={article.penulis || 'Admin'}
         className="w-full h-full object-cover"
       />

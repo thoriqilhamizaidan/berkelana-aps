@@ -98,7 +98,7 @@ const UserAccount = () => {
 
   try {
     const token = localStorage.getItem('token');
-    const response = await fetch('http://localhost:3000/api/upload-avatar', {
+    const response = await fetch('http://localhost:5052/api/upload-avatar', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -378,7 +378,7 @@ const UserAccount = () => {
                   ) : user?.profil_user ? (
                     // Show current profile image
                     <img
-                      src={user.profil_user.startsWith('http') ? user.profil_user : `http://localhost:3000${user.profil_user}`}
+                      src={user.profil_user.startsWith('http') ? user.profil_user : `http://localhost:5052${user.profil_user}`}
                       alt="User Profile"
                       className="w-full h-full object-cover"
                       onError={(e) => {
