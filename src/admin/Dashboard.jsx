@@ -23,7 +23,7 @@ const Dashboard = () => {
 
   // Configure API base URL
   const API_BASE_URL = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:5052/api' 
+    ? import.meta.env.VITE_API_BASE_URL 
     : '/api';
 
   // Generate years for filter (current year and 2 previous years)

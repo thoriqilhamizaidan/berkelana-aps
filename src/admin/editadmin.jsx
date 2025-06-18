@@ -55,7 +55,7 @@ const EditKelolaAdmin = ({ admin, onBack, onUpdate }) => {
     try {
       const token = localStorage.getItem('token');
 
-      const res = await fetch(`http://localhost:5052/api/admin/${admin.id_admin}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/${admin.id_admin}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

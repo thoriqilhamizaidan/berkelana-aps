@@ -51,7 +51,7 @@ const TambahArtikel = ({ onBack, onSave }) => {
 
       // >>>> Tambahkan token Authorization
       const token = localStorage.getItem('token');
-      fetch('http://localhost:5052/api/artikel', {
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/artikel`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

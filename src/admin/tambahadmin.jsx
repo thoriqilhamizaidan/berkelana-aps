@@ -30,7 +30,7 @@ const TambahAdmin = ({ onBack, onSave }) => {
           return;
         }
 
-        const res = await fetch('http://localhost:5052/api/admin', {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',

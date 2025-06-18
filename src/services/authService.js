@@ -1,7 +1,7 @@
 // src/services/authService.js
 
 // Use environment variable with fallback
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5052/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 class AuthService {
   async login(email, password) {

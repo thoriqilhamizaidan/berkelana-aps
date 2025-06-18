@@ -1,7 +1,7 @@
 // src/services/kendaraanService.js
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5052/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -179,7 +179,8 @@ class KendaraanService {
 
   getImageUrl(filename) {
     if (!filename) return null;
-    return `${API_BASE_URL.replace('/api', '')}/uploads/kendaraan/${filename}`;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    return `${baseUrl}/uploads/kendaraan/${filename}`;
   }
 }
 

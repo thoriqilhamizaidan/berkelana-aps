@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeftRight } from 'lucide-react';
 
 // API URL from environment variables
-const API_URL = import.meta.env.VITE_API_BASE_URL ? `${import.meta.env.VITE_API_BASE_URL}/promos` : "http://localhost:5052/api/promos";
+const API_URL = `${import.meta.env.VITE_API_BASE_URL || '/api'}/promos`;
 
 // Modal Component for Terms and Conditions
 const TermsModal = ({ show, promo, onClose }) => {
@@ -169,11 +169,11 @@ const PromoCard = ({ promo, onCopyCode, onShowTerms }) => {
     
     // If starts with /, it's a relative path from server root
     if (image.startsWith('/')) {
-      return `http://localhost:5052${image}`;
+      return `${import.meta.env.VITE_API_BASE_URL}${image}`;
     }
     
     // Otherwise, assume it's a relative path that needs /uploads/ prefix
-    return `http://localhost:5052/uploads/${image}`;
+    return `${import.meta.env.VITE_API_BASE_URL}/uploads/${image}`;
   };
 
   const imageUrl = getImageUrl(promo.image || promo.gambar);

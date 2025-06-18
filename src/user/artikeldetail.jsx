@@ -43,9 +43,9 @@ const ArtikelDetail = () => {
             day: 'numeric'
           }),
           gambarUrl: articleData.gambar_artikel ? 
-            `http://localhost:5052/uploads/artikel/${articleData.gambar_artikel}` : null,
+            `${import.meta.env.VITE_API_BASE_URL}/uploads/artikel/${articleData.gambar_artikel}` : null,
           authorPhotoUrl: articleData.foto_penulis ? 
-            `http://localhost:5052/uploads/artikel/${articleData.foto_penulis}` : null,
+            `${import.meta.env.VITE_API_BASE_URL}/uploads/artikel/${articleData.foto_penulis}` : null,
           isiArtikel: articleData.isi || 'Konten artikel tidak tersedia.',
           jumlah_pembaca: parseInt(articleData.jumlah_pembaca) || 0
         };
@@ -316,7 +316,7 @@ const prevSlide = () => {
                     <div className="h-48 overflow-hidden">
                       {relatedArticle.gambar_artikel ? (
                         <img 
-                          src={`http://localhost:5052/uploads/artikel/${relatedArticle.gambar_artikel}`}
+                          src={`${import.meta.env.VITE_API_BASE_URL}/uploads/artikel/${relatedArticle.gambar_artikel}`}
                           alt={relatedArticle.judul} 
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                         />
@@ -367,7 +367,7 @@ const prevSlide = () => {
                           <div className="h-40 sm:h-48 overflow-hidden">
                             {relatedArticle.gambar_artikel ? (
                               <img 
-                                src={`http://localhost:5052/uploads/artikel/${relatedArticle.gambar_artikel}`}
+                                src={`${import.meta.env.VITE_API_BASE_URL}/uploads/artikel/${relatedArticle.gambar_artikel}`}
                                 alt={relatedArticle.judul} 
                                 className="w-full h-full object-cover"
                               />

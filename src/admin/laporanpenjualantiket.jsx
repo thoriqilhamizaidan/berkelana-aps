@@ -24,7 +24,7 @@ const LaporanPenjualanTiket = () => {
   // Fix: Handle environment variable safely
   const API_BASE_URL = (typeof window !== 'undefined' && window.REACT_APP_API_URL) || 
                        (typeof process !== 'undefined' && process.env?.REACT_APP_API_URL) || 
-                       'http://localhost:5052';
+                       import.meta.env.VITE_API_BASE_URL;
 
   // Helper function untuk handle fetch dengan error checking
   const fetchWithErrorHandling = async (url, options = {}) => {
