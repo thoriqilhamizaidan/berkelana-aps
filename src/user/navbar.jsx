@@ -196,7 +196,7 @@ const Navbar = () => {
           <div className="flex-shrink-0 mb-1 sm:mb-2">
             <Link to="/">
               <img
-                src="/images/Logo nocaption.png"
+                src="/public/images/Logo nocaption.png"
                 alt="Berkelana Logo"
                 className="h-7 sm:h-8 lg:h-9 xl:h-10 2xl:h-12"
                 onError={(e) => {
@@ -297,7 +297,7 @@ const Navbar = () => {
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = "/images/default-avatar.png";
+                            e.target.src = "/public/images/default-avatar.png";
                           }}
                         />
                       ) : (
@@ -451,7 +451,7 @@ const Navbar = () => {
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           e.target.onerror = null;
-                          e.target.src = "/images/default-avatar.png";
+                          e.target.src = "/public/images/default-avatar.png";
                         }}
                       />
                     ) : (

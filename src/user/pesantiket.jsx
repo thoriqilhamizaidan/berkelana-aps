@@ -611,12 +611,12 @@ const DetailPopup = ({ ticket, onClose }) => {
 
             <div className="md:w-1/2 mt-4 md:mt-0">
               <img 
-                src={vehicleImageUrl || "/images/Detail Armada.png"} 
+                src={vehicleImageUrl || "/public/images/Detail Armada.png"} 
                 alt="Bus interior" 
                 className="w-full h-48 sm:h-64 object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:scale-105 transition-transform"
                 onError={(e) => {
                   e.target.onerror = null; // Prevent infinite loop
-                  e.target.src = "/images/Detail Armada.png"; // Fallback image
+                  e.target.src = "/public/images/Detail Armada.png"; // Fallback image
                 }}
               />
             </div>
@@ -645,7 +645,7 @@ const DetailPopup = ({ ticket, onClose }) => {
       <section className="relative h-160 bg-cover bg-center">
         <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.4)] via-transparent to-transparent z-10"></div>
         <div className="absolute inset-0 z-0">
-          <img src="/images/janke-laskowski-jz-ayLjk2nk-unsplash.jpg" alt="Background" className="w-full h-full object-cover" />
+          <img src="/public/images/janke-laskowski-jz-ayLjk2nk-unsplash.jpg" alt="Background" className="w-full h-full object-cover" />
         </div>
         
         <div className="relative z-20 h-full flex flex-col justify-center items-center text-center px-4">

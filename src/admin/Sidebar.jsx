@@ -153,7 +153,7 @@ const Sidebar = ({ activeMenu, setActiveMenu, userRole = null }) => {
             <div className={`${isCollapsed ? 'w-12 h-12' : 'w-20 h-20'} flex items-center justify-center transition-all duration-500 ease-in-out`}>
               {isCollapsed ? (
                 <img
-                  src="../images/berkelana-logo-kecil.png"
+                  src="/public/images/berkelana-logo-kecil.png"
                   alt="Berkelana Logo Small"
                   className="w-10 h-10 object-contain filter drop-shadow-sm transition-all duration-500"
                   onError={(e) => {
@@ -163,7 +163,7 @@ const Sidebar = ({ activeMenu, setActiveMenu, userRole = null }) => {
                 />
               ) : (
                 <img
-                  src="../images/berkelana-logo.png"
+                  src="/public/images/berkelana-logo.png"
                   alt="Berkelana Logo"
                   className="w-26 h-26 object-contain filter drop-shadow-sm transition-all duration-500"
                   onError={(e) => {
@@ -258,7 +258,7 @@ const Sidebar = ({ activeMenu, setActiveMenu, userRole = null }) => {
           <div className="p-4 border-b border-gray-200 flex items-center justify-between">
             <div className="flex items-center">
               <img
-                src="../images/berkelana-logo-kecil.png"
+                src="/public/images/berkelana-logo-kecil.png"
                 alt="Berkelana Logo"
                 className="w-8 h-8 object-contain"
                 onError={(e) => {

@@ -193,7 +193,7 @@ const UserAccount = () => {
       <div className="relative h-96 bg-gradient-to-r from-purple-500/30 to-blue-500/20">
         <div className="absolute inset-0 overflow-hidden">
           <img 
-            src="/images/Pusat akun.jpg" 
+            src="/public/images/Pusat akun.jpg" 
             alt="Banner background" 
             className="w-full h-full object-cover opacity-80"
             onError={(e) => {

@@ -409,7 +409,7 @@ const handleDeleteTicket = async (ticket) => {
     return (
       <>
         {/* Background Header */}
-        <div className="relative bg-cover bg-center h-80" style={{ backgroundImage: "url('/images/backgroundtiketsaya.jpg')" }}>
+        <div className="relative bg-cover bg-center h-80" style={{ backgroundImage: "url('/public/images/backgroundtiketsaya.jpg')" }}>
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.6)] via-transparent to-transparent z-1"></div>
           <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-10">
             <h1 className="text-4xl md:text-4xl sm:text-3xl xs:text-2xl font-bold">Tiket Saya</h1>
@@ -437,7 +437,7 @@ const handleDeleteTicket = async (ticket) => {
     return (
       <>
         {/* Background Header */}
-        <div className="relative bg-cover bg-center h-80" style={{ backgroundImage: "url('/images/backgroundtiketsaya.jpg')" }}>
+        <div className="relative bg-cover bg-center h-80" style={{ backgroundImage: "url('/public/images/backgroundtiketsaya.jpg')" }}>
           <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.6)] via-transparent to-transparent z-1"></div>
           <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-10">
             <h1 className="text-4xl md:text-4xl sm:text-3xl xs:text-2xl font-bold">Tiket Saya</h1>
@@ -483,7 +483,7 @@ const handleDeleteTicket = async (ticket) => {
   return (
     <>
       {/* Background Header */}
-      <div className="relative bg-cover bg-center h-80" style={{ backgroundImage: "url('/images/backgroundtiketsaya.jpg')" }}>
+      <div className="relative bg-cover bg-center h-80" style={{ backgroundImage: "url('/public/images/backgroundtiketsaya.jpg')" }}>
         <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.6)] via-transparent to-transparent z-1"></div>
         <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-10">
           <h1 className="text-4xl md:text-4xl sm:text-3xl xs:text-2xl font-bold">Tiket Saya</h1>
@@ -573,7 +573,7 @@ const handleDeleteTicket = async (ticket) => {
                           alt="Bus"
                           className="w-full h-40 object-cover rounded mx-auto md:mx-0"
                           onError={(e) => {
-                            e.target.src = '/images/Bis ungu.png';
+                            e.target.src = '/public/images/Bis ungu.png';
                           }}
                         />
                       </div>

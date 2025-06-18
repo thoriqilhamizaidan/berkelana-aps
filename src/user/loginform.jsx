@@ -89,7 +89,7 @@ const LoginForm = () => {
     <div
       className="min-h-screen flex items-center justify-center p-4"
       style={{
-        backgroundImage: "url('images/directly-shot-christmas-decorations-blue-background 1.png')",
+        backgroundImage: "url('/public/images/directly-shot-christmas-decorations-blue-background 1.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -101,7 +101,7 @@ const LoginForm = () => {
           <div className="text-center text-white">
             <Link to="/" className="inline-block hover:opacity-80 transition-opacity duration-300">
               <img
-                src="/images/berkelana-logo-white.png"
+                src="/public/images/berkelana-logo-white.png"
                 alt="Logo Berkelana"
                 className="max-w-full h-auto cursor-pointer max-h-20 sm:max-h-24 lg:max-h-none"
               />
@@ -116,7 +116,7 @@ const LoginForm = () => {
             <div className="mb-4 sm:mb-6 flex justify-center">
               <Link to="/" className="inline-block hover:opacity-80 transition-opacity duration-300">
                 <img
-                  src="images/berkelana-logo.png"
+                  src="/public/images/berkelana-logo.png"
                   alt="Logo Berkelana"
                   className="h-8 sm:h-10 lg:h-12 w-auto cursor-pointer"
                 />

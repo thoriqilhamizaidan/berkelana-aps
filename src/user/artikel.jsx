@@ -286,7 +286,7 @@ const navigateToArticleDetail = async (articleId) => {
         <section className="relative h-80 sm:h-96 md:h-125 bg-cover bg-center pt-16">
   <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
   <div className="absolute inset-0 z-0">
-    <img src="../images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
+    <img src="/public/images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
   </div>
   <div className="relative z-10 container mx-auto px-4 sm:px-6 h-full flex flex-col justify-center">
     <div className="max-w-3xl">
@@ -330,7 +330,7 @@ const navigateToArticleDetail = async (articleId) => {
         <section className="relative h-125 bg-cover bg-center pt-16">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
           <div className="absolute inset-0 z-0">
-            <img src="../images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
+            <img src="/public/images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
           </div>
           <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center">
             <div className="max-w-3xl">
@@ -363,7 +363,7 @@ const navigateToArticleDetail = async (articleId) => {
       <section className="relative h-125 bg-cover bg-center pt-16">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
         <div className="absolute inset-0 z-0">
-          <img src="../images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
+          <img src="/public/images/arhero.jpg" alt="Mountain Background" className="w-full h-full object-cover" />
         </div>
         <div className="relative z-10 container mx-auto px-4 h-full flex flex-col justify-center">
           <div className="max-w-3xl">
@@ -773,7 +773,7 @@ const navigateToArticleDetail = async (articleId) => {
                    {/* Logo Section */}
                    <div className="text-center">
                      <img
-                       src="../images/berkelana-logo.png"
+                       src="/public/images/berkelana-logo.png"
                        alt="Berkelana Logo"
                        className="h-16 sm:h-20 mx-auto"
                        onError={(e) => {
@@ -868,7 +868,7 @@ const navigateToArticleDetail = async (articleId) => {
                    {/* Logo Section */}
                    <div className="flex-shrink-0">
                      <img
-                       src="../images/berkelana-logo.png"
+                       src="/public/images/berkelana-logo.png"
                        alt="Berkelana Logo"
                        className="h-20 lg:h-25"
                        onError={(e) => {

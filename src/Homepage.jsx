@@ -485,7 +485,7 @@ const getImageUrl = (image, type = 'artikel') => {
                   alt={article.judul || article.title} 
                   className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                   onError={(e) => {
-                    e.target.src = "../images/ar1.png"; // Fallback image
+                    e.target.src = "/public/images/ar1.png"; // Fallback image
                   }}
                 />
               ) : (
@@ -508,7 +508,7 @@ const getImageUrl = (image, type = 'artikel') => {
       />
     ) : (
       <img
-        src="../images/arp.png"
+        src="/public/images/arp.png"
         alt="Admin"
         className="w-full h-full object-cover"
       />
@@ -579,11 +579,11 @@ const handleCloseTerms = () => {
       <section className="relative h-auto min-h-125 bg-cover bg-center pt-16 flex items-center justify-center"> {/* Added min-h-125 for consistent height */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/30 to-purple-900/30 z-0"></div>
         <div className="absolute inset-0 z-0">
-          <img src="../images/hero.png" alt="Mountain Background" className="w-full h-full object-cover" />
+          <img src="/public/images/hero.png" alt="Mountain Background" className="w-full h-full object-cover" />
         </div>
         
         <div className="relative z-10 h-full flex flex-col justify-center items-center text-white text-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-          <img src="../images/lhero.png" alt="Berkelana Logo" className="mb-8 sm:mb-16 w-3/4 max-w-sm" /> {/* Responsive logo size */}
+          <img src="/public/images/lhero.png" alt="Berkelana Logo" className="mb-8 sm:mb-16 w-3/4 max-w-sm" /> {/* Responsive logo size */}
           
           <h1 className="text-3xl sm:text-5xl font-bold mb-2 leading-tight">Berkelana kemana hari ini?</h1> {/* Responsive font size, line height */}
           <p className="text-base sm:text-lg mb-8 sm:mb-12 max-w-2xl">Bersama Berkelana - Perjalanan Tak Terbatas, Keindahan Tanpa Batas</p> {/* Responsive font size, max-width */}

@@ -912,15 +912,15 @@ const Pembayaran = () => {
                       <span>Kartu Kredit</span>
                     </div>
                     <div className="flex flex-col items-center text-xs text-gray-600 p-2 bg-gray-50 rounded">
-                      <img src="../images/va-logo.svg" alt="Virtual Account" className="w-6 h-6 mb-1" />
+                      <img src="/public/images/va-logo.svg" alt="Virtual Account" className="w-6 h-6 mb-1" />
                       <span>Virtual Account</span>
                     </div>
                     <div className="flex flex-col items-center text-xs text-gray-600 p-2 bg-gray-50 rounded">
-                      <img src="../images/qris.png" alt="QRIS" className="w-6 h-6 mb-1" />
+                      <img src="/public/images/qris.png" alt="QRIS" className="w-6 h-6 mb-1" />
                       <span>QRIS</span>
                     </div>
                     <div className="flex flex-col items-center text-xs text-gray-600 p-2 bg-gray-50 rounded">
-                      <img src="../images/ewallet-logo.svg" alt="E-Wallet" className="w-6 h-6 mb-1" />
+                      <img src="/public/images/ewallet-logo.svg" alt="E-Wallet" className="w-6 h-6 mb-1" />
                       <span>E-Wallet</span>
                     </div>
                   </div>

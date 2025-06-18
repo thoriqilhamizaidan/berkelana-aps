@@ -478,7 +478,7 @@ const PromoPage = () => {
 <section className="relative h-[280px] sm:h-[320px] md:h-[370px] lg:h-[420px] bg-cover bg-center">
   <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-purple-950/40 z-0"></div>
   <img
-    src="/images/Rectangle 65.png"
+    src="/public/images/Rectangle 65.png"
     alt="Bus Background"
     className="absolute inset-0 w-full h-full object-cover z-0"
   />

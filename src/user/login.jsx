@@ -73,7 +73,7 @@ const Login = () => {
           <div className="text-center text-white">
             <Link to="/" className="inline-block hover:opacity-80 transition-opacity duration-300">
               <img
-                src="/images/berkelana-logo-white.png"
+                src="/public/images/berkelana-logo-white.png"
                 alt="Logo Berkelana"
                 className="max-w-full h-auto cursor-pointer max-h-24 sm:max-h-32 lg:max-h-none"
                 onError={(e) => {
@@ -92,7 +92,7 @@ const Login = () => {
             <div className="mb-6 sm:mb-8 lg:mb-12 flex justify-center lg:block">
               <Link to="/" className="inline-block hover:opacity-80 transition-opacity duration-300">
                 <img
-                  src="/images/berkelana-logo.png"
+                  src="/public/images/berkelana-logo.png"
                   alt="Logo Berkelana"
                   className="h-10 sm:h-12 lg:h-16 w-auto cursor-pointer"
                   onError={(e) => {

@@ -87,7 +87,7 @@ const TentangKami = () => {
       {/* Hero Section */}
       <div
         className="relative bg-cover bg-center h-96"
-        style={{ backgroundImage: "url('/images/backgroundtentangkami.jpg')" }}
+        style={{ backgroundImage: "url('/public/images/backgroundtentangkami.jpg')" }}
       >
         <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-10">
           <h1 className="text-4xl font-bold">Lebih Dekat dengan Berkelana</h1>
@@ -98,7 +98,7 @@ const TentangKami = () => {
       {/* Section 2 */}
       <div
         className="relative bg-cover bg-center py-12"
-        style={{ backgroundImage: "url('/images/tentangkami2.jpg')" }}
+        style={{ backgroundImage: "url('/public/images/tentangkami2.jpg')" }}
       >
         <div className="absolute inset-0 bg-white1 opacity-60"></div>
 
@@ -123,7 +123,7 @@ const TentangKami = () => {
                 Jadi Apa itu <span className="font-bold text-purple1">#Berkelana?</span>
               </h2>
               <img
-                src="/images/bagicon.png"
+                src="/public/images/bagicon.png"
                 alt="Travel Bag Icon"
                 className="h-36 w-36"
               />
@@ -145,7 +145,7 @@ const TentangKami = () => {
           </div>
           <div className="md:w-2/3">
             <img
-              src="/images/tentangkami3.png"
+              src="/public/images/tentangkami3.png"
               alt="Peta Indonesia"
               className="w-full h-auto"
             />

@@ -73,7 +73,7 @@ const ChangePassword = () => {
       className="min-h-screen flex items-center justify-center p-4"
       style={{
         backgroundImage:
-          "url('images/directly-shot-christmas-background.png')",
+          "url('/public/images/directly-shot-christmas-background.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
@@ -93,7 +93,7 @@ const ChangePassword = () => {
         {/* Logo */}
         <div className="mb-6 sm:mb-8 lg:mb-10 flex justify-center">
           <img
-            src="images/berkelana-logo.png"
+            src="/public/images/berkelana-logo.png"
             alt="Logo"
             className="h-8 sm:h-10 lg:h-12 w-auto"
           />

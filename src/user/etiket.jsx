@@ -208,14 +208,14 @@ const handleDownloadPDF = async () => {
       } catch (error) {
         console.error('Error loading vehicle image:', error);
         try {
-          vehicleImageBase64 = await getBase64FromUrl('/images/seat.jpg');
+          vehicleImageBase64 = await getBase64FromUrl('/public/images/seat.jpg');
         } catch (e) {
           console.error('Error loading fallback image:', e);
         }
       }
     } else {
       try {
-        vehicleImageBase64 = await getBase64FromUrl('/images/seat.jpg');
+        vehicleImageBase64 = await getBase64FromUrl('/public/images/seat.jpg');
       } catch (error) {
         console.error('Error loading fallback image:', error);
       }
@@ -742,7 +742,7 @@ const handleDownloadPDF = async () => {
         {/* Header with Logo (No Padding) */}
         <div className="flex justify-between items-center mb-4">
           <div>
-            <img src="/images/Berkelana-logo.png" alt="Berkelana" className="h-12 sm:h-16 md:h-20 text-purple-600" />
+            <img src="/public/images/Berkelana-logo.png" alt="Berkelana" className="h-12 sm:h-16 md:h-20 text-purple-600" />
           </div>
           <button
             onClick={handleClose} // Add onClick event to handle the close button
@@ -771,12 +771,12 @@ const handleDownloadPDF = async () => {
             {/* Bus Image Side */}
             <div className="w-full md:w-1/3 bg-gray-50 p-4 flex flex-col">
               <img 
-                src={vehicleImage || "/images/seat.jpg"} 
+                src={vehicleImage || "/public/images/seat.jpg"} 
                 alt="Interior Bus" 
                 className="w-full h-48 object-cover rounded-lg mb-4" 
                 onError={(e) => {
                   e.target.onerror = null; // Prevent infinite loop
-                  e.target.src = "/images/seat.jpg"; // Fallback image
+                  e.target.src = "/public/images/seat.jpg"; // Fallback image
                 }}
               />
               <div className="text-gray-600 text-sm space-y-1">

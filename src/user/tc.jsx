@@ -9,7 +9,7 @@ const Tc = () => {
       {/* Hero Section */}
       <div
         className="relative bg-cover bg-center h-96"
-        style={{ backgroundImage: "url('/images/backgroundtentangkami.jpg')" }}
+        style={{ backgroundImage: "url('/public/images/backgroundtentangkami.jpg')" }}
       >
         <div className="absolute inset-0 flex flex-col justify-center items-center text-center text-white z-10">
           <h1 className="text-4xl font-bold">Syarat dan Ketentuan & Kebijakan Privasi</h1>

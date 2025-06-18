@@ -9,7 +9,7 @@ const Footer = () => {
       <section className="relative h-32 sm:h-40 md:h-48 bg-cover bg-center">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-900/50 to-purple-900/50 z-0"></div>
         <div className="absolute inset-0 z-0">
-          <img src="../images/banner.png" alt="Footer Banner" className="w-full h-full object-cover" />
+          <img src="/public/images/banner.png" alt="Footer Banner" className="w-full h-full object-cover" />
         </div>
         <div className="relative z-10 h-full flex flex-col justify-center items-start text-white px-4 sm:px-6 md:px-8 lg:px-16">
           <h2 className="text-lg sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2">
@@ -27,7 +27,7 @@ const Footer = () => {
             {/* Logo Section */}
             <div className="text-center">
               <img
-                src="../images/berkelana-logo.png"
+                src="/public/images/berkelana-logo.png"
                 alt="Berkelana Logo"
                 className="h-16 sm:h-20 mx-auto"
                 onError={(e) => {
@@ -122,7 +122,7 @@ const Footer = () => {
             {/* Logo Section */}
             <div className="flex-shrink-0">
               <img
-                src="../images/berkelana-logo.png"
+                src="/public/images/berkelana-logo.png"
                 alt="Berkelana Logo"
                 className="h-20 lg:h-25"
                 onError={(e) => {
