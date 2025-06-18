@@ -1,5 +1,5 @@
 // src/services/transaksiService.js - UPDATED WITH XENDIT SUPPORT
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5052/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 // Helper function untuk handle fetch response
 const handleResponse = async (response) => {

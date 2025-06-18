@@ -306,7 +306,7 @@ const Pembayaran = () => {
     try {
       const currentTotal = calculatePriceBreakdown().subtotal;
       
-      const response = await fetch('http://localhost:5052/api/promo/validate', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/promo/validate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -18,7 +18,7 @@ const KelolaAdmin = () => {
   const fetchAdmins = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:5052/api/admin', {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/admin`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -45,7 +45,7 @@ const KelolaAdmin = () => {
 
   const handleDeleteAdmin = (id) => {
     const token = localStorage.getItem('token');
-    fetch(`http://localhost:5052/api/admin/${id}`, {
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/admin/${id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`

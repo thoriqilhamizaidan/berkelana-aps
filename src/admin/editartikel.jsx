@@ -102,7 +102,7 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
     }
     
     // Otherwise, it's a filename, so construct the full URL
-    return `http://localhost:5052/uploads/artikel/${imageData}`;
+    return `${import.meta.env.VITE_API_BASE_URL}/uploads/artikel/${imageData}`;
   };
 
   const handleSubmit = async (e) => {
@@ -134,7 +134,7 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5052/api/artikel/${article?.id_artikel || article?.id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/artikel/${article?.id_artikel || article?.id}`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -153,8 +153,8 @@ export default function EditArtikel({ article, onBack, onUpdate }) {
           isi: data.isi,
           kategori: data.kategori,
           penulis: data.nama_penulis,
-          gambarUrl: data.gambar_artikel ? `http://localhost:5052/uploads/artikel/${data.gambar_artikel}` : null,
-        authorPhotoUrl: data.foto_penulis ? `http://localhost:5052/uploads/artikel/${data.foto_penulis}` : null,
+          gambarUrl: data.gambar_artikel ? `${import.meta.env.VITE_API_BASE_URL}/uploads/artikel/${data.gambar_artikel}` : null,
+      authorPhotoUrl: data.foto_penulis ? `${import.meta.env.VITE_API_BASE_URL}/uploads/artikel/${data.foto_penulis}` : null,
         };
         onUpdate(updatedData);
       }
